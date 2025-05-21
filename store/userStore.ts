@@ -1,5 +1,8 @@
 import { create } from 'zustand'
-import { devtools, persist } from 'zustand/middleware'
+import { devtools } from 'zustand/middleware'
+import { db } from '@/lib/firebase'
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
+import { useAuthStore } from './authStore'
 
 // Types for our character
 export type Race = 'human' | 'elf' | 'dwarf' | 'orc' | 'kitsune'
@@ -55,25 +58,23 @@ export type Quest = {
 
 // User store types
 type UserState = {
-  user: {
-    id: string
-    email: string
-    username: string
-  } | null
   character: Character | null
   quests: Quest[]
   isCompetitive: boolean
   partyId: string | null
+  isLoading: boolean
+  error: string | null
   actions: {
-    setUser: (user: UserState['user']) => void
-    setCharacter: (character: Character) => void
-    addQuest: (quest: Omit<Quest, 'id' | 'dateCreated'>) => void
-    toggleQuestComplete: (id: string) => void
-    gainExperience: (amount: number) => void
-    levelUp: () => void
-    improveSkill: (skillName: string, amount: number) => void
-    toggleCompetitiveMode: () => void
-    setPartyId: (partyId: string | null) => void
+    setCharacter: (character: Character) => Promise<void>
+    addQuest: (quest: Omit<Quest, 'id' | 'dateCreated'>) => Promise<void>
+    toggleQuestComplete: (id: string) => Promise<void>
+    gainExperience: (amount: number) => Promise<void>
+    levelUp: () => Promise<void>
+    improveSkill: (skillName: string, amount: number) => Promise<void>
+    toggleCompetitiveMode: () => Promise<void>
+    setPartyId: (partyId: string | null) => Promise<void>
+    loadUserData: () => Promise<void>
+    clearError: () => void
     resetState: () => void
   }
 }
@@ -85,131 +86,224 @@ const calculateNextLevelXp = (level: number): number => {
 
 // Initial empty state
 const initialState: Omit<UserState, 'actions'> = {
-  user: null,
   character: null,
   quests: [],
   isCompetitive: false,
-  partyId: null
+  partyId: null,
+  isLoading: false,
+  error: null
 }
 
 // Create the store
 export const useUserStore = create<UserState>()(
   devtools(
-    persist(
-      (set, get) => ({
-        ...initialState,
-        actions: {
-          setUser: (user) => set({ user }),
-          
-          setCharacter: (character) => set({ character }),
-          
-          addQuest: (quest) => set((state) => ({ 
-            quests: [
-              ...state.quests, 
-              { 
-                ...quest, 
-                id: Math.random().toString(36).substring(2, 9),
-                dateCreated: new Date() 
-              }
-            ] 
-          })),
-          
-          toggleQuestComplete: (id) => set((state) => {
+    (set, get) => ({
+      ...initialState,
+      actions: {
+        setCharacter: async (character) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            await setDoc(doc(db, 'users', user.uid), { character }, { merge: true })
+            set({ character, isLoading: false })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to update character',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        addQuest: async (quest) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const newQuest = {
+              ...quest,
+              id: Math.random().toString(36).substring(2, 9),
+              dateCreated: new Date()
+            }
+
+            const userRef = doc(db, 'users', user.uid)
+            const userDoc = await getDoc(userRef)
+            const currentQuests = userDoc.data()?.quests || []
+            
+            await updateDoc(userRef, {
+              quests: [...currentQuests, newQuest]
+            })
+
+            set((state) => ({ 
+              quests: [...state.quests, newQuest],
+              isLoading: false
+            }))
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to add quest',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        toggleQuestComplete: async (id) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
             const quest = state.quests.find(q => q.id === id)
-            
-            if (!quest) return state
-            
-            // If completing a quest, gain XP
-            if (!quest.completed) {
-              get().actions.gainExperience(quest.reward)
+            if (!quest) throw new Error('Quest not found')
+
+            const updatedQuest = {
+              ...quest,
+              completed: !quest.completed,
+              dateCompleted: !quest.completed ? new Date() : undefined
             }
+
+            const userRef = doc(db, 'users', user.uid)
+            const userDoc = await getDoc(userRef)
+            const currentQuests = userDoc.data()?.quests || []
             
-            return {
-              quests: state.quests.map(q => 
-                q.id === id 
-                  ? { 
-                      ...q, 
-                      completed: !q.completed, 
-                      dateCompleted: !q.completed ? new Date() : undefined
-                    } 
-                  : q
+            await updateDoc(userRef, {
+              quests: currentQuests.map((q: Quest) => 
+                q.id === id ? updatedQuest : q
               )
+            })
+
+            if (!quest.completed) {
+              await get().actions.gainExperience(quest.reward)
             }
-          }),
-          
-          gainExperience: (amount) => set((state) => {
+
+            set((state) => ({
+              quests: state.quests.map(q => 
+                q.id === id ? updatedQuest : q
+              ),
+              isLoading: false
+            }))
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to toggle quest',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        gainExperience: async (amount) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
             const character = state.character
-            
-            if (!character) return state
-            
+            if (!character) throw new Error('No character found')
+
             const newExperience = character.experience + amount
             const nextLevelXp = character.nextLevelXp
-            
-            // If experience is enough to level up
+
             if (newExperience >= nextLevelXp) {
-              get().actions.levelUp()
-              return state
+              await get().actions.levelUp()
+              return
             }
-            
-            return {
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              'character.experience': newExperience
+            })
+
+            set({
               character: {
                 ...character,
                 experience: newExperience
-              }
-            }
-          }),
-          
-          levelUp: () => set((state) => {
+              },
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to gain experience',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        levelUp: async () => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
             const character = state.character
-            
-            if (!character) return state
-            
+            if (!character) throw new Error('No character found')
+
             const newLevel = character.level + 1
             const newExperience = character.experience - character.nextLevelXp
             const newNextLevelXp = calculateNextLevelXp(newLevel)
-            
-            // Improve stats randomly on level up
+
             const statKeys = ['strength', 'intelligence', 'dexterity', 'wisdom', 'constitution', 'charisma'] as const
             const randomStatIndex = Math.floor(Math.random() * statKeys.length)
             const randomStat = statKeys[randomStatIndex]
-            
-            return {
-              character: {
-                ...character,
-                level: newLevel,
-                experience: newExperience,
-                nextLevelXp: newNextLevelXp,
-                stats: {
-                  ...character.stats,
-                  [randomStat]: character.stats[randomStat] + 1
-                }
+
+            const updatedCharacter = {
+              ...character,
+              level: newLevel,
+              experience: newExperience,
+              nextLevelXp: newNextLevelXp,
+              stats: {
+                ...character.stats,
+                [randomStat]: character.stats[randomStat] + 1
               }
             }
-          }),
-          
-          improveSkill: (skillName, amount) => set((state) => {
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              character: updatedCharacter
+            })
+
+            set({
+              character: updatedCharacter,
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to level up',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        improveSkill: async (skillName, amount) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
             const character = state.character
-            
-            if (!character) return state
-            
-            // Find skill or create it if doesn't exist
+            if (!character) throw new Error('No character found')
+
             let skills = [...character.skills]
             let skill = skills.find(s => s.name === skillName)
-            
+
             if (skill) {
-              // Update existing skill
               const newProgress = skill.progress + amount
               
-              // Level up skill if progress >= 100
               if (newProgress >= 100) {
                 skill = {
                   ...skill,
                   level: skill.level + 1,
                   progress: newProgress - 100
                 }
-                
-                // Also gain some XP when skill levels up
-                get().actions.gainExperience(skill.level * 10)
+                await get().actions.gainExperience(skill.level * 10)
               } else {
                 skill = {
                   ...skill,
@@ -219,41 +313,132 @@ export const useUserStore = create<UserState>()(
               
               skills = skills.map(s => s.name === skillName ? skill! : s)
             } else {
-              // Create new skill
               skills.push({
                 name: skillName,
                 level: 1,
                 progress: amount
               })
             }
-            
-            return {
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              'character.skills': skills
+            })
+
+            set({
               character: {
                 ...character,
                 skills
-              }
+              },
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to improve skill',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        toggleCompetitiveMode: async () => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
+            const newMode = !state.isCompetitive
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              isCompetitive: newMode
+            })
+
+            set({
+              isCompetitive: newMode,
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to toggle competitive mode',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        setPartyId: async (partyId) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              partyId
+            })
+
+            set({
+              partyId,
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to set party ID',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        loadUserData: async () => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const userRef = doc(db, 'users', user.uid)
+            const userDoc = await getDoc(userRef)
+            
+            if (!userDoc.exists()) {
+              throw new Error('User data not found')
             }
-          }),
-          
-          toggleCompetitiveMode: () => set((state) => ({
-            isCompetitive: !state.isCompetitive
-          })),
-          
-          setPartyId: (partyId) => set({ partyId }),
-          
-          resetState: () => set(initialState)
+
+            const userData = userDoc.data()
+            set({
+              character: userData.character || null,
+              quests: userData.quests || [],
+              isCompetitive: userData.isCompetitive || false,
+              partyId: userData.partyId || null,
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to load user data',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        clearError: () => set({ error: null }),
+
+        resetState: () => {
+          set(initialState)
         }
-      }),
-      {
-        name: 'rl-hero-storage',
-        partialize: (state) => ({
-          user: state.user,
-          character: state.character,
-          quests: state.quests,
-          isCompetitive: state.isCompetitive,
-          partyId: state.partyId
-        })
       }
-    )
+    })
   )
-) 
+)
+
+// Initialize user data when auth state changes
+if (typeof window !== 'undefined') {
+  useAuthStore.subscribe((state) => {
+    if (state.user) {
+      useUserStore.getState().actions.loadUserData()
+    } else {
+      useUserStore.setState(initialState)
+    }
+  })
+} 

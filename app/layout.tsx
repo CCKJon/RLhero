@@ -1,6 +1,7 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import ClientLayout from './components/ClientLayout'
+import { EnvDebug } from '@/components/EnvDebug'
 
 export const metadata: Metadata = {
   title: 'RL Hero - Level Up Your Life',
@@ -18,6 +19,7 @@ export default function RootLayout({
         <ClientLayout>
           {children}
         </ClientLayout>
+        <EnvDebug />
       </body>
     </html>
   )

@@ -1,38 +1,42 @@
-import { initializeApp } from 'firebase/app'
-import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
-import { getStorage } from 'firebase/storage'
+// Import the functions you need from the SDKs you need
+import { deleteApp, getApp, getApps, initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
+import { getStorage } from 'firebase/storage';
 
-// Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAGXK-GtgTGvEx-gVA9PUurCfUgTM2KWNs",
-  authDomain: "fir-practice-todo.firebaseapp.com",
-  projectId: "fir-practice-todo",
-  storageBucket: "fir-practice-todo.appspot.com",
-  messagingSenderId: "1071871730626",
-  appId: "1:1071871730626:web:e633b102a01af9b5182c5b"
-}
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+};
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig)
-export const auth = getAuth(app)
+let firebaseApp;
+if (!getApps().length) {
+    firebaseApp = initializeApp(firebaseConfig);
+} else {
+    firebaseApp = getApp();
+    deleteApp(firebaseApp);
+    firebaseApp = initializeApp(firebaseConfig);
+}
 
-// Get Firebase services
-const db = getFirestore(app)
-const storage = getStorage(app)
+export const auth = getAuth(firebaseApp);
+export const db = getFirestore(firebaseApp);
+export const storage = getStorage(firebaseApp);
 
 // Auth state observer
 export const onAuthStateChange = (callback: (user: any) => void) => {
-  return onAuthStateChanged(auth, callback)
-}
+    return onAuthStateChanged(auth, callback);
+};
 
 // Sign out function
 export const signOutUser = async () => {
-  try {
-    await signOut(auth)
-  } catch (error) {
-    console.error('Error signing out:', error)
-  }
-}
-
-export { db, storage } 
+    try {
+        await signOut(auth);
+    } catch (error) {
+        console.error('Error signing out:', error);
+    }
+};

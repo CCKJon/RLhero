@@ -7,10 +7,12 @@ import { useRouter } from 'next/navigation'
 import { useUserStore } from '@/store/userStore'
 import type { Race, Gender, Character } from '@/store/userStore'
 import Image from 'next/image'
+import { useAuthStore } from '@/store/authStore'
 
 export default function Register() {
   const router = useRouter()
-  const { actions } = useUserStore()
+  const { actions: userActions } = useUserStore()
+  const { actions: authActions } = useAuthStore()
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     email: '',
@@ -47,64 +49,65 @@ export default function Register() {
     }
   }
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (step < 3) {
       setStep(step + 1)
     } else {
-      // Create user and character in store
-      actions.setUser({
-        id: Math.random().toString(36).substring(2, 9),
-        email: formData.email,
-        username: formData.username
-      })
-      
-      // Create default character
-      const newCharacter: Character = {
-        id: Math.random().toString(36).substring(2, 9),
-        name: formData.characterName,
-        race: formData.race,
-        gender: formData.gender,
-        level: 1,
-        experience: 0,
-        nextLevelXp: 100,
-        stats: {
-          strength: formData.race === 'orc' ? 12 : formData.race === 'dwarf' ? 10 : 8,
-          intelligence: formData.race === 'elf' ? 12 : formData.race === 'kitsune' ? 10 : 8,
-          dexterity: formData.race === 'kitsune' ? 12 : formData.race === 'elf' ? 10 : 8,
-          wisdom: formData.race === 'human' ? 10 : 8,
-          constitution: formData.race === 'dwarf' ? 12 : formData.race === 'orc' ? 10 : 8,
-          charisma: formData.race === 'human' ? 12 : 8
-        },
-        skills: [],
-        equipment: {
-          weapon: getRaceDefaultWeapon(formData.race),
-          armor: 'Beginner Armor',
-          accessory: 'Traveler\'s Pendant'
-        },
-        titles: ['Novice Adventurer'],
-        appearance: formData.appearance
+      try {
+        // Register the user first
+        await authActions.register(formData.email, formData.password, formData.username)
+        
+        // Create default character
+        const newCharacter: Character = {
+          id: Math.random().toString(36).substring(2, 9),
+          name: formData.characterName,
+          race: formData.race,
+          gender: formData.gender,
+          level: 1,
+          experience: 0,
+          nextLevelXp: 100,
+          stats: {
+            strength: formData.race === 'orc' ? 12 : formData.race === 'dwarf' ? 10 : 8,
+            intelligence: formData.race === 'elf' ? 12 : formData.race === 'kitsune' ? 10 : 8,
+            dexterity: formData.race === 'kitsune' ? 12 : formData.race === 'elf' ? 10 : 8,
+            wisdom: formData.race === 'human' ? 10 : 8,
+            constitution: formData.race === 'dwarf' ? 12 : formData.race === 'orc' ? 10 : 8,
+            charisma: formData.race === 'human' ? 12 : 8
+          },
+          skills: [],
+          equipment: {
+            weapon: getRaceDefaultWeapon(formData.race),
+            armor: 'Beginner Armor',
+            accessory: 'Traveler\'s Pendant'
+          },
+          titles: ['Novice Adventurer'],
+          appearance: formData.appearance
+        }
+        
+        await userActions.setCharacter(newCharacter)
+        
+        // Add starter quests
+        await userActions.addQuest({
+          name: 'Complete your first task',
+          reward: 50,
+          category: 'Education',
+          completed: false
+        })
+        
+        await userActions.addQuest({
+          name: 'Read for 30 minutes',
+          reward: 25,
+          category: 'Education',
+          completed: false
+        })
+        
+        // Redirect to dashboard
+        router.push('/dashboard')
+      } catch (error) {
+        console.error('Registration failed:', error)
+        // You might want to show an error message to the user here
       }
-      
-      actions.setCharacter(newCharacter)
-      
-      // Add starter quests
-      actions.addQuest({
-        name: 'Complete your first task',
-        reward: 50,
-        category: 'Education',
-        completed: false
-      })
-      
-      actions.addQuest({
-        name: 'Read for 30 minutes',
-        reward: 25,
-        category: 'Education',
-        completed: false
-      })
-      
-      // Redirect to dashboard
-      router.push('/dashboard')
     }
   }
   

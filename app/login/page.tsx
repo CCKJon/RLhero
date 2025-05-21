@@ -1,27 +1,76 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
+import { useAuthStore } from '@/store/authStore'
+import { auth } from '@/lib/firebase'
+import { useUserStore } from '@/store/userStore'
 
 export default function Login() {
+  const router = useRouter()
+  const { actions: { login } } = useAuthStore()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    rememberMe: false
   })
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    // Check for saved credentials
+    const savedEmail = localStorage.getItem('rememberedEmail')
+    const savedPassword = localStorage.getItem('rememberedPassword')
+    if (savedEmail && savedPassword) {
+      setFormData(prev => ({
+        ...prev,
+        email: savedEmail,
+        password: savedPassword,
+        rememberMe: true
+      }))
+    }
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
+    const { name, value, type, checked } = e.target
     setFormData({
       ...formData,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     })
+    // Clear error when user starts typing
+    if (error) setError('')
   }
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission - will implement with Firebase later
-    console.log(formData)
+    setError('') // Clear any existing errors
+    setIsLoading(true)
+    
+    try {
+      await login(formData.email, formData.password)
+      
+      // Save credentials if remember me is checked
+      if (formData.rememberMe) {
+        localStorage.setItem('rememberedEmail', formData.email)
+        localStorage.setItem('rememberedPassword', formData.password)
+      } else {
+        localStorage.removeItem('rememberedEmail')
+        localStorage.removeItem('rememberedPassword')
+      }
+      
+      // Wait for user data to be loaded before redirecting
+      const { actions: { loadUserData } } = useUserStore.getState()
+      await loadUserData()
+      
+      // Redirect to dashboard
+      router.push('/dashboard')
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Login failed. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -37,6 +86,12 @@ export default function Login() {
             Resume Your Quest
           </h2>
           
+          {error && (
+            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
+              <p className="text-sm text-red-400">{error}</p>
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -51,6 +106,7 @@ export default function Login() {
                 required
                 className="input w-full"
                 placeholder="your@email.com"
+                disabled={isLoading}
               />
             </div>
             
@@ -67,6 +123,7 @@ export default function Login() {
                 required
                 className="input w-full"
                 placeholder="Enter your password"
+                disabled={isLoading}
               />
             </div>
             
@@ -74,9 +131,12 @@ export default function Login() {
               <div className="flex items-center">
                 <input
                   id="remember-me"
-                  name="remember-me"
+                  name="rememberMe"
                   type="checkbox"
+                  checked={formData.rememberMe}
+                  onChange={handleChange}
                   className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  disabled={isLoading}
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                   Remember me
@@ -92,8 +152,16 @@ export default function Login() {
               <button 
                 type="submit" 
                 className="btn btn-primary w-full py-3"
+                disabled={isLoading}
               >
-                Sign In
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                    Signing in...
+                  </div>
+                ) : (
+                  'Sign In'
+                )}
               </button>
             </div>
           </form>
