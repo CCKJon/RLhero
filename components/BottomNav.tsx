@@ -1,12 +1,22 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { signOutUser } from '@/lib/firebase'
+import { useUserStore } from '@/store/userStore'
 
 export default function BottomNav() {
   const pathname = usePathname()
+  const router = useRouter()
+  const { actions: { resetState } } = useUserStore()
 
   const isActive = (path: string) => pathname === path
+
+  const handleSignOut = async () => {
+    await signOutUser()
+    resetState()
+    router.push('/login')
+  }
 
   return (
     <nav className="bg-dark/90 backdrop-blur-lg fixed bottom-0 w-full border-t border-gray-800">
@@ -44,6 +54,12 @@ export default function BottomNav() {
           >
             <span className="text-xs">Profile</span>
           </Link>
+          <button
+            onClick={handleSignOut}
+            className="flex flex-col items-center justify-center w-full text-red-400 hover:text-red-300"
+          >
+            <span className="text-xs">Logout</span>
+          </button>
         </div>
       </div>
     </nav>

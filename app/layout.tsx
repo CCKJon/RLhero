@@ -1,5 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import ClientLayout from './components/ClientLayout'
 
 export const metadata: Metadata = {
   title: 'RL Hero - Level Up Your Life',
@@ -14,7 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   )

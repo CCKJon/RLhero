@@ -255,26 +255,6 @@ export default function Party() {
           )}
         </motion.div>
       </main>
-      
-      {/* Bottom Navigation */}
-      <nav className="bg-dark/90 backdrop-blur-lg fixed bottom-0 w-full border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-around h-16">
-            <Link href="/dashboard" className="flex flex-col items-center justify-center w-full text-gray-500 hover:text-gray-300">
-              <span className="text-xs">Dashboard</span>
-            </Link>
-            <Link href="/quests" className="flex flex-col items-center justify-center w-full text-gray-500 hover:text-gray-300">
-              <span className="text-xs">Quests</span>
-            </Link>
-            <Link href="/party" className="flex flex-col items-center justify-center w-full text-accent-400">
-              <span className="text-xs">Party</span>
-            </Link>
-            <Link href="/settings" className="flex flex-col items-center justify-center w-full text-gray-500 hover:text-gray-300">
-              <span className="text-xs">Profile</span>
-            </Link>
-          </div>
-        </div>
-      </nav>
     </div>
   )
 } 

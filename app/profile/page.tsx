@@ -1,108 +1,66 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-
-interface Skill {
-  id: string;
-  name: string;
-  description: string;
-  levelRequired: number;
-  prerequisites?: string[];
-}
-
-interface Class {
-  id: string;
-  name: string;
-  description: string;
-  skillTree: Skill[];
-}
-
-const classes: Class[] = [
-  {
-    id: 'warrior',
-    name: 'Warrior',
-    description: 'A master of combat and physical prowess',
-    skillTree: [
-      {
-        id: 'basic_attack',
-        name: 'Basic Attack',
-        description: 'A simple but effective attack',
-        levelRequired: 1,
-      },
-      {
-        id: 'heavy_strike',
-        name: 'Heavy Strike',
-        description: 'A powerful attack that deals increased damage',
-        levelRequired: 5,
-        prerequisites: ['basic_attack'],
-      },
-      // Add more skills as needed
-    ],
-  },
-  // Add more classes as needed
-];
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { onAuthStateChange, signOutUser } from '@/lib/firebase';
 
 export default function ProfilePage() {
-  const [selectedClass, setSelectedClass] = useState<Class | null>(null);
-  const [characterLevel, setCharacterLevel] = useState(1);
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChange((user) => {
+      if (!user) {
+        router.push('/login');
+      } else {
+        setUser(user);
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  const handleSignOut = async () => {
+    await signOutUser();
+    router.push('/login');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Character Profile</h1>
-      
-      {/* Class Selection */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Select Your Class</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {classes.map((classOption) => (
-            <motion.div
-              key={classOption.id}
-              whileHover={{ scale: 1.05 }}
-              className={`p-4 rounded-lg border cursor-pointer ${
-                selectedClass?.id === classOption.id
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-blue-300'
-              }`}
-              onClick={() => setSelectedClass(classOption)}
-            >
-              <h3 className="text-xl font-semibold">{classOption.name}</h3>
-              <p className="text-gray-600">{classOption.description}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+        <h1 className="text-3xl font-bold mb-6">Profile</h1>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <p className="mt-1 text-lg">{user?.email}</p>
+          </div>
 
-      {/* Skill Tree Display */}
-      {selectedClass && (
-        <div className="mt-8">
-          <h2 className="text-2xl font-semibold mb-4">Skill Tree</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {selectedClass.skillTree.map((skill) => (
-              <motion.div
-                key={skill.id}
-                whileHover={{ scale: 1.02 }}
-                className={`p-4 rounded-lg border ${
-                  characterLevel >= skill.levelRequired
-                    ? 'border-green-500 bg-green-50'
-                    : 'border-gray-300 bg-gray-50'
-                }`}
-              >
-                <h3 className="text-lg font-semibold">{skill.name}</h3>
-                <p className="text-gray-600">{skill.description}</p>
-                <p className="text-sm mt-2">
-                  Required Level: {skill.levelRequired}
-                </p>
-                {skill.prerequisites && (
-                  <p className="text-sm text-gray-500">
-                    Prerequisites: {skill.prerequisites.join(', ')}
-                  </p>
-                )}
-              </motion.div>
-            ))}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">User ID</label>
+            <p className="mt-1 text-lg">{user?.uid}</p>
+          </div>
+
+          <div className="pt-4">
+            <button
+              onClick={handleSignOut}
+              className="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 } 

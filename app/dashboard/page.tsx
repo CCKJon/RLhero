@@ -238,40 +238,24 @@ export default function Dashboard() {
                 ))}
               </div>
               
-              {/* Quests List */}
-              <div className="space-y-3">
-                {filteredQuests.length === 0 ? (
-                  <div className="text-center p-8">
-                    <div className="mb-4">
-                      <Image 
-                        src="/images/fire-emblem/empty-quest.png" 
-                        alt="No quests" 
-                        width={120} 
-                        height={120} 
-                        className="mx-auto opacity-70"
-                      />
-                    </div>
-                    <p className="text-gray-400">No quests available in this category.</p>
-                    <p className="text-sm text-gray-500 mt-1">Add a new quest below to get started!</p>
-                  </div>
-                ) : (
-                  filteredQuests.map((quest) => (
-                    <div 
-                      key={quest.id}
-                      className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 flex items-center justify-between"
-                    >
+              {/* Daily Quests */}
+              <div className="space-y-4 mb-8">
+                {filteredQuests.map((quest) => (
+                  <div 
+                    key={quest.id}
+                    className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700"
+                  >
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <input
                           type="checkbox"
                           checked={quest.completed}
                           onChange={() => handleQuestToggle(quest.id)}
-                          className="h-5 w-5 rounded border-gray-600 text-primary-600 focus:ring-primary-500"
+                          className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-600 rounded bg-gray-700"
                         />
                         <div className="ml-3">
-                          <p className={`text-sm font-medium ${quest.completed ? 'text-gray-500 line-through' : 'text-white'}`}>
-                            {quest.name}
-                          </p>
-                          <span className="text-xs text-gray-500">{quest.category}</span>
+                          <h3 className="text-white font-medium">{quest.name}</h3>
+                          <p className="text-sm text-gray-400">{quest.category}</p>
                         </div>
                       </div>
                       <div className="flex items-center">
@@ -280,48 +264,41 @@ export default function Dashboard() {
                         </span>
                       </div>
                     </div>
-                  ))
-                )}
+                  </div>
+                ))}
               </div>
-              
-              {/* Add Quest Form */}
-              <div className="mt-6 bg-gray-800/50 backdrop-blur-sm rounded-lg p-4">
-                <h3 className="text-sm font-medium text-white mb-3">Add Custom Quest</h3>
-                <form onSubmit={handleAddQuest} className="flex flex-col sm:flex-row gap-3">
-                  <input
-                    type="text"
-                    value={newQuest.name}
-                    onChange={(e) => setNewQuest({ ...newQuest, name: e.target.value })}
-                    placeholder="Enter quest name..."
-                    className="flex-1 bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-white placeholder-gray-400 focus:ring-primary-500 focus:border-primary-500"
-                    required
-                  />
-                  <select
-                    value={newQuest.category}
-                    onChange={(e) => setNewQuest({ ...newQuest, category: e.target.value as QuestCategory })}
-                    className="w-full sm:w-auto bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-white focus:ring-primary-500 focus:border-primary-500"
-                  >
-                    <option value="Wellness">Wellness</option>
-                    <option value="Education">Education</option>
-                    <option value="Fitness">Fitness</option>
-                    <option value="Health">Health</option>
-                    <option value="Skills">Skills</option>
-                  </select>
-                  <input
-                    type="number"
-                    value={newQuest.reward}
-                    onChange={(e) => setNewQuest({ ...newQuest, reward: parseInt(e.target.value) })}
-                    min={5}
-                    max={100}
-                    className="w-full sm:w-20 bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-white focus:ring-primary-500 focus:border-primary-500"
-                  />
-                  <button
-                    type="submit"
-                    className="w-full sm:w-auto bg-primary-600 hover:bg-primary-500 text-white rounded-md px-4 py-2 text-sm font-medium"
-                  >
-                    Add Quest
-                  </button>
-                </form>
+
+              {/* Available Quests */}
+              <div className="mt-8">
+                <h3 className="text-lg font-medium text-white mb-4">Available Quests</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {['Defeat the Dragon', 'Rescue the Princess', 'Find the Sacred Stone', 'Train with the Mercenaries'].map((quest, index) => (
+                    <div key={index} className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
+                      <div className="flex items-start">
+                        <div className="w-12 h-12 bg-primary-900 rounded-md flex-shrink-0 flex items-center justify-center mr-3">
+                          <Image 
+                            src={`/images/fire-emblem/quest-${index + 1}.png`}
+                            alt="Quest"
+                            width={32}
+                            height={32}
+                          />
+                        </div>
+                        <div>
+                          <h4 className="text-white text-sm font-medium">{quest}</h4>
+                          <p className="text-gray-400 text-xs mt-1">Difficulty: {index + 1} ⭐</p>
+                          <div className="mt-2 flex items-center">
+                            <span className="text-xs bg-primary-900/50 text-primary-300 px-2 py-1 rounded mr-2">
+                              +{(index + 1) * 50} XP
+                            </span>
+                            <span className="text-xs bg-accent-900/50 text-accent-300 px-2 py-1 rounded">
+                              Reward: {(index + 1) * 100} Gold
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -441,59 +418,35 @@ export default function Dashboard() {
           {selectedTab === 'inventory' && (
             <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
               <div className="lg:col-span-2 bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
-                <h3 className="text-lg font-medium text-white mb-4">Available Quests</h3>
+                <h3 className="text-lg font-medium text-white mb-4">Inventory</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {['Defeat the Dragon', 'Rescue the Princess', 'Find the Sacred Stone', 'Train with the Mercenaries'].map((quest, index) => (
+                  {['Health Potion', 'Mana Potion', 'Strength Elixir', 'Magic Scroll'].map((item, index) => (
                     <div key={index} className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
                       <div className="flex items-start">
                         <div className="w-12 h-12 bg-primary-900 rounded-md flex-shrink-0 flex items-center justify-center mr-3">
                           <Image 
-                            src={`/images/fire-emblem/quest-${index + 1}.png`}
-                            alt="Quest"
+                            src={`/images/fire-emblem/item-${index + 1}.png`}
+                            alt={item}
                             width={32}
                             height={32}
                           />
                         </div>
                         <div>
-                          <h4 className="text-white text-sm font-medium">{quest}</h4>
-                          <p className="text-gray-400 text-xs mt-1">Difficulty: {index + 1} ⭐</p>
+                          <h4 className="text-white text-sm font-medium">{item}</h4>
+                          <p className="text-gray-400 text-xs mt-1">Quantity: {index + 1}</p>
                           <div className="mt-2 flex items-center">
-                            <span className="text-xs bg-primary-900/50 text-primary-300 px-2 py-1 rounded mr-2">
-                              +{(index + 1) * 50} XP
-                            </span>
-                            <span className="text-xs bg-accent-900/50 text-accent-300 px-2 py-1 rounded">
-                              Reward: {(index + 1) * 100} Gold
+                            <span className="text-xs bg-primary-900/50 text-primary-300 px-2 py-1 rounded">
+                              {index === 0 ? 'Restores 50 HP' : 
+                               index === 1 ? 'Restores 30 MP' :
+                               index === 2 ? '+5 Strength for 1 hour' :
+                               'Teaches a new spell'}
                             </span>
                           </div>
                         </div>
                       </div>
                     </div>
                   ))}
-                </div>
-                
-                <div className="mt-6">
-                  <h3 className="text-lg font-medium text-white mb-4">Battle Arena</h3>
-                  <div className="bg-gray-700/50 rounded-lg p-4 border border-primary-700">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <Image 
-                          src="/images/fire-emblem/arena.png"
-                          alt="Arena"
-                          width={64}
-                          height={64}
-                          className="mr-4"
-                        />
-                        <div>
-                          <h4 className="text-white font-medium">Weekly Tournament</h4>
-                          <p className="text-gray-400 text-sm mt-1">Challenge other players and earn special rewards!</p>
-                        </div>
-                      </div>
-                      <button className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white text-sm font-medium rounded">
-                        Enter
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </div>
               
@@ -523,45 +476,11 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
-                
-                <div className="mt-6 pt-4 border-t border-gray-700">
-                  <h3 className="text-sm font-medium text-white mb-3">Your Gold</h3>
-                  <div className="flex items-center">
-                    <Image 
-                      src="/images/fire-emblem/gold.png"
-                      alt="Gold"
-                      width={24}
-                      height={24}
-                      className="mr-2"
-                    />
-                    <span className="text-xl font-bold text-yellow-400">1,250</span>
-                  </div>
-                </div>
               </div>
             </div>
           )}
         </motion.div>
       </main>
-      
-      {/* Bottom Navigation */}
-      <nav className="bg-dark/90 backdrop-blur-lg fixed bottom-0 w-full border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-around h-16">
-            <Link href="/dashboard" className="flex flex-col items-center justify-center w-full text-accent-400">
-              <span className="text-xs">Dashboard</span>
-            </Link>
-            <Link href="/quests" className="flex flex-col items-center justify-center w-full text-gray-500 hover:text-gray-300">
-              <span className="text-xs">Quests</span>
-            </Link>
-            <Link href="/party" className="flex flex-col items-center justify-center w-full text-gray-500 hover:text-gray-300">
-              <span className="text-xs">Party</span>
-            </Link>
-            <Link href="/settings" className="flex flex-col items-center justify-center w-full text-gray-500 hover:text-gray-300">
-              <span className="text-xs">Profile</span>
-            </Link>
-          </div>
-        </div>
-      </nav>
     </div>
   )
 } 
