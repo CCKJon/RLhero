@@ -47,9 +47,9 @@ export default function BottomNav() {
             <span className="text-xs">Party</span>
           </Link>
           <Link 
-            href="/settings" 
+            href="/profile" 
             className={`flex flex-col items-center justify-center w-full ${
-              isActive('/settings') ? 'text-accent-400' : 'text-gray-500 hover:text-gray-300'
+              isActive('/profile') ? 'text-accent-400' : 'text-gray-500 hover:text-gray-300'
             }`}
           >
             <span className="text-xs">Profile</span>
