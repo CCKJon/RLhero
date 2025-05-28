@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useUserStore } from '@/store/userStore'
+import { ALL_EQUIPMENT } from '@/types/equipment';
 
 // Define available skills and their unlock levels
 const AVAILABLE_SKILLS = [
@@ -51,6 +52,14 @@ export default function Stats() {
   const [selectedTab, setSelectedTab] = useState<'stats' | 'skills' | 'locked'>('stats')
 
   if (!character) return null
+
+  // Hydrate equipment with full item data
+  const hydratedEquipment = Object.fromEntries(
+    Object.entries(character?.equipment || {}).map(([slot, item]) => [
+      slot,
+      item && typeof item === 'object' && item.id ? item : ALL_EQUIPMENT.find(e => e.id === (item?.id || item)) || null
+    ])
+  );
 
   const unlockedSkills = character.skills
   const lockedSkills = AVAILABLE_SKILLS.filter(
@@ -157,19 +166,49 @@ export default function Stats() {
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
                 <h3 className="text-lg font-medium text-white mb-4">Equipment</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {Object.entries(character.equipment).map(([slot, item]) => (
-                    <div key={slot} className="bg-gray-700/50 rounded-lg p-4 relative">
-                      <div className="w-full h-16 mb-2 flex items-center justify-center">
-                        <Image 
-                          src={`/images/fire-emblem/item-${slot}.png`} 
-                          alt={item as string} 
-                          width={48} 
-                          height={48} 
-                          className="opacity-90"
-                        />
-                      </div>
-                      <p className="text-xs text-gray-400 text-center capitalize">{slot}</p>
-                      <p className="text-sm text-white text-center mt-1">{item}</p>
+                  {Object.entries(hydratedEquipment).map(([slot, item]) => (
+                    <div key={slot} className="bg-gray-700/50 rounded-lg p-4">
+                      <label className="block text-sm font-medium text-gray-400 capitalize mb-2">{slot}</label>
+                      {item ? (
+                        <>
+                          <div className="w-full h-16 mb-3 flex items-center justify-center">
+                            <Image 
+                              src={item.image} 
+                              alt={item.name} 
+                              width={48} 
+                              height={48} 
+                              className="opacity-90"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <p className="text-white font-medium">{item.name}</p>
+                              <span className="text-xs text-gray-400">Level {item.level}</span>
+                            </div>
+                            <p className="text-sm text-gray-400">{item.description}</p>
+                            {item.stats && Object.entries(item.stats).length > 0 && (
+                              <div className="mt-2 space-y-1">
+                                <p className="text-xs text-gray-400 font-medium">Stats:</p>
+                                {Object.entries(item.stats).map(([stat, value]) => (
+                                  <div key={stat} className="flex justify-between text-xs">
+                                    <span className="text-gray-400 capitalize">{stat}</span>
+                                    <span className="text-primary-400">+{value}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {item.set && (
+                              <div className="mt-2 p-2 bg-gray-700/30 rounded">
+                                <p className="text-xs text-gray-300 mb-1">Part of {item.set}</p>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center py-4">
+                          <p className="text-gray-400">No {slot} equipped</p>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

@@ -3,6 +3,7 @@ import { devtools } from 'zustand/middleware'
 import { db } from '@/lib/firebase'
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
 import { useAuthStore } from './authStore'
+import { Equipment, EquipmentStats, calculateEquipmentStats, calculateSetBonuses } from '@/types/equipment'
 
 // Types for our character
 export type Race = 'human' | 'elf' | 'dwarf' | 'orc' | 'kitsune'
@@ -30,10 +31,11 @@ export type Character = {
     progress: number
   }[]
   equipment: {
-    weapon: string
-    armor: string
-    accessory: string
+    weapon: Equipment | null
+    armor: Equipment | null
+    accessory: Equipment | null
   }
+  inventory: Equipment[]
   titles: string[]
   appliedTitle: string | null
   appearance: {
@@ -78,6 +80,10 @@ type UserState = {
     clearError: () => void
     resetState: () => void
     setAppliedTitle: (title: string | null) => Promise<void>
+    equipItem: (item: Equipment) => Promise<void>
+    unequipItem: (slot: keyof Character['equipment']) => Promise<void>
+    addToInventory: (item: Equipment) => Promise<void>
+    removeFromInventory: (itemId: string) => Promise<void>
   }
 }
 
@@ -460,6 +466,167 @@ export const useUserStore = create<UserState>()(
           } catch (error: any) {
             set({ 
               error: error.message || 'Failed to set applied title',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        equipItem: async (item: Equipment) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
+            const character = state.character
+            if (!character) throw new Error('No character found')
+
+            // Remove item from inventory
+            const updatedInventory = character.inventory.filter(i => i.id !== item.id)
+            
+            // Get currently equipped item in that slot
+            const currentItem = character.equipment[item.type]
+            
+            // Add current item back to inventory if it exists
+            if (currentItem) {
+              updatedInventory.push(currentItem)
+            }
+
+            // Update equipment
+            const updatedEquipment = {
+              ...character.equipment,
+              [item.type]: item
+            }
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              'character.equipment': updatedEquipment,
+              'character.inventory': updatedInventory
+            })
+
+            set({
+              character: {
+                ...character,
+                equipment: updatedEquipment,
+                inventory: updatedInventory
+              },
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to equip item',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        unequipItem: async (slot: keyof Character['equipment']) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
+            const character = state.character
+            if (!character) throw new Error('No character found')
+
+            const item = character.equipment[slot]
+            if (!item) throw new Error('No item equipped in that slot')
+
+            // Add item to inventory
+            const updatedInventory = [...character.inventory, item]
+            
+            // Remove item from equipment
+            const updatedEquipment = {
+              ...character.equipment,
+              [slot]: null
+            }
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              'character.equipment': updatedEquipment,
+              'character.inventory': updatedInventory
+            })
+
+            set({
+              character: {
+                ...character,
+                equipment: updatedEquipment,
+                inventory: updatedInventory
+              },
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to unequip item',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        addToInventory: async (item: Equipment) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
+            const character = state.character
+            if (!character) throw new Error('No character found')
+
+            const updatedInventory = [...character.inventory, item]
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              'character.inventory': updatedInventory
+            })
+
+            set({
+              character: {
+                ...character,
+                inventory: updatedInventory
+              },
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to add item to inventory',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        removeFromInventory: async (itemId: string) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
+            const character = state.character
+            if (!character) throw new Error('No character found')
+
+            const updatedInventory = character.inventory.filter(item => item.id !== itemId)
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              'character.inventory': updatedInventory
+            })
+
+            set({
+              character: {
+                ...character,
+                inventory: updatedInventory
+              },
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to remove item from inventory',
               isLoading: false 
             })
             throw error

@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useUserStore } from '@/store/userStore'
+import { useUserStore, Character } from '@/store/userStore'
 import { redirect } from 'next/navigation'
 import type { QuestCategory } from '@/store/userStore'
+import { ARMOR_SETS, ArmorSet } from '@/types/equipment'
 
 export default function Dashboard() {
   const { 
@@ -15,7 +16,8 @@ export default function Dashboard() {
     actions: { 
       toggleQuestComplete, 
       addQuest,
-      gainExperience 
+      gainExperience,
+      unequipItem
     } 
   } = useUserStore()
   
@@ -375,20 +377,102 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {Object.entries(character.equipment).map(([slot, item]) => (
                     <div key={slot} className="bg-gray-700/50 rounded-lg p-4 relative">
-                      <div className="w-full h-16 mb-2 flex items-center justify-center">
-                        <Image 
-                          src={`/images/fire-emblem/item-${slot}.png`} 
-                          alt={item as string} 
-                          width={48} 
-                          height={48} 
-                          className="opacity-90"
-                        />
-                      </div>
-                      <p className="text-xs text-gray-400 text-center capitalize">{slot}</p>
-                      <p className="text-sm text-white text-center mt-1">{item}</p>
+                      {item ? (
+                        <>
+                          <div className="w-full h-16 mb-2 flex items-center justify-center">
+                            <Image 
+                              src={item.image} 
+                              alt={item.name} 
+                              width={48} 
+                              height={48} 
+                              className="opacity-90"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm text-white">{item.name}</p>
+                            <span className="text-xs text-gray-400">Level {item.level}</span>
+                          </div>
+                          
+                          {/* Stats */}
+                          <div className="space-y-1 mb-2">
+                            {typeof item === 'object' && item.stats ? (
+                              Object.entries(item.stats).map(([stat, value]) => (
+                                <div key={stat} className="flex justify-between text-xs">
+                                  <span className="text-gray-400 capitalize">{stat}</span>
+                                  <span className="text-primary-400">+{value}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="text-xs text-gray-400">No stats available</div>
+                            )}
+                          </div>
+
+                          {/* Set Info */}
+                          {item.set && (
+                            <div className="mt-2 p-2 bg-gray-600/30 rounded text-xs">
+                              <p className="text-gray-300">Part of {item.set}</p>
+                            </div>
+                          )}
+
+                          <button
+                            onClick={() => unequipItem(slot as 'weapon' | 'armor' | 'accessory')}
+                            className="mt-2 w-full py-1 text-xs bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors"
+                          >
+                            Unequip
+                          </button>
+                        </>
+                      ) : (
+                        <div className="text-center py-4">
+                          <p className="text-sm text-gray-400 capitalize">{slot}</p>
+                          <p className="text-xs text-gray-500 mt-1">Empty</p>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
+
+                {/* Set Bonuses */}
+                {Object.values(character.equipment).some(item => item?.set) && (
+                  <div className="mt-6">
+                    <h4 className="text-sm font-medium text-white mb-3">Active Set Bonuses</h4>
+                    <div className="space-y-3">
+                      {ARMOR_SETS.map((set: ArmorSet) => {
+                        const equippedPieces = Object.values(character.equipment).filter(
+                          item => item?.set === set.name
+                        );
+                        
+                        if (equippedPieces.length === 0) return null;
+
+                        return (
+                          <div key={set.name} className="bg-gray-700/30 rounded-lg p-3">
+                            <div className="flex justify-between items-center mb-2">
+                              <p className="text-sm text-gray-300">{set.name}</p>
+                              <span className="text-xs text-gray-400">
+                                {equippedPieces.length}/{set.pieces.length} pieces
+                              </span>
+                            </div>
+                            
+                            {Object.entries(set.bonuses).map(([pieceCount, bonus]) => {
+                              const isActive = equippedPieces.length >= parseInt(pieceCount);
+                              return (
+                                <div 
+                                  key={pieceCount} 
+                                  className={`text-xs ${isActive ? 'text-primary-400' : 'text-gray-500'}`}
+                                >
+                                  {pieceCount} pieces: {Object.entries(bonus as Record<string, number>).map(([stat, value]) => (
+                                    <span key={stat} className="mr-2">
+                                      +{value} {stat}
+                                    </span>
+                                  ))}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
               
               {/* Titles */}

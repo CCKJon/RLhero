@@ -6,102 +6,45 @@ import { onAuthStateChange } from '@/lib/firebase';
 import { motion } from 'framer-motion';
 import { useUserStore } from '@/store/userStore';
 import Image from 'next/image';
+import { Equipment, EquipmentRarity, ARMOR_SETS, ALL_EQUIPMENT } from '@/types/equipment';
 
-type ShopItem = {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  type: 'weapon' | 'armor' | 'accessory' | 'consumable';
-  image: string;
-  stats?: {
-    [key: string]: number;
-  };
+const rarityColors: Record<EquipmentRarity, string> = {
+  common: 'text-gray-400',
+  uncommon: 'text-green-400',
+  rare: 'text-blue-400',
+  epic: 'text-purple-400',
+  legendary: 'text-yellow-400'
 };
-
-const shopItems: ShopItem[] = [
-  {
-    id: '1',
-    name: 'Mystic Blade',
-    description: 'A sword imbued with ancient magic. Increases strength and intelligence.',
-    price: 500,
-    type: 'weapon',
-    image: '/images/fire-emblem/weapon-1.png',
-    stats: {
-      strength: 5,
-      intelligence: 3
-    }
-  },
-  {
-    id: '2',
-    name: 'Dragon Scale Armor',
-    description: 'Armor crafted from dragon scales. Provides excellent protection.',
-    price: 750,
-    type: 'armor',
-    image: '/images/fire-emblem/armor-1.png',
-    stats: {
-      constitution: 8,
-      dexterity: 2
-    }
-  },
-  {
-    id: '3',
-    name: 'Wisdom Amulet',
-    description: 'An amulet that enhances your magical abilities.',
-    price: 300,
-    type: 'accessory',
-    image: '/images/fire-emblem/accessory-1.png',
-    stats: {
-      wisdom: 5,
-      intelligence: 3
-    }
-  },
-  {
-    id: '4',
-    name: 'Health Potion',
-    description: 'Restores health and provides temporary stat boosts.',
-    price: 100,
-    type: 'consumable',
-    image: '/images/fire-emblem/potion-1.png'
-  }
-];
 
 export default function ShopPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<ShopItem['type'] | 'all'>('all');
-  const { character, actions: { gainExperience } } = useUserStore();
+  const { character, actions } = useUserStore();
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'weapon' | 'armor' | 'accessory'>('all');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange((user) => {
       if (!user) {
         router.push('/login');
-      } else {
-        setLoading(false);
       }
     });
 
     return () => unsubscribe();
   }, [router]);
 
-  const handlePurchase = (item: ShopItem) => {
-    // Here you would typically handle the purchase logic
-    // For now, we'll just gain some XP
-    gainExperience(item.price / 10);
-    alert(`Purchased ${item.name}!`);
-  };
+  if (!character) return null;
 
   const filteredItems = selectedCategory === 'all' 
-    ? shopItems 
-    : shopItems.filter(item => item.type === selectedCategory);
+    ? ALL_EQUIPMENT 
+    : ALL_EQUIPMENT.filter(item => item.type === selectedCategory);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-primary-900 to-dark flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
-      </div>
-    );
-  }
+  const handlePurchase = async (item: Equipment) => {
+    try {
+      await actions.addToInventory(item);
+      // You might want to add a currency system and deduct the cost here
+    } catch (error) {
+      console.error('Failed to purchase item:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary-900 to-dark">
@@ -114,13 +57,13 @@ export default function ShopPage() {
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-display text-white">Shop</h1>
             <div className="text-white">
-              <span className="text-primary-400 font-bold">{character?.experience || 0}</span> XP
+              <span className="text-primary-400 font-bold">{character.experience || 0}</span> XP
             </div>
           </div>
 
           {/* Category Filter */}
           <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
-            {['all', 'weapon', 'armor', 'accessory', 'consumable'].map((category) => (
+            {['all', 'weapon', 'armor', 'accessory'].map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category as any)}
@@ -138,48 +81,51 @@ export default function ShopPage() {
           {/* Shop Items Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredItems.map((item) => (
-              <motion.div
-                key={item.id}
-                className="bg-dark/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">
-                  <Image
+              <div key={item.id} className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className={`text-lg font-medium ${rarityColors[item.rarity]}`}>{item.name}</h3>
+                  <span className="text-sm text-gray-400">Level {item.level}</span>
+                </div>
+                
+                <div className="w-full h-32 mb-4 flex items-center justify-center bg-gray-700/50 rounded-lg">
+                  <Image 
                     src={item.image}
                     alt={item.name}
-                    width={300}
-                    height={300}
-                    className="w-full h-full object-cover"
+                    width={96}
+                    height={96}
+                    className="opacity-90"
                   />
                 </div>
-                <h2 className="text-xl font-display text-white mb-2">{item.name}</h2>
-                <p className="text-gray-400 mb-4">{item.description}</p>
-                
-                {item.stats && (
-                  <div className="mb-4">
-                    <h3 className="text-sm font-medium text-gray-400 mb-2">Stats:</h3>
-                    <div className="grid grid-cols-2 gap-2">
-                      {Object.entries(item.stats).map(([stat, value]) => (
-                        <div key={stat} className="bg-gray-800/50 rounded p-2">
-                          <span className="text-xs text-gray-400 capitalize">{stat}</span>
-                          <span className="block text-primary-400 font-bold">+{value}</span>
-                        </div>
-                      ))}
+
+                <p className="text-gray-400 text-sm mb-4">{item.description}</p>
+
+                {/* Stats */}
+                <div className="space-y-2 mb-4">
+                  {Object.entries(item.stats).map(([stat, value]) => (
+                    <div key={stat} className="flex justify-between text-sm">
+                      <span className="text-gray-400 capitalize">{stat}</span>
+                      <span className="text-primary-400">+{value}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Set Bonus Info */}
+                {item.set && (
+                  <div className="mb-4 p-3 bg-gray-700/30 rounded-lg">
+                    <p className="text-sm text-gray-300 mb-2">Part of {item.set}</p>
+                    <div className="text-xs text-gray-400">
+                      {ARMOR_SETS.find(s => s.name === item.set)?.description}
                     </div>
                   </div>
                 )}
 
-                <div className="flex justify-between items-center mt-4">
-                  <span className="text-primary-400 font-bold">{item.price} XP</span>
-                  <button
-                    onClick={() => handlePurchase(item)}
-                    className="bg-primary-500/20 text-primary-400 px-4 py-2 rounded-lg hover:bg-primary-500/30 transition-colors border border-primary-500/50"
-                  >
-                    Purchase
-                  </button>
-                </div>
-              </motion.div>
+                <button
+                  onClick={() => handlePurchase(item)}
+                  className="w-full py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors"
+                >
+                  Purchase
+                </button>
+              </div>
             ))}
           </div>
         </motion.div>

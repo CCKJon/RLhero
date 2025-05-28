@@ -9,6 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import BottomNav from '@/components/BottomNav';
 import { TITLE_BONUSES } from '@/lib/titles';
+import { ARMOR_SETS, ALL_EQUIPMENT } from '@/types/equipment';
 
 // Define available skills and their unlock levels
 const AVAILABLE_SKILLS = [
@@ -144,6 +145,14 @@ export default function ProfilePage() {
 
   const raceInfo = RACE_INFO[character?.race as keyof typeof RACE_INFO];
 
+  // Hydrate equipment with full item data
+  const hydratedEquipment = Object.fromEntries(
+    Object.entries(character?.equipment || {}).map(([slot, item]) => [
+      slot,
+      item && typeof item === 'object' && item.id ? item : ALL_EQUIPMENT.find(e => e.id === (item?.id || item)) || null
+    ])
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary-900 to-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -236,10 +245,58 @@ export default function ProfilePage() {
               <div className="bg-gray-800/50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-white mb-4">Equipment</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {Object.entries(character?.equipment || {}).map(([slot, item]) => (
+                  {Object.entries(hydratedEquipment).map(([slot, item]) => (
                     <div key={slot} className="bg-gray-700/50 rounded-lg p-4">
-                      <label className="block text-sm font-medium text-gray-400 capitalize">{slot}</label>
-                      <p className="mt-1 text-white">{item}</p>
+                      <label className="block text-sm font-medium text-gray-400 capitalize mb-2">{slot}</label>
+                      {item ? (
+                        <>
+                          <div className="w-full h-16 mb-3 flex items-center justify-center">
+                            <Image 
+                              src={item.image} 
+                              alt={item.name} 
+                              width={48} 
+                              height={48} 
+                              className="opacity-90"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <p className="text-white font-medium">{item.name}</p>
+                              <span className="text-xs text-gray-400">Level {item.level}</span>
+                            </div>
+                            
+                            {/* Item Description */}
+                            <p className="text-sm text-gray-400">{item.description}</p>
+                            
+                            {/* Item Stats */}
+                            {item.stats && Object.entries(item.stats).length > 0 && (
+                              <div className="mt-2 space-y-1">
+                                <p className="text-xs text-gray-400 font-medium">Stats:</p>
+                                {Object.entries(item.stats).map(([stat, value]) => (
+                                  <div key={stat} className="flex justify-between text-xs">
+                                    <span className="text-gray-400 capitalize">{stat}</span>
+                                    <span className="text-primary-400">+{value}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {/* Set Bonus Info */}
+                            {item.set && (
+                              <div className="mt-2 p-2 bg-gray-700/30 rounded">
+                                <p className="text-xs text-gray-300 mb-1">Part of {item.set}</p>
+                                <p className="text-xs text-gray-400">
+                                  {ARMOR_SETS.find(s => s.name === item.set)?.description}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center py-4">
+                          <p className="text-gray-400">No {slot} equipped</p>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
