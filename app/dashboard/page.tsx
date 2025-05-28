@@ -61,32 +61,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-dark">
-      {/* Top Navigation */}
-      <nav className="bg-dark/50 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <span className="text-xl font-display text-white">RL Hero</span>
-            </div>
-            <div className="flex items-center">
-              <span className="text-sm font-medium text-white mr-4">
-                Level {character.level} {character.race}
-                {character.appliedTitle && (
-                  <span className="ml-2 text-accent-400">
-                    [{character.appliedTitle}]
-                  </span>
-                )}
-              </span>
-              <div className="relative w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center">
-                <span className="text-xs font-bold text-white">
-                  {character.level}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-      
       {/* Hero Banner */}
       <div className="relative w-full h-48 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-accent-900/80 z-10"></div>

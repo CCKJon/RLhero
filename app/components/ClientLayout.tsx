@@ -1,6 +1,7 @@
 'use client'
 
 import BottomNav from '@/components/BottomNav'
+import TopNav from '@/components/TopNav'
 
 export default function ClientLayout({
   children,
@@ -9,6 +10,7 @@ export default function ClientLayout({
 }) {
   return (
     <>
+      <TopNav />
       {children}
       <BottomNav />
     </>

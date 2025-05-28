@@ -5,13 +5,14 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useUserStore } from '@/store/userStore'
 import { signOutUser } from '@/lib/firebase'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 
 export default function TopNav() {
   const { character, actions: { resetState } } = useUserStore()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -39,6 +40,40 @@ export default function TopNav() {
           <div className="flex items-center">
             <Link href="/dashboard" className="text-xl font-display text-white">
               RL Hero
+            </Link>
+          </div>
+          <div className="flex items-center space-x-6">
+            <Link 
+              href="/dashboard" 
+              className={`text-sm ${
+                pathname === '/dashboard' ? 'text-accent-400' : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              Dashboard
+            </Link>
+            <Link 
+              href="/quests" 
+              className={`text-sm ${
+                pathname === '/quests' ? 'text-accent-400' : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              Quests
+            </Link>
+            <Link 
+              href="/party" 
+              className={`text-sm ${
+                pathname === '/party' ? 'text-accent-400' : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              Party
+            </Link>
+            <Link 
+              href="/profile" 
+              className={`text-sm ${
+                pathname === '/profile' ? 'text-accent-400' : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              Profile
             </Link>
           </div>
           <div className="flex items-center">

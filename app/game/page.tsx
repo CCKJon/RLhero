@@ -77,27 +77,6 @@ export default function Game() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary-900 to-dark">
-      {/* Top Navigation */}
-      <nav className="bg-dark/50 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <Link href="/dashboard" className="text-xl font-display text-white">
-                RL Hero
-              </Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-white">
-                <span className="text-primary-400 font-bold">{character.experience}</span> XP
-              </div>
-              <div className="text-white">
-                Level <span className="text-accent-400 font-bold">{character.level}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
