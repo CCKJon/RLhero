@@ -69,6 +69,11 @@ export default function Dashboard() {
             <div className="flex items-center">
               <span className="text-sm font-medium text-white mr-4">
                 Level {character.level} {character.race}
+                {character.appliedTitle && (
+                  <span className="ml-2 text-accent-400">
+                    [{character.appliedTitle}]
+                  </span>
+                )}
               </span>
               <div className="relative w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center">
                 <span className="text-xs font-bold text-white">

@@ -35,6 +35,7 @@ export type Character = {
     accessory: string
   }
   titles: string[]
+  appliedTitle: string | null
   appearance: {
     hairStyle: number
     hairColor: string
@@ -76,6 +77,7 @@ type UserState = {
     loadUserData: () => Promise<void>
     clearError: () => void
     resetState: () => void
+    setAppliedTitle: (title: string | null) => Promise<void>
   }
 }
 
@@ -426,6 +428,42 @@ export const useUserStore = create<UserState>()(
 
         resetState: () => {
           set(initialState)
+        },
+
+        setAppliedTitle: async (title) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
+            const character = state.character
+            if (!character) throw new Error('No character found')
+
+            // Verify the title exists in the character's titles
+            if (title && !character.titles.includes(title)) {
+              throw new Error('Title not found in character titles')
+            }
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              'character.appliedTitle': title
+            })
+
+            set({
+              character: {
+                ...character,
+                appliedTitle: title
+              },
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to set applied title',
+              isLoading: false 
+            })
+            throw error
+          }
         }
       }
     })

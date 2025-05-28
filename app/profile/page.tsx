@@ -8,6 +8,67 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import BottomNav from '@/components/BottomNav';
+import { TITLE_BONUSES } from '@/lib/titles';
+
+// Define available skills and their unlock levels
+const AVAILABLE_SKILLS = [
+  {
+    name: 'Sword Mastery',
+    description: 'Increases damage with swords by 10% per level',
+    unlockLevel: 1,
+    category: 'Combat'
+  },
+  {
+    name: 'Basic Magic',
+    description: 'Increases spell damage by 5% per level',
+    unlockLevel: 1,
+    category: 'Magic'
+  },
+  {
+    name: 'Fitness',
+    description: 'Increases health and stamina by 8% per level',
+    unlockLevel: 1,
+    category: 'Physical'
+  },
+  {
+    name: 'Study',
+    description: 'Increases experience gain by 5% per level',
+    unlockLevel: 1,
+    category: 'Academic'
+  },
+  {
+    name: 'Archery',
+    description: 'Increases accuracy and damage with bows by 15% per level',
+    unlockLevel: 5,
+    category: 'Combat'
+  },
+  {
+    name: 'Magic Affinity',
+    description: 'Increases spell damage and reduces mana cost by 12% per level',
+    unlockLevel: 10,
+    category: 'Magic'
+  },
+  {
+    name: 'Stealth',
+    description: 'Increases chance to avoid detection and critical hit chance by 8% per level',
+    unlockLevel: 15,
+    category: 'Utility'
+  },
+  {
+    name: 'Leadership',
+    description: 'Increases party member stats by 5% per level',
+    unlockLevel: 20,
+    category: 'Social'
+  },
+  {
+    name: 'Alchemy',
+    description: 'Increases potion effectiveness and crafting success rate by 15% per level',
+    unlockLevel: 25,
+    category: 'Crafting'
+  }
+] as const;
+
+type AvailableSkill = typeof AVAILABLE_SKILLS[number];
 
 // Race descriptions and bonuses
 const RACE_INFO = {
@@ -52,7 +113,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
-  const { character, actions: { resetState } } = useUserStore();
+  const { character, actions: { resetState, setAppliedTitle } } = useUserStore();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange((user) => {
@@ -188,38 +249,163 @@ export default function ProfilePage() {
               <div className="bg-gray-800/50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-white mb-4">Skills</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {character?.skills.map((skill) => (
-                    <div key={skill.name} className="bg-gray-700/50 rounded-lg p-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-white">{skill.name}</span>
-                        <span className="text-primary-400">Level {skill.level}</span>
+                  {AVAILABLE_SKILLS.map((skill) => {
+                    const isUnlocked = (character?.level ?? 0) >= skill.unlockLevel;
+                    const currentSkill = character?.skills.find(s => s.name === skill.name);
+                    
+                    return (
+                      <div key={skill.name} className={`bg-gray-700/50 rounded-lg p-4 ${!isUnlocked ? 'opacity-60' : ''}`}>
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h4 className="text-white font-medium">{skill.name}</h4>
+                            <p className="text-sm text-gray-400">{skill.description}</p>
+                          </div>
+                          {!isUnlocked ? (
+                            <span className="text-sm font-medium text-gray-500">Unlocks at Level {skill.unlockLevel}</span>
+                          ) : (
+                            <span className="text-primary-400">Level {currentSkill?.level || 0}/10</span>
+                          )}
+                        </div>
+                        {isUnlocked ? (
+                          <>
+                            <div className="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-primary-500" 
+                                style={{ width: `${((currentSkill?.level || 0) / 10) * 100}%` }}
+                              ></div>
+                            </div>
+                            <p className="text-xs text-gray-400 mt-1">
+                              Max Level: 10
+                            </p>
+                          </>
+                        ) : (
+                          <div className="mt-2">
+                            <div className="flex items-center justify-between text-sm text-gray-400 mb-1">
+                              <span>Current Level</span>
+                              <span>{character?.level ?? 0}</span>
+                            </div>
+                            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-gray-600" 
+                                style={{ width: `${((character?.level ?? 0) / skill.unlockLevel) * 100}%` }}
+                              ></div>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {skill.unlockLevel - (character?.level ?? 0)} levels remaining
+                            </p>
+                          </div>
+                        )}
                       </div>
-                      <div className="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-primary-500" 
-                          style={{ width: `${skill.progress}%` }}
-                        ></div>
-                      </div>
-                      <p className="text-xs text-gray-400 mt-1">
-                        Progress: {skill.progress}%
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Titles */}
               <div className="bg-gray-800/50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-white mb-4">Titles</h3>
-                <div className="flex flex-wrap gap-2">
-                  {character?.titles.map((title) => (
-                    <span 
-                      key={title}
-                      className="px-3 py-1 bg-primary-500/20 text-primary-400 rounded-full text-sm"
-                    >
-                      {title}
-                    </span>
-                  ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    {
+                      name: "Novice Adventurer",
+                      description: "Your first step into the world of adventure",
+                      requirements: "Complete the tutorial",
+                      unlockLevel: 1
+                    },
+                    {
+                      name: "Master of the Blade",
+                      description: "Awarded for reaching level 10 in any combat skill",
+                      requirements: "Level 10 in any combat skill",
+                      unlockLevel: 10
+                    },
+                    {
+                      name: "Arcane Scholar",
+                      description: "Awarded for mastering three magic skills",
+                      requirements: "Level 5 in three magic skills",
+                      unlockLevel: 15
+                    },
+                    {
+                      name: "Guild Leader",
+                      description: "Awarded for leading a successful party",
+                      requirements: "Complete 10 party quests as leader",
+                      unlockLevel: 20
+                    },
+                    {
+                      name: "Legendary Hero",
+                      description: "The highest honor for completing all major quests",
+                      requirements: "Complete all main story quests",
+                      unlockLevel: 30
+                    }
+                  ].map((title) => {
+                    const isUnlocked = character?.titles.includes(title.name);
+                    const canUnlock = (character?.level ?? 0) >= title.unlockLevel;
+                    const isApplied = character?.appliedTitle === title.name;
+                    const titleBonus = TITLE_BONUSES[title.name];
+                    
+                    return (
+                      <div key={title.name} className={`bg-gray-700/50 rounded-lg p-4 ${!canUnlock ? 'opacity-60' : ''}`}>
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h4 className="text-white font-medium">{title.name}</h4>
+                            <p className="text-sm text-gray-400">{title.description}</p>
+                            <p className="text-xs text-gray-500 mt-1">Requirements: {title.requirements}</p>
+                            {isUnlocked && titleBonus && (
+                              <div className="mt-2">
+                                <p className="text-xs text-accent-400 font-medium">Bonuses:</p>
+                                {Object.entries(titleBonus.statBonus).map(([stat, value]) => (
+                                  <p key={stat} className="text-xs text-gray-300">
+                                    +{value} {stat.charAt(0).toUpperCase() + stat.slice(1)}
+                                  </p>
+                                ))}
+                                {titleBonus.xpBonus && (
+                                  <p className="text-xs text-gray-300">
+                                    +{titleBonus.xpBonus}% XP Gain
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            {!canUnlock ? (
+                              <span className="text-sm font-medium text-gray-500">Unlocks at Level {title.unlockLevel}</span>
+                            ) : isUnlocked ? (
+                              <>
+                                {isApplied ? (
+                                  <span className="text-primary-400">Applied</span>
+                                ) : (
+                                  <button
+                                    onClick={() => setAppliedTitle(title.name)}
+                                    className="text-sm bg-primary-600 hover:bg-primary-700 text-white px-3 py-1 rounded"
+                                  >
+                                    Apply
+                                  </button>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-gray-400">Available</span>
+                            )}
+                          </div>
+                        </div>
+                        {!canUnlock && (
+                          <div className="mt-2">
+                            <div className="flex items-center justify-between text-sm text-gray-400 mb-1">
+                              <span>Current Level</span>
+                              <span>{character?.level ?? 0}</span>
+                            </div>
+                            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-gray-600" 
+                                style={{ width: `${((character?.level ?? 0) / title.unlockLevel) * 100}%` }}
+                              ></div>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {title.unlockLevel - (character?.level ?? 0)} levels remaining
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
