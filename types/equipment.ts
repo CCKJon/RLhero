@@ -1,6 +1,6 @@
 import { Character } from '@/store/userStore'
 
-export type EquipmentSlot = 'weapon' | 'armor' | 'accessory'
+export type EquipmentSlot = 'weapon' | 'armor' | 'accessory' | 'consumable'
 
 export type EquipmentStats = {
   strength?: number
@@ -148,6 +148,48 @@ export const ALL_EQUIPMENT: Equipment[] = [
     image: '/images/fire-emblem/weapon-1.png'
   },
   {
+    id: 'flame-sword',
+    name: 'Flame Sword',
+    type: 'weapon',
+    rarity: 'epic',
+    level: 15,
+    stats: {
+      strength: 6,
+      damage: 12,
+      criticalChance: 3
+    },
+    description: 'A sword wreathed in eternal flames. Deals additional fire damage.',
+    image: '/images/fire-emblem/weapon-2.png'
+  },
+  {
+    id: 'storm-bow',
+    name: 'Storm Bow',
+    type: 'weapon',
+    rarity: 'rare',
+    level: 12,
+    stats: {
+      dexterity: 7,
+      damage: 9,
+      dodgeChance: 2
+    },
+    description: 'A bow that harnesses the power of storms. Increases accuracy and critical chance.',
+    image: '/images/fire-emblem/weapon-3.png'
+  },
+  {
+    id: 'arcane-staff',
+    name: 'Arcane Staff',
+    type: 'weapon',
+    rarity: 'epic',
+    level: 15,
+    stats: {
+      intelligence: 8,
+      wisdom: 5,
+      damage: 10
+    },
+    description: 'A staff imbued with powerful arcane magic. Enhances spell damage.',
+    image: '/images/fire-emblem/weapon-4.png'
+  },
+  {
     id: 'dragon-helmet',
     name: "Dragon Knight's Helmet",
     type: 'armor',
@@ -192,6 +234,21 @@ export const ALL_EQUIPMENT: Equipment[] = [
     set: "Mystic Sage's Attire"
   },
   {
+    id: 'assassin-hood',
+    name: "Shadow Assassin's Hood",
+    type: 'armor',
+    rarity: 'epic',
+    level: 15,
+    stats: {
+      dexterity: 4,
+      dodgeChance: 3,
+      criticalChance: 2
+    },
+    description: "Part of the Shadow Assassin's Garb set. Enhances stealth and critical strikes.",
+    image: '/images/fire-emblem/armor-4.png',
+    set: "Shadow Assassin's Garb"
+  },
+  {
     id: 'wisdom-amulet',
     name: 'Wisdom Amulet',
     type: 'accessory',
@@ -204,5 +261,95 @@ export const ALL_EQUIPMENT: Equipment[] = [
     },
     description: 'An amulet that enhances your magical abilities.',
     image: '/images/fire-emblem/accessory-1.png'
+  },
+  {
+    id: 'berserker-ring',
+    name: 'Berserker Ring',
+    type: 'accessory',
+    rarity: 'epic',
+    level: 15,
+    stats: {
+      strength: 6,
+      damage: 5,
+      criticalChance: 4
+    },
+    description: 'A ring that channels the fury of ancient warriors. Increases physical damage.',
+    image: '/images/fire-emblem/accessory-2.png'
+  },
+  {
+    id: 'shadow-cloak',
+    name: 'Shadow Cloak',
+    type: 'accessory',
+    rarity: 'rare',
+    level: 12,
+    stats: {
+      dexterity: 5,
+      dodgeChance: 4,
+      criticalChance: 3
+    },
+    description: 'A cloak woven with shadows. Enhances stealth and evasion.',
+    image: '/images/fire-emblem/accessory-3.png'
+  },
+  {
+    id: 'healing-pendant',
+    name: 'Healing Pendant',
+    type: 'accessory',
+    rarity: 'uncommon',
+    level: 8,
+    stats: {
+      constitution: 4,
+      wisdom: 3
+    },
+    description: 'A pendant that enhances natural healing abilities.',
+    image: '/images/fire-emblem/accessory-4.png'
+  },
+  {
+    id: 'health-potion',
+    name: 'Health Potion',
+    type: 'consumable',
+    rarity: 'common',
+    level: 1,
+    stats: {
+      constitution: 10
+    },
+    description: 'Restores 50 HP when consumed.',
+    image: '/images/fire-emblem/potion-1.png'
+  },
+  {
+    id: 'mana-potion',
+    name: 'Mana Potion',
+    type: 'consumable',
+    rarity: 'common',
+    level: 1,
+    stats: {
+      intelligence: 10
+    },
+    description: 'Restores 30 MP when consumed.',
+    image: '/images/fire-emblem/potion-2.png'
+  },
+  {
+    id: 'strength-elixir',
+    name: 'Strength Elixir',
+    type: 'consumable',
+    rarity: 'uncommon',
+    level: 5,
+    stats: {
+      strength: 5
+    },
+    description: 'Temporarily increases strength by 5 for 1 hour.',
+    image: '/images/fire-emblem/potion-3.png'
+  },
+  {
+    id: 'magic-scroll',
+    name: 'Magic Scroll',
+    type: 'consumable',
+    rarity: 'rare',
+    level: 10,
+    stats: {
+      intelligence: 8,
+      wisdom: 5
+    },
+    description: 'Teaches a new spell when used.',
+    image: '/images/fire-emblem/scroll-1.png'
   }
 ]; 

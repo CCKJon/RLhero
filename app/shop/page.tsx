@@ -19,7 +19,7 @@ const rarityColors: Record<EquipmentRarity, string> = {
 export default function ShopPage() {
   const router = useRouter();
   const { character, actions } = useUserStore();
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'weapon' | 'armor' | 'accessory'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'weapon' | 'armor' | 'accessory' | 'consumable'>('all');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange((user) => {
@@ -63,7 +63,7 @@ export default function ShopPage() {
 
           {/* Category Filter */}
           <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
-            {['all', 'weapon', 'armor', 'accessory'].map((category) => (
+            {['all', 'weapon', 'armor', 'accessory', 'consumable'].map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category as any)}

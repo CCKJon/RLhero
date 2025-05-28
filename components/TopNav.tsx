@@ -42,7 +42,7 @@ export default function TopNav() {
               RL Hero
             </Link>
           </div>
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-8">
             <Link 
               href="/dashboard" 
               className={`text-sm ${
@@ -66,6 +66,14 @@ export default function TopNav() {
               }`}
             >
               Party
+            </Link>
+            <Link 
+              href="/shop" 
+              className={`text-sm ${
+                pathname === '/shop' ? 'text-accent-400' : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              Shop
             </Link>
             <Link 
               href="/profile" 
