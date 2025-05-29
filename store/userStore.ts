@@ -8,12 +8,14 @@ import { Equipment, EquipmentStats, calculateEquipmentStats, calculateSetBonuses
 // Types for our character
 export type Race = 'human' | 'elf' | 'dwarf' | 'orc' | 'kitsune'
 export type Gender = 'male' | 'female' | 'non-binary'
+export type CharacterClass = 'warrior' | 'mage' | 'archer' | 'assassin' | 'knight' | 'priest' | 'thief' | 'bard' | 'druid' | 'monk' | 'paladin' | 'ranger' | 'shaman' | 'warlock' | 'wizard'
 
 export type Character = {
   id: string
   name: string
   race: Race
   gender: Gender
+  class: CharacterClass
   level: number
   experience: number
   nextLevelXp: number
@@ -25,16 +27,8 @@ export type Character = {
     constitution: number
     charisma: number
   }
-  skills: {
-    name: string
-    level: number
-    progress: number
-  }[]
-  equipment: {
-    weapon: Equipment | null
-    armor: Equipment | null
-    accessory: Equipment | null
-  }
+  skills: Record<string, number>
+  equipment: Equipment
   inventory: Equipment[]
   titles: string[]
   appliedTitle: string | null
@@ -44,10 +38,19 @@ export type Character = {
     eyeColor: string
     skinTone: string
   }
+  completedQuests: string[]
 }
 
 // Types for our quests
 export type QuestCategory = 'Wellness' | 'Education' | 'Fitness' | 'Health' | 'Skills'
+
+export type QuestPrerequisite = {
+  type: 'level' | 'skill' | 'quest'
+  value: number | string
+  requiredLevel?: number
+  requiredSkill?: string
+  requiredQuestId?: string
+}
 
 export type Quest = {
   id: string
@@ -62,6 +65,9 @@ export type Quest = {
   goldReward?: number
   itemReward?: string
   difficulty?: number // 1-5
+  levelRequirement?: number
+  prerequisites?: QuestPrerequisite[]
+  isLocked?: boolean
 }
 
 // User store types
@@ -347,33 +353,18 @@ export const useUserStore = create<UserState>()(
             const character = state.character
             if (!character) throw new Error('No character found')
 
-            let skills = [...character.skills]
-            let skill = skills.find(s => s.name === skillName)
+            let skills = { ...character.skills }
+            let skill = skills[skillName]
 
             if (skill) {
-              const newProgress = skill.progress + amount
+              const newProgress = skill + amount
               
               if (newProgress >= 100) {
-                skill = {
-                  ...skill,
-                  level: skill.level + 1,
-                  progress: newProgress - 100
-                }
-                await get().actions.gainExperience(skill.level * 10)
-              } else {
-                skill = {
-                  ...skill,
-                  progress: newProgress
-                }
+                skill = newProgress - 100
+                await get().actions.gainExperience(skill * 10)
               }
-              
-              skills = skills.map(s => s.name === skillName ? skill! : s)
             } else {
-              skills.push({
-                name: skillName,
-                level: 1,
-                progress: amount
-              })
+              skills[skillName] = amount
             }
 
             const userRef = doc(db, 'users', user.uid)

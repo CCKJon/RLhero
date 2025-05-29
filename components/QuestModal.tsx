@@ -1,6 +1,7 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
-import { Quest } from '@/store/userStore'
+import { Quest, QuestPrerequisite } from '@/store/userStore'
+import { useUserStore } from '@/store/userStore'
 
 type QuestModalProps = {
   isOpen: boolean
@@ -10,7 +11,52 @@ type QuestModalProps = {
 }
 
 export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestModalProps) {
-  if (!quest) return null
+  const { character } = useUserStore()
+  
+  if (!quest || !character) return null
+
+  const isQuestLocked = () => {
+    if (!quest.levelRequirement && !quest.prerequisites) return false
+    
+    // Check level requirement
+    if (quest.levelRequirement && character.level < quest.levelRequirement) {
+      return true
+    }
+    
+    // Check prerequisites
+    if (quest.prerequisites) {
+      return quest.prerequisites.some(prereq => {
+        switch (prereq.type) {
+          case 'level':
+            return character.level < (prereq.requiredLevel || 0)
+          case 'skill':
+            return !character.skills[prereq.requiredSkill || ''] || 
+                   character.skills[prereq.requiredSkill || ''] < (prereq.value as number)
+          case 'quest':
+            return !character.completedQuests?.includes(prereq.requiredQuestId || '')
+          default:
+            return false
+        }
+      })
+    }
+    
+    return false
+  }
+
+  const getPrerequisiteText = (prereq: QuestPrerequisite) => {
+    switch (prereq.type) {
+      case 'level':
+        return `Level ${prereq.requiredLevel}`
+      case 'skill':
+        return `${prereq.requiredSkill} Level ${prereq.value}`
+      case 'quest':
+        return `Complete Quest: ${prereq.value}`
+      default:
+        return ''
+    }
+  }
+
+  const locked = isQuestLocked()
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -44,6 +90,9 @@ export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestMo
                   className="text-lg font-medium leading-6 text-white"
                 >
                   {quest.name}
+                  {locked && (
+                    <span className="ml-2 text-sm text-red-400">(Locked)</span>
+                  )}
                 </Dialog.Title>
 
                 <div className="mt-2 flex items-center text-sm text-gray-300">
@@ -56,7 +105,32 @@ export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestMo
                     <span className="w-24">Category:</span>
                     <span className="text-accent-400">{quest.category}</span>
                   </div>
+                  
+                  {quest.levelRequirement && (
+                    <div className="flex items-center text-sm text-gray-300">
+                      <span className="w-24">Level Required:</span>
+                      <span className={character.level >= quest.levelRequirement ? "text-green-400" : "text-red-400"}>
+                        {quest.levelRequirement} (Your Level: {character.level})
+                      </span>
+                    </div>
+                  )}
                 </div>
+
+                {quest.prerequisites && quest.prerequisites.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-semibold text-primary-400 mb-1">Prerequisites</h4>
+                    <div className="space-y-1 bg-gray-900/40 rounded px-3 py-2">
+                      {quest.prerequisites.map((prereq, index) => (
+                        <div key={index} className="flex items-center text-sm text-gray-300">
+                          <span className="w-24">Required:</span>
+                          <span className={isQuestLocked() ? "text-red-400" : "text-green-400"}>
+                            {getPrerequisiteText(prereq)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="mt-4 mb-2">
                   <h4 className="text-sm font-semibold text-primary-400 mb-1">Description</h4>
@@ -83,18 +157,18 @@ export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestMo
                   </div>
                 </div>
 
-                <div className="mt-6 flex justify-end space-x-3">
+                <div className="mt-6 flex justify-end gap-3">
                   <button
                     type="button"
-                    className="inline-flex justify-center rounded-md border border-transparent bg-gray-700 px-4 py-2 text-sm font-medium text-white hover:bg-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
+                    className="btn btn-secondary"
                     onClick={onClose}
                   >
                     Close
                   </button>
-                  {!quest.accepted && onAccept && (
+                  {!locked && !quest.accepted && (
                     <button
                       type="button"
-                      className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                      className="btn btn-primary"
                       onClick={onAccept}
                     >
                       Accept Quest

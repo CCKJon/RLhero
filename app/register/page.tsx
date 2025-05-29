@@ -104,7 +104,84 @@ export default function Register() {
           reward: 25,
           category: 'Education',
           completed: false,
-          accepted: false
+          accepted: false,
+          description: 'Read any book or article for 30 minutes to improve your knowledge.',
+          difficulty: 1
+        })
+
+        await userActions.addQuest({
+          name: 'Advanced Study Session',
+          reward: 50,
+          category: 'Education',
+          completed: false,
+          accepted: false,
+          description: 'Complete a 2-hour focused study session on a challenging topic.',
+          difficulty: 3,
+          levelRequirement: 5,
+          prerequisites: [
+            {
+              type: 'quest',
+              value: 'Read for 30 minutes',
+              requiredQuestId: 'read-30-min'
+            }
+          ]
+        })
+
+        await userActions.addQuest({
+          name: 'Master the Basics',
+          reward: 40,
+          category: 'Skills',
+          completed: false,
+          accepted: false,
+          description: 'Practice a new skill for 1 hour to master the fundamentals.',
+          difficulty: 2,
+          levelRequirement: 3
+        })
+
+        await userActions.addQuest({
+          name: 'Skill Mastery',
+          reward: 75,
+          category: 'Skills',
+          completed: false,
+          accepted: false,
+          description: 'Achieve level 5 in any skill to demonstrate mastery.',
+          difficulty: 4,
+          levelRequirement: 8,
+          prerequisites: [
+            {
+              type: 'skill',
+              value: 5,
+              requiredSkill: 'any'
+            }
+          ]
+        })
+
+        await userActions.addQuest({
+          name: 'Daily Exercise',
+          reward: 30,
+          category: 'Fitness',
+          completed: false,
+          accepted: false,
+          description: 'Complete a 30-minute workout session.',
+          difficulty: 2
+        })
+
+        await userActions.addQuest({
+          name: 'Fitness Challenge',
+          reward: 60,
+          category: 'Fitness',
+          completed: false,
+          accepted: false,
+          description: 'Complete a 1-hour high-intensity workout.',
+          difficulty: 3,
+          levelRequirement: 4,
+          prerequisites: [
+            {
+              type: 'quest',
+              value: 'Daily Exercise',
+              requiredQuestId: 'daily-exercise'
+            }
+          ]
         })
         
         // Redirect to dashboard
