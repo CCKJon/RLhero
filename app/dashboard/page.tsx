@@ -84,19 +84,20 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-dark">
       {/* Hero Banner */}
-      <div className="relative w-full h-48 overflow-hidden">
+      <div className="relative w-full h-64 overflow-hidden">
         {/* Banner background overlay - ensure z-0 so header is above */}
         <div className="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-accent-900/80 z-0 pointer-events-none"></div>
         <Image 
           src="/images/fire-emblem/banner-bg.jpg" 
-          alt="Game Banner"
+          alt=""
           width={1920}
           height={400}
           className="w-full h-full object-cover z-0 pointer-events-none"
           priority
+          aria-hidden="true"
         />
         {/* Banner content overlay - ensure z-10 so header (z-10 sticky) is above */}
-        <div className="absolute inset-0 z-10 flex items-center px-8 dashboard-banner-content">
+        <div className="absolute inset-0 z-10 flex items-center px-8">
           <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
             <h1 className="text-3xl md:text-4xl font-display font-bold text-white drop-shadow-lg">
               Welcome back, <span className="text-accent-400">{character.name}</span>
