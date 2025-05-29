@@ -71,4 +71,9 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: theme('colors.primary.600');
+}
+
+.dashboard-banner-content {
+  position: relative;
+  z-index: 20;
 } 

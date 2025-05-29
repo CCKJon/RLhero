@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useUserStore, Character } from '@/store/userStore'
+import { useUserStore, Character, Quest } from '@/store/userStore'
 import { redirect } from 'next/navigation'
 import type { QuestCategory } from '@/store/userStore'
 import { ARMOR_SETS, ArmorSet } from '@/types/equipment'
+import QuestModal from '@/components/QuestModal'
 
 export default function Dashboard() {
   const { 
@@ -17,16 +18,21 @@ export default function Dashboard() {
       toggleQuestComplete, 
       addQuest,
       gainExperience,
-      unequipItem
+      unequipItem,
+      acceptQuest
     } 
   } = useUserStore()
   
   const [selectedTab, setSelectedTab] = useState<'quests' | 'stats' | 'inventory'>('quests')
   const [questFilter, setQuestFilter] = useState<'All' | QuestCategory>('All')
+  const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [newQuest, setNewQuest] = useState({ 
     name: '', 
     reward: 30, 
-    category: 'Wellness' as QuestCategory 
+    category: 'Wellness' as QuestCategory,
+    completed: false,
+    accepted: false
   })
   
   // If no character, redirect to registration
@@ -56,8 +62,23 @@ export default function Dashboard() {
       completed: false,
       category: newQuest.category
     })
-    setNewQuest({ name: '', reward: 30, category: 'Wellness' })
+    setNewQuest({ name: '', reward: 30, category: 'Wellness', completed: false, accepted: false })
   }
+
+  const handleQuestClick = (quest: Quest) => {
+    setSelectedQuest(quest)
+    setIsModalOpen(true)
+  }
+
+  const handleAcceptQuest = async () => {
+    if (selectedQuest) {
+      await acceptQuest(selectedQuest.id)
+      setIsModalOpen(false)
+    }
+  }
+
+  const acceptedQuests = quests.filter(q => q.accepted && !q.completed)
+  const availableQuests = quests.filter(q => !q.accepted && !q.completed)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-dark">
@@ -74,19 +95,11 @@ export default function Dashboard() {
           priority
         />
         {/* Banner content overlay - ensure z-10 so header (z-10 sticky) is above */}
-        <div className="absolute inset-0 z-10 flex items-center px-8 pointer-events-none">
+        <div className="absolute inset-0 z-10 flex items-center px-8 pointer-events-none dashboard-banner-content">
           <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
             <h1 className="text-3xl md:text-4xl font-display font-bold text-white drop-shadow-lg">
               Welcome back, <span className="text-accent-400">{character.name}</span>
             </h1>
-            <div className="hidden md:block">
-              <div className="px-4 py-2 bg-dark/50 backdrop-blur-sm rounded-lg border border-gray-700">
-                <p className="text-sm font-medium text-gray-300">Daily Quests Completed</p>
-                <p className="text-2xl font-bold text-white">
-                  {quests.filter(q => q.completed).length}/{quests.length}
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -161,6 +174,16 @@ export default function Dashboard() {
           </motion.div>
         </div>
         
+        {/* Daily Quests Completed sign moved here, above available quests, right-aligned */}
+        <div className="flex justify-end mb-4">
+          <div className="px-4 py-2 bg-dark/50 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg">
+            <p className="text-sm font-medium text-gray-300">Daily Quests Completed</p>
+            <p className="text-2xl font-bold text-white">
+              {quests.filter(q => q.completed).length}/{quests.length}
+            </p>
+          </div>
+        </div>
+        
         {/* Tab Navigation */}
         <div className="flex border-b border-gray-800 mb-6">
           <button
@@ -221,61 +244,76 @@ export default function Dashboard() {
                 ))}
               </div>
               
-              {/* Daily Quests */}
-              <div className="space-y-4 mb-8">
-                {filteredQuests.map((quest) => (
-                  <div 
-                    key={quest.id}
-                    className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={quest.completed}
-                          onChange={() => handleQuestToggle(quest.id)}
-                          className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-600 rounded bg-gray-700"
-                        />
-                        <div className="ml-3">
-                          <h3 className="text-white font-medium">{quest.name}</h3>
-                          <p className="text-sm text-gray-400">{quest.category}</p>
+              {/* Accepted Quests */}
+              {acceptedQuests.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-lg font-medium text-white mb-4">Accepted Quests</h3>
+                  <div className="space-y-4">
+                    {acceptedQuests.map((quest) => (
+                      <div 
+                        key={quest.id}
+                        className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700 cursor-pointer hover:bg-gray-700/50 transition-colors"
+                        onClick={() => handleQuestClick(quest)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={quest.completed}
+                              onChange={(e) => {
+                                e.stopPropagation()
+                                handleQuestToggle(quest.id)
+                              }}
+                              className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-600 rounded bg-gray-700"
+                            />
+                            <div className="ml-3">
+                              <h3 className="text-white font-medium">{quest.name}</h3>
+                              <p className="text-sm text-gray-400">{quest.category}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            <span className="text-xs bg-accent-900/50 text-accent-300 px-2 py-1 rounded">
+                              +{quest.reward} XP
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center">
-                        <span className="text-xs bg-accent-900/50 text-accent-300 px-2 py-1 rounded">
-                          +{quest.reward} XP
-                        </span>
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
 
               {/* Available Quests */}
               <div className="mt-8">
                 <h3 className="text-lg font-medium text-white mb-4">Available Quests</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {['Defeat the Dragon', 'Rescue the Princess', 'Find the Sacred Stone', 'Train with the Mercenaries'].map((quest, index) => (
-                    <div key={index} className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
+                  {availableQuests.map((quest) => (
+                    <div 
+                      key={quest.id} 
+                      className="bg-gray-700/50 rounded-lg p-4 border border-gray-600 cursor-pointer hover:bg-gray-600/50 transition-colors"
+                      onClick={() => handleQuestClick(quest)}
+                    >
                       <div className="flex items-start">
                         <div className="w-12 h-12 bg-primary-900 rounded-md flex-shrink-0 flex items-center justify-center mr-3">
                           <Image 
-                            src={`/images/fire-emblem/quest-${index + 1}.png`}
+                            src={`/images/fire-emblem/quest-${Math.floor(Math.random() * 4) + 1}.png`}
                             alt="Quest"
                             width={32}
                             height={32}
                           />
                         </div>
                         <div>
-                          <h4 className="text-white text-sm font-medium">{quest}</h4>
-                          <p className="text-gray-400 text-xs mt-1">Difficulty: {index + 1} ⭐</p>
+                          <h4 className="text-white text-sm font-medium">{quest.name}</h4>
+                          <p className="text-gray-400 text-xs mt-1">Category: {quest.category}</p>
                           <div className="mt-2 flex items-center">
                             <span className="text-xs bg-primary-900/50 text-primary-300 px-2 py-1 rounded mr-2">
-                              +{(index + 1) * 50} XP
+                              +{quest.reward} XP
                             </span>
-                            <span className="text-xs bg-accent-900/50 text-accent-300 px-2 py-1 rounded">
-                              Reward: {(index + 1) * 100} Gold
-                            </span>
+                            {quest.goldReward && (
+                              <span className="text-xs bg-accent-900/50 text-accent-300 px-2 py-1 rounded">
+                                +{quest.goldReward} Gold
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -546,6 +584,14 @@ export default function Dashboard() {
           )}
         </motion.div>
       </main>
+
+      {/* Quest Modal */}
+      <QuestModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        quest={selectedQuest}
+        onAccept={handleAcceptQuest}
+      />
     </div>
   )
 } 

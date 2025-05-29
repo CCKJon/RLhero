@@ -57,6 +57,11 @@ export type Quest = {
   category: QuestCategory
   dateCreated: Date
   dateCompleted?: Date
+  accepted: boolean
+  description?: string
+  goldReward?: number
+  itemReward?: string
+  difficulty?: number // 1-5
 }
 
 // User store types
@@ -71,6 +76,7 @@ type UserState = {
     setCharacter: (character: Character) => Promise<void>
     addQuest: (quest: Omit<Quest, 'id' | 'dateCreated'>) => Promise<void>
     toggleQuestComplete: (id: string) => Promise<void>
+    acceptQuest: (id: string) => Promise<void>
     gainExperience: (amount: number) => Promise<void>
     levelUp: () => Promise<void>
     improveSkill: (skillName: string, amount: number) => Promise<void>
@@ -134,7 +140,9 @@ export const useUserStore = create<UserState>()(
             const newQuest = {
               ...quest,
               id: Math.random().toString(36).substring(2, 9),
-              dateCreated: new Date()
+              dateCreated: new Date(),
+              description: quest.description || 'Complete this quest to earn rewards!',
+              difficulty: quest.difficulty || 1
             }
 
             const userRef = doc(db, 'users', user.uid)
@@ -197,6 +205,46 @@ export const useUserStore = create<UserState>()(
           } catch (error: any) {
             set({ 
               error: error.message || 'Failed to toggle quest',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        acceptQuest: async (id) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
+            const quest = state.quests.find(q => q.id === id)
+            if (!quest) throw new Error('Quest not found')
+
+            const updatedQuest = {
+              ...quest,
+              accepted: true
+            }
+
+            const userRef = doc(db, 'users', user.uid)
+            const userDoc = await getDoc(userRef)
+            const currentQuests = userDoc.data()?.quests || []
+            
+            await updateDoc(userRef, {
+              quests: currentQuests.map((q: Quest) => 
+                q.id === id ? updatedQuest : q
+              )
+            })
+
+            set((state) => ({
+              quests: state.quests.map(q => 
+                q.id === id ? updatedQuest : q
+              ),
+              isLoading: false
+            }))
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to accept quest',
               isLoading: false 
             })
             throw error
