@@ -60,7 +60,8 @@ export default function Dashboard() {
       name: newQuest.name,
       reward: newQuest.reward,
       completed: false,
-      category: newQuest.category
+      category: newQuest.category,
+      accepted: false
     })
     setNewQuest({ name: '', reward: 30, category: 'Wellness', completed: false, accepted: false })
   }
@@ -95,7 +96,7 @@ export default function Dashboard() {
           priority
         />
         {/* Banner content overlay - ensure z-10 so header (z-10 sticky) is above */}
-        <div className="absolute inset-0 z-10 flex items-center px-8 pointer-events-none dashboard-banner-content">
+        <div className="absolute inset-0 z-10 flex items-center px-8 dashboard-banner-content">
           <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
             <h1 className="text-3xl md:text-4xl font-display font-bold text-white drop-shadow-lg">
               Welcome back, <span className="text-accent-400">{character.name}</span>

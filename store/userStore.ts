@@ -530,6 +530,11 @@ export const useUserStore = create<UserState>()(
             const character = state.character
             if (!character) throw new Error('No character found')
 
+            // Only allow equipping weapon, armor, or accessory
+            if (item.type === 'consumable') {
+              throw new Error('Consumable items cannot be equipped')
+            }
+
             // Remove item from inventory
             const updatedInventory = character.inventory.filter(i => i.id !== item.id)
             

@@ -46,11 +46,6 @@ export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestMo
                   {quest.name}
                 </Dialog.Title>
 
-                <div className="mt-4">
-                  <p className="text-sm text-gray-300">
-                    {quest.description || 'Complete this quest to earn rewards!'}
-                  </p>
-                </div>
                 <div className="mt-2 flex items-center text-sm text-gray-300">
                   <span className="w-24">Difficulty:</span>
                   <span className="text-yellow-400">{'★'.repeat(quest.difficulty || 1)}{'☆'.repeat(5 - (quest.difficulty || 1))}</span>
@@ -61,22 +56,31 @@ export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestMo
                     <span className="w-24">Category:</span>
                     <span className="text-accent-400">{quest.category}</span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-300">
-                    <span className="w-24">XP Reward:</span>
-                    <span className="text-primary-400">+{quest.reward} XP</span>
+                </div>
+
+                <div className="mt-4 mb-2">
+                  <h4 className="text-sm font-semibold text-primary-400 mb-1">Description</h4>
+                  <p className="text-sm text-gray-300 bg-gray-900/40 rounded px-3 py-2">
+                    {quest.description || 'Complete this quest to earn rewards!'}
+                  </p>
+                </div>
+
+                <div className="mt-4">
+                  <h4 className="text-sm font-semibold text-primary-400 mb-1">Rewards</h4>
+                  <div className="flex flex-col gap-1 bg-gray-900/40 rounded px-3 py-2">
+                    <div className="flex items-center text-sm text-gray-300">
+                      <span className="w-24">XP:</span>
+                      <span className="text-primary-400">+{quest.reward} XP</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-300">
+                      <span className="w-24">Gold:</span>
+                      <span className="text-yellow-400">+{quest.goldReward || 0} Gold</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-300">
+                      <span className="w-24">Item:</span>
+                      <span className="text-accent-400">{quest.itemReward || 'None'}</span>
+                    </div>
                   </div>
-                  {quest.goldReward && (
-                    <div className="flex items-center text-sm text-gray-300">
-                      <span className="w-24">Gold Reward:</span>
-                      <span className="text-yellow-400">+{quest.goldReward} Gold</span>
-                    </div>
-                  )}
-                  {quest.itemReward && (
-                    <div className="flex items-center text-sm text-gray-300">
-                      <span className="w-24">Item Reward:</span>
-                      <span className="text-accent-400">{quest.itemReward}</span>
-                    </div>
-                  )}
                 </div>
 
                 <div className="mt-6 flex justify-end space-x-3">

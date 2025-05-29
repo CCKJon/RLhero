@@ -8,6 +8,7 @@ import { useUserStore } from '@/store/userStore'
 import type { Race, Gender, Character } from '@/store/userStore'
 import Image from 'next/image'
 import { useAuthStore } from '@/store/authStore'
+import { ALL_EQUIPMENT } from '@/types/equipment'
 
 export default function Register() {
   const router = useRouter()
@@ -77,12 +78,14 @@ export default function Register() {
           },
           skills: [],
           equipment: {
-            weapon: getRaceDefaultWeapon(formData.race),
-            armor: 'Beginner Armor',
-            accessory: 'Traveler\'s Pendant'
+            weapon: ALL_EQUIPMENT.find(e => e.name === getRaceDefaultWeapon(formData.race) && e.type === 'weapon') || null,
+            armor: ALL_EQUIPMENT.find(e => e.name === 'Beginner Armor' && e.type === 'armor') || null,
+            accessory: ALL_EQUIPMENT.find(e => e.name === "Traveler's Pendant" && e.type === 'accessory') || null
           },
           titles: ['Novice Adventurer'],
-          appearance: formData.appearance
+          appearance: formData.appearance,
+          inventory: [],
+          appliedTitle: null
         }
         
         await userActions.setCharacter(newCharacter)
@@ -92,14 +95,16 @@ export default function Register() {
           name: 'Complete your first task',
           reward: 50,
           category: 'Education',
-          completed: false
+          completed: false,
+          accepted: false
         })
         
         await userActions.addQuest({
           name: 'Read for 30 minutes',
           reward: 25,
           category: 'Education',
-          completed: false
+          completed: false,
+          accepted: false
         })
         
         // Redirect to dashboard
