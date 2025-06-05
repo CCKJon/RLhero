@@ -302,7 +302,7 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {AVAILABLE_SKILLS.map((skill) => {
                     const isUnlocked = (character?.level ?? 0) >= skill.unlockLevel;
-                    const currentSkill = character?.skills.find(s => s.name === skill.name);
+                    const currentSkillLevel = character?.skills[skill.name] ?? 0;
                     
                     return (
                       <div key={skill.name} className={`bg-gray-700/50 rounded-lg p-4 ${!isUnlocked ? 'opacity-60' : ''}`}>
@@ -314,7 +314,7 @@ export default function ProfilePage() {
                           {!isUnlocked ? (
                             <span className="text-sm font-medium text-gray-500">Unlocks at Level {skill.unlockLevel}</span>
                           ) : (
-                            <span className="text-primary-400">Level {currentSkill?.level || 0}/10</span>
+                            <span className="text-primary-400">Level {currentSkillLevel}/10</span>
                           )}
                         </div>
                         {isUnlocked ? (
@@ -322,7 +322,7 @@ export default function ProfilePage() {
                             <div className="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
                               <div 
                                 className="h-full bg-primary-500" 
-                                style={{ width: `${((currentSkill?.level || 0) / 10) * 100}%` }}
+                                style={{ width: `${(currentSkillLevel / 10) * 100}%` }}
                               ></div>
                             </div>
                             <p className="text-xs text-gray-400 mt-1">
