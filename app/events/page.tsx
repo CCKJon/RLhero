@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaGift, FaScroll, FaStore, FaClock } from 'react-icons/fa';
+import EventModal from '@/components/EventModal';
 
 interface Event {
   id: string;
@@ -48,7 +49,7 @@ const mockEvents: Event[] = [
   }
 ];
 
-const EventCard = ({ event }: { event: Event }) => {
+const EventCard = ({ event, onViewDetails }: { event: Event; onViewDetails: (event: Event) => void }) => {
   const getIcon = (type: Event['type']) => {
     switch (type) {
       case 'event':
@@ -81,7 +82,10 @@ const EventCard = ({ event }: { event: Event }) => {
           <span className="text-sm text-gray-500">
             Ends: {new Date(event.endDate).toLocaleDateString()}
           </span>
-          <button className="btn btn-primary text-sm whitespace-nowrap">
+          <button 
+            className="btn btn-primary text-sm whitespace-nowrap"
+            onClick={() => onViewDetails(event)}
+          >
             View Details
           </button>
         </div>
@@ -92,6 +96,7 @@ const EventCard = ({ event }: { event: Event }) => {
 
 export default function EventsPage() {
   const [activeFilter, setActiveFilter] = useState<Event['type'] | 'all'>('all');
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const filteredEvents = activeFilter === 'all'
     ? mockEvents
@@ -160,10 +165,21 @@ export default function EventsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
           {filteredEvents.map((event) => (
-            <EventCard key={event.id} event={event} />
+            <EventCard 
+              key={event.id} 
+              event={event} 
+              onViewDetails={setSelectedEvent}
+            />
           ))}
         </div>
       </div>
+
+      {/* Event Modal */}
+      <EventModal
+        isOpen={!!selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+        event={selectedEvent}
+      />
     </div>
   );
 } 
