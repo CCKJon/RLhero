@@ -70,6 +70,7 @@ export default function Register() {
           experience: 0,
           nextLevelXp: 100,
           gold: 0,
+          sp: 0,
           stats: {
             strength: formData.race === 'orc' ? 12 : formData.race === 'dwarf' ? 10 : 8,
             intelligence: formData.race === 'elf' ? 12 : formData.race === 'kitsune' ? 10 : 8,
@@ -79,7 +80,12 @@ export default function Register() {
             charisma: formData.race === 'human' ? 12 : 8
           },
           skills: {},
-          equipment: ALL_EQUIPMENT.find(e => e.name === getRaceDefaultWeapon(formData.race) && e.type === 'weapon') || ALL_EQUIPMENT.find(e => e.type === 'weapon')!,
+          equipment: {
+            weapon: ALL_EQUIPMENT.find(e => e.name === getRaceDefaultWeapon(formData.race) && e.type === 'weapon') || ALL_EQUIPMENT.find(e => e.type === 'weapon')!,
+            armor: ALL_EQUIPMENT.find(e => e.name === 'Beginner Armor' && e.type === 'armor') || null,
+            accessory: ALL_EQUIPMENT.find(e => e.name === "Traveler's Pendant" && e.type === 'accessory') || null,
+            consumable: null
+          },
           titles: ['Novice Adventurer'],
           appearance: formData.appearance,
           inventory: [
