@@ -36,9 +36,9 @@ export type Character = {
   appliedTitle: string | null
   appearance: {
     hairStyle: number
-    hairColor: string
-    eyeColor: string
-    skinTone: string
+    skinTone: Array<{ original: string; replacement: string }>
+    hairColor: Array<{ original: string; replacement: string }>
+    eyeColor: Array<{ original: string; replacement: string }>
   }
   completedQuests: string[]
 }

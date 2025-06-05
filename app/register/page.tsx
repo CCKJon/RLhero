@@ -9,6 +9,7 @@ import type { Race, Gender, Character } from '@/store/userStore'
 import Image from 'next/image'
 import { useAuthStore } from '@/store/authStore'
 import { ALL_EQUIPMENT } from '@/types/equipment'
+import CharacterCustomizer from '../components/CharacterCustomizer'
 
 export default function Register() {
   const router = useRouter()
@@ -24,9 +25,9 @@ export default function Register() {
     gender: '' as Gender,
     appearance: {
       hairStyle: 0,
-      hairColor: '#000000',
-      eyeColor: '#000000',
-      skinTone: '#f5d7b8',
+      skinTone: [] as Array<{ original: string; replacement: string }>,
+      hairColor: [] as Array<{ original: string; replacement: string }>,
+      eyeColor: [] as Array<{ original: string; replacement: string }>,
     }
   })
 
@@ -497,96 +498,27 @@ export default function Register() {
             )}
             
             {step === 3 && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="space-y-4">
                   <div>
-                    <label htmlFor="appearance.hairColor" className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Hair Color
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Customize Appearance
                     </label>
-                    <input
-                      type="color"
-                      id="appearance.hairColor"
-                      name="appearance.hairColor"
-                      value={formData.appearance.hairColor}
-                      onChange={handleChange}
-                      className="w-full h-10 rounded-md"
+                    <CharacterCustomizer
+                      baseImageUrl={`/images/fire-emblem/character-${formData.race}.png`}
+                      onColorChange={(colorMappings) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          appearance: {
+                            ...prev.appearance,
+                            skinTone: colorMappings.skinTone,
+                            hairColor: colorMappings.hairColor,
+                            eyeColor: colorMappings.eyeColor,
+                          }
+                        }));
+                      }}
                     />
                   </div>
-                  
-                  <div>
-                    <label htmlFor="appearance.hairStyle" className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Hair Style
-                    </label>
-                    <select
-                      id="appearance.hairStyle"
-                      name="appearance.hairStyle"
-                      value={formData.appearance.hairStyle}
-                      onChange={handleChange as any}
-                      className="input w-full"
-                    >
-                      <option value="0">Style 1</option>
-                      <option value="1">Style 2</option>
-                      <option value="2">Style 3</option>
-                      <option value="3">Style 4</option>
-                    </select>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="appearance.eyeColor" className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Eye Color
-                    </label>
-                    <input
-                      type="color"
-                      id="appearance.eyeColor"
-                      name="appearance.eyeColor"
-                      value={formData.appearance.eyeColor}
-                      onChange={handleChange}
-                      className="w-full h-10 rounded-md"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="appearance.skinTone" className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Skin Tone
-                    </label>
-                    <input
-                      type="color"
-                      id="appearance.skinTone"
-                      name="appearance.skinTone"
-                      value={formData.appearance.skinTone}
-                      onChange={handleChange}
-                      className="w-full h-10 rounded-md"
-                    />
-                  </div>
-                </div>
-                
-                <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-center">
-                  {formData.race ? (
-                    <div className="relative w-32 h-32 mx-auto overflow-hidden">
-                      <Image 
-                        src={`/images/fire-emblem/character-${formData.race}.png`}
-                        alt="Character Preview"
-                        width={128}
-                        height={128}
-                        className="object-cover"
-                      />
-                      <div 
-                        className="absolute inset-0"
-                        style={{
-                          background: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3))`
-                        }}
-                      ></div>
-                      <p className="text-sm mt-4 text-gray-500 dark:text-gray-400">
-                        {formData.characterName || 'Your Character'}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Select a race to see character preview
-                    </p>
-                  )}
                 </div>
               </div>
             )}
