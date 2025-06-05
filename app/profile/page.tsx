@@ -167,12 +167,6 @@ export default function ProfilePage() {
             <Link href="/dashboard" className="text-primary-400 hover:text-primary-300">
               ← Back to Dashboard
             </Link>
-            <button
-              onClick={handleSignOut}
-              className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors border border-red-500/50"
-            >
-              Sign Out
-            </button>
           </div>
 
           <div className="flex flex-col md:flex-row gap-8">

@@ -66,7 +66,7 @@ const EventCard = ({ event }: { event: Event }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gray-800/50 backdrop-blur-sm rounded-lg overflow-hidden border border-gray-700 hover:border-gray-600 transition-colors"
+      className="bg-gray-800/50 backdrop-blur-sm rounded-lg overflow-hidden border border-gray-700 hover:border-gray-600 transition-colors min-h-[300px] h-full flex flex-col"
     >
       <div className="relative h-48">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-dark/80" />
@@ -74,14 +74,14 @@ const EventCard = ({ event }: { event: Event }) => {
           {getIcon(event.type)}
         </div>
       </div>
-      <div className="p-6">
+      <div className="p-6 flex flex-col h-full">
         <h3 className="text-xl font-display text-white mb-2">{event.title}</h3>
         <p className="text-gray-400 mb-4">{event.description}</p>
-        <div className="flex justify-between items-center">
+        <div className="mt-auto grid grid-cols-[1fr,auto] gap-4 items-center">
           <span className="text-sm text-gray-500">
             Ends: {new Date(event.endDate).toLocaleDateString()}
           </span>
-          <button className="btn btn-primary text-sm">
+          <button className="btn btn-primary text-sm whitespace-nowrap">
             View Details
           </button>
         </div>
@@ -158,7 +158,7 @@ export default function EventsPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
           {filteredEvents.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}
