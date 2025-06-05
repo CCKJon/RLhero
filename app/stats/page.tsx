@@ -61,10 +61,15 @@ export default function Stats() {
     ])
   );
 
-  const unlockedSkills = character.skills
+  const unlockedSkills = Object.entries(character.skills).map(([name, level]) => ({
+    name,
+    level,
+    progress: (level / 10) * 100
+  }));
+
   const lockedSkills = AVAILABLE_SKILLS.filter(
-    skill => !unlockedSkills.find(s => s.name === skill.name) && skill.unlockLevel > character.level
-  )
+    skill => !(skill.name in character.skills) && skill.unlockLevel > character.level
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-dark">
