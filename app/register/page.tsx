@@ -68,6 +68,7 @@ export default function Register() {
           level: 1,
           experience: 0,
           nextLevelXp: 100,
+          gold: 0,
           stats: {
             strength: formData.race === 'orc' ? 12 : formData.race === 'dwarf' ? 10 : 8,
             intelligence: formData.race === 'elf' ? 12 : formData.race === 'kitsune' ? 10 : 8,
@@ -97,7 +98,8 @@ export default function Register() {
           reward: 50,
           category: 'Education',
           completed: false,
-          accepted: false
+          accepted: false,
+          goldReward: 100
         })
         
         await userActions.addQuest({
@@ -107,7 +109,8 @@ export default function Register() {
           completed: false,
           accepted: false,
           description: 'Read any book or article for 30 minutes to improve your knowledge.',
-          difficulty: 1
+          difficulty: 1,
+          goldReward: 50
         })
 
         await userActions.addQuest({
@@ -119,6 +122,7 @@ export default function Register() {
           description: 'Complete a 2-hour focused study session on a challenging topic.',
           difficulty: 3,
           levelRequirement: 5,
+          goldReward: 150,
           prerequisites: [
             {
               type: 'quest',
@@ -136,7 +140,8 @@ export default function Register() {
           accepted: false,
           description: 'Practice a new skill for 1 hour to master the fundamentals.',
           difficulty: 2,
-          levelRequirement: 3
+          levelRequirement: 3,
+          goldReward: 75
         })
 
         await userActions.addQuest({
@@ -148,6 +153,7 @@ export default function Register() {
           description: 'Achieve level 5 in any skill to demonstrate mastery.',
           difficulty: 4,
           levelRequirement: 8,
+          goldReward: 200,
           prerequisites: [
             {
               type: 'skill',
@@ -164,7 +170,8 @@ export default function Register() {
           completed: false,
           accepted: false,
           description: 'Complete a 30-minute workout session.',
-          difficulty: 2
+          difficulty: 2,
+          goldReward: 50
         })
 
         await userActions.addQuest({
@@ -176,6 +183,7 @@ export default function Register() {
           description: 'Complete a 1-hour high-intensity workout.',
           difficulty: 3,
           levelRequirement: 4,
+          goldReward: 150,
           prerequisites: [
             {
               type: 'quest',
@@ -193,7 +201,8 @@ export default function Register() {
           accepted: false,
           description: 'Track and complete 10,000 steps in a day.',
           difficulty: 2,
-          levelRequirement: 2
+          levelRequirement: 2,
+          goldReward: 75
         })
 
         await userActions.addQuest({
@@ -203,7 +212,8 @@ export default function Register() {
           completed: false,
           accepted: false,
           description: 'Prepare and eat a healthy meal.',
-          difficulty: 1
+          difficulty: 1,
+          goldReward: 50
         })
 
         await userActions.addQuest({
@@ -215,6 +225,7 @@ export default function Register() {
           description: 'Join a group workout session and complete it together.',
           difficulty: 4,
           levelRequirement: 6,
+          goldReward: 200,
           prerequisites: [
             {
               type: 'quest',
@@ -231,7 +242,8 @@ export default function Register() {
           completed: false,
           accepted: false,
           description: 'Reflect on your day and write a journal entry.',
-          difficulty: 1
+          difficulty: 1,
+          goldReward: 25
         })
 
         await userActions.addQuest({
@@ -242,7 +254,8 @@ export default function Register() {
           accepted: false,
           description: 'Go for a 5km run.',
           difficulty: 3,
-          levelRequirement: 4
+          levelRequirement: 4,
+          goldReward: 125
         })
 
         await userActions.addQuest({

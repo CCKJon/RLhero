@@ -83,6 +83,15 @@ type UserState = {
   partyId: string | null
   isLoading: boolean
   error: string | null
+  showLevelUpModal: boolean
+  levelUpRewards: {
+    gold: number;
+    items: Array<{
+      name: string;
+      type: string;
+      image: string;
+    }>;
+  } | null
   actions: {
     setCharacter: (character: Character) => Promise<void>
     addQuest: (quest: Omit<Quest, 'id' | 'dateCreated'>) => Promise<void>
@@ -102,12 +111,16 @@ type UserState = {
     unequipItem: (slot: keyof Character['equipment']) => Promise<void>
     addToInventory: (item: Equipment) => Promise<void>
     removeFromInventory: (itemId: string) => Promise<void>
+    closeLevelUpModal: () => void
   }
 }
 
-// Calculate XP needed for next level using a common RPG formula
+// Calculate XP needed for next level using a more challenging RPG formula
 const calculateNextLevelXp = (level: number): number => {
-  return Math.floor(100 * Math.pow(1.5, level - 1))
+  // Base XP for level 1 is 100
+  // Each level requires 50% more XP than the previous level
+  // Additionally, we add a small exponential factor to make higher levels more challenging
+  return Math.floor(100 * Math.pow(1.5, level - 1) * (1 + (level - 1) * 0.1))
 }
 
 // Initial empty state
@@ -117,7 +130,9 @@ const initialState: Omit<UserState, 'actions'> = {
   isCompetitive: false,
   partyId: null,
   isLoading: false,
-  error: null
+  error: null,
+  showLevelUpModal: false,
+  levelUpRewards: null
 }
 
 // Create the store
@@ -284,6 +299,16 @@ export const useUserStore = create<UserState>()(
             const character = state.character
             if (!character) throw new Error('No character found')
 
+            // Ensure character has gold initialized
+            if (typeof character.gold !== 'number') {
+              character.gold = 0
+            }
+
+            console.log('Before quest completion:', {
+              questGoldReward: quest.goldReward,
+              currentGold: character.gold
+            })
+
             // Update quest status
             const updatedQuest = {
               ...quest,
@@ -297,6 +322,11 @@ export const useUserStore = create<UserState>()(
               gold: character.gold + (quest.goldReward || 0),
               completedQuests: [...(character.completedQuests || []), quest.id]
             }
+
+            console.log('After quest completion:', {
+              newGold: updatedCharacter.gold,
+              goldAdded: quest.goldReward || 0
+            })
 
             // Add item reward to inventory if present
             if (quest.itemReward) {
@@ -319,12 +349,7 @@ export const useUserStore = create<UserState>()(
             // Update both quest and character in a single transaction
             await updateDoc(userRef, {
               quests: state.quests.map(q => q.id === id ? updatedQuest : q),
-              character: {
-                ...character,
-                gold: updatedCharacter.gold,
-                completedQuests: updatedCharacter.completedQuests,
-                inventory: updatedCharacter.inventory
-              }
+              character: updatedCharacter
             })
 
             // Update local state
@@ -353,21 +378,69 @@ export const useUserStore = create<UserState>()(
             const { user } = useAuthStore.getState()
             if (!user) throw new Error('No authenticated user')
 
-            const state = get()
-            const character = state.character
+            let state = get()
+            let character = state.character
             if (!character) throw new Error('No character found')
 
-            const newExperience = character.experience + amount
-            const nextLevelXp = character.nextLevelXp
+            let newExperience = character.experience + amount
+            let nextLevelXp = character.nextLevelXp
+            let leveledUp = false;
 
-            if (newExperience >= nextLevelXp) {
-              await get().actions.levelUp()
-              return
+            // Handle multiple level-ups if enough XP is gained
+            while (newExperience >= nextLevelXp) {
+              leveledUp = true;
+              newExperience = newExperience - nextLevelXp;
+              const newLevel: number = character.level + 1;
+              const newNextLevelXp = calculateNextLevelXp(newLevel);
+
+              // Calculate level-up rewards
+              const goldReward = Math.floor(100 * Math.pow(1.5, newLevel - 1) * (1 + (newLevel - 1) * 0.1))
+              const levelUpRewards = {
+                gold: goldReward,
+                items: [
+                  {
+                    name: `Level ${newLevel} Reward Box`,
+                    type: 'Special',
+                    image: '/images/fire-emblem/treasure-chest.png'
+                  }
+                ]
+              }
+
+              const statKeys = ['strength', 'intelligence', 'dexterity', 'wisdom', 'constitution', 'charisma'] as const
+              const randomStatIndex = Math.floor(Math.random() * statKeys.length)
+              const randomStat = statKeys[randomStatIndex]
+
+              character = {
+                ...character,
+                level: newLevel,
+                experience: newExperience,
+                nextLevelXp: newNextLevelXp,
+                gold: character.gold + goldReward,
+                stats: {
+                  ...character.stats,
+                  [randomStat]: character.stats[randomStat] + 1
+                }
+              }
+              nextLevelXp = newNextLevelXp
+              // Show modal only for the last level up
+              set({
+                character,
+                showLevelUpModal: true,
+                levelUpRewards,
+                isLoading: false
+              })
             }
+
+            // Clamp experience to 0 minimum
+            newExperience = Math.max(0, newExperience)
 
             const userRef = doc(db, 'users', user.uid)
             await updateDoc(userRef, {
-              'character.experience': newExperience
+              'character.experience': newExperience,
+              'character.level': character.level,
+              'character.nextLevelXp': character.nextLevelXp,
+              'character.gold': character.gold,
+              'character.stats': character.stats
             })
 
             set({
@@ -400,6 +473,19 @@ export const useUserStore = create<UserState>()(
             const newExperience = character.experience - character.nextLevelXp
             const newNextLevelXp = calculateNextLevelXp(newLevel)
 
+            // Calculate level-up rewards
+            const goldReward = Math.floor(100 * Math.pow(1.5, newLevel - 1))
+            const levelUpRewards = {
+              gold: goldReward,
+              items: [
+                {
+                  name: `Level ${newLevel} Reward Box`,
+                  type: 'Special',
+                  image: '/images/fire-emblem/treasure-chest.png'
+                }
+              ]
+            }
+
             const statKeys = ['strength', 'intelligence', 'dexterity', 'wisdom', 'constitution', 'charisma'] as const
             const randomStatIndex = Math.floor(Math.random() * statKeys.length)
             const randomStat = statKeys[randomStatIndex]
@@ -409,6 +495,7 @@ export const useUserStore = create<UserState>()(
               level: newLevel,
               experience: newExperience,
               nextLevelXp: newNextLevelXp,
+              gold: character.gold + goldReward,
               stats: {
                 ...character.stats,
                 [randomStat]: character.stats[randomStat] + 1
@@ -422,7 +509,9 @@ export const useUserStore = create<UserState>()(
 
             set({
               character: updatedCharacter,
-              isLoading: false
+              isLoading: false,
+              showLevelUpModal: true,
+              levelUpRewards
             })
           } catch (error: any) {
             set({ 
@@ -431,6 +520,13 @@ export const useUserStore = create<UserState>()(
             })
             throw error
           }
+        },
+
+        closeLevelUpModal: () => {
+          set({
+            showLevelUpModal: false,
+            levelUpRewards: null
+          })
         },
 
         improveSkill: async (skillName, amount) => {

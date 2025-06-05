@@ -9,17 +9,21 @@ import { redirect } from 'next/navigation'
 import { Equipment, ARMOR_SETS, ArmorSet } from '@/types/equipment'
 import QuestModal from '@/components/QuestModal'
 import ItemModal from '@/components/ItemModal'
+import LevelUpModal from '@/components/LevelUpModal'
 
 export default function Dashboard() {
   const { 
     character, 
     quests, 
+    showLevelUpModal,
+    levelUpRewards,
     actions: { 
       toggleQuestComplete, 
       addQuest,
       gainExperience,
       unequipItem,
-      acceptQuest
+      acceptQuest,
+      closeLevelUpModal
     } 
   } = useUserStore()
   
@@ -66,6 +70,11 @@ export default function Dashboard() {
 
   const acceptedQuests = quests.filter(q => q.accepted && !q.completed)
   const availableQuests = quests.filter(q => !q.accepted && !q.completed)
+
+  // Clamp experience and percentage for display
+  const displayedExperience = Math.max(0, character.experience);
+  const displayedNextLevelXp = character.nextLevelXp;
+  const displayedPercent = Math.max(0, Math.round((displayedExperience / displayedNextLevelXp) * 100));
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-dark">
@@ -149,13 +158,13 @@ export default function Dashboard() {
                 {/* XP Bar */}
                 <div className="mt-4">
                   <div className="flex justify-between text-xs text-gray-400 mb-1">
-                    <span>Experience: {character.experience}/{character.nextLevelXp}</span>
-                    <span>{Math.round((character.experience / character.nextLevelXp) * 100)}%</span>
+                    <span>Experience: {displayedExperience}/{displayedNextLevelXp}</span>
+                    <span>{displayedPercent}%</span>
                   </div>
                   <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-accent-500" 
-                      style={{ width: `${(character.experience / character.nextLevelXp) * 100}%` }}
+                      style={{ width: `${displayedPercent}%` }}
                     ></div>
                   </div>
                 </div>
@@ -622,6 +631,13 @@ export default function Dashboard() {
           onClose={() => setSelectedItem(null)}
         />
       )}
+
+      <LevelUpModal
+        isOpen={showLevelUpModal}
+        onClose={closeLevelUpModal}
+        newLevel={character.level}
+        rewards={levelUpRewards || { gold: 0, items: [] }}
+      />
     </div>
   )
 } 
