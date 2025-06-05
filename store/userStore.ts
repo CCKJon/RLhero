@@ -3,7 +3,7 @@ import { devtools } from 'zustand/middleware'
 import { db } from '@/lib/firebase'
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
 import { useAuthStore } from './authStore'
-import { Equipment, EquipmentStats, calculateEquipmentStats, calculateSetBonuses } from '@/types/equipment'
+import { Equipment, EquipmentStats, EquipmentSlot, calculateEquipmentStats, calculateSetBonuses } from '@/types/equipment'
 
 // Types for our character
 export type Race = 'human' | 'elf' | 'dwarf' | 'orc' | 'kitsune'
@@ -28,7 +28,7 @@ export type Character = {
     charisma: number
   }
   skills: Record<string, number>
-  equipment: Equipment
+  equipment: Record<EquipmentSlot, Equipment | null>
   inventory: Equipment[]
   titles: string[]
   appliedTitle: string | null

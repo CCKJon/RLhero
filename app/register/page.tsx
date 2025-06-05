@@ -76,16 +76,17 @@ export default function Register() {
             constitution: formData.race === 'dwarf' ? 12 : formData.race === 'orc' ? 10 : 8,
             charisma: formData.race === 'human' ? 12 : 8
           },
-          skills: [],
-          equipment: {
-            weapon: ALL_EQUIPMENT.find(e => e.name === getRaceDefaultWeapon(formData.race) && e.type === 'weapon') || null,
-            armor: ALL_EQUIPMENT.find(e => e.name === 'Beginner Armor' && e.type === 'armor') || null,
-            accessory: ALL_EQUIPMENT.find(e => e.name === "Traveler's Pendant" && e.type === 'accessory') || null
-          },
+          skills: {},
+          equipment: ALL_EQUIPMENT.find(e => e.name === getRaceDefaultWeapon(formData.race) && e.type === 'weapon') || ALL_EQUIPMENT.find(e => e.type === 'weapon')!,
           titles: ['Novice Adventurer'],
           appearance: formData.appearance,
-          inventory: [],
-          appliedTitle: null
+          inventory: [
+            ALL_EQUIPMENT.find(e => e.name === 'Beginner Armor' && e.type === 'armor'),
+            ALL_EQUIPMENT.find(e => e.name === "Traveler's Pendant" && e.type === 'accessory')
+          ].filter(Boolean) as typeof ALL_EQUIPMENT,
+          appliedTitle: null,
+          class: 'warrior',
+          completedQuests: []
         }
         
         await userActions.setCharacter(newCharacter)
@@ -180,6 +181,105 @@ export default function Register() {
               type: 'quest',
               value: 'Daily Exercise',
               requiredQuestId: 'daily-exercise'
+            }
+          ]
+        })
+
+        await userActions.addQuest({
+          name: 'Walk 10,000 steps',
+          reward: 35,
+          category: 'Fitness',
+          completed: false,
+          accepted: false,
+          description: 'Track and complete 10,000 steps in a day.',
+          difficulty: 2,
+          levelRequirement: 2
+        })
+
+        await userActions.addQuest({
+          name: 'Cook a healthy meal',
+          reward: 20,
+          category: 'Wellness',
+          completed: false,
+          accepted: false,
+          description: 'Prepare and eat a healthy meal.',
+          difficulty: 1
+        })
+
+        await userActions.addQuest({
+          name: 'Complete a group workout',
+          reward: 70,
+          category: 'Fitness',
+          completed: false,
+          accepted: false,
+          description: 'Join a group workout session and complete it together.',
+          difficulty: 4,
+          levelRequirement: 6,
+          prerequisites: [
+            {
+              type: 'quest',
+              value: 'Daily Exercise',
+              requiredQuestId: 'daily-exercise'
+            }
+          ]
+        })
+
+        await userActions.addQuest({
+          name: 'Write a journal entry',
+          reward: 15,
+          category: 'Wellness',
+          completed: false,
+          accepted: false,
+          description: 'Reflect on your day and write a journal entry.',
+          difficulty: 1
+        })
+
+        await userActions.addQuest({
+          name: 'Run 5km',
+          reward: 55,
+          category: 'Fitness',
+          completed: false,
+          accepted: false,
+          description: 'Go for a 5km run.',
+          difficulty: 3,
+          levelRequirement: 4
+        })
+
+        await userActions.addQuest({
+          name: 'Learn a new language word',
+          reward: 10,
+          category: 'Education',
+          completed: false,
+          accepted: false,
+          description: 'Learn and use a new word in a foreign language.',
+          difficulty: 1
+        })
+
+        await userActions.addQuest({
+          name: 'Complete a meditation session',
+          reward: 25,
+          category: 'Health',
+          completed: false,
+          accepted: false,
+          description: 'Meditate for at least 15 minutes.',
+          difficulty: 2,
+          levelRequirement: 2
+        })
+
+        await userActions.addQuest({
+          name: 'Win a party challenge',
+          reward: 100,
+          category: 'Skills',
+          completed: false,
+          accepted: false,
+          description: 'Participate in and win a party challenge.',
+          difficulty: 5,
+          levelRequirement: 10,
+          prerequisites: [
+            {
+              type: 'quest',
+              value: 'Skill Mastery',
+              requiredQuestId: 'skill-mastery'
             }
           ]
         })

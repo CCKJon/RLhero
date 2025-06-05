@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useUserStore, Character, Quest } from '@/store/userStore'
+import { useUserStore, Character, Quest, QuestCategory } from '@/store/userStore'
 import { redirect } from 'next/navigation'
-import type { QuestCategory } from '@/store/userStore'
-import { ARMOR_SETS, ArmorSet } from '@/types/equipment'
+import { Equipment, ARMOR_SETS, ArmorSet } from '@/types/equipment'
 import QuestModal from '@/components/QuestModal'
+import ItemModal from '@/components/ItemModal'
 
 export default function Dashboard() {
   const { 
@@ -27,13 +27,7 @@ export default function Dashboard() {
   const [questFilter, setQuestFilter] = useState<'All' | QuestCategory>('All')
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [newQuest, setNewQuest] = useState({ 
-    name: '', 
-    reward: 30, 
-    category: 'Wellness' as QuestCategory,
-    completed: false,
-    accepted: false
-  })
+  const [selectedItem, setSelectedItem] = useState<Equipment | null>(null)
   
   // If no character, redirect to registration
   useEffect(() => {
@@ -44,37 +38,29 @@ export default function Dashboard() {
   
   if (!character) return null // Prevent rendering during redirect
   
-  const completionPercentage = Math.round((character.experience / character.nextLevelXp) * 100)
-  
-  const filteredQuests = quests.filter(
-    quest => questFilter === 'All' || quest.category === questFilter
-  )
-  
   const handleQuestToggle = (id: string) => {
     toggleQuestComplete(id)
   }
   
-  const handleAddQuest = (e: React.FormEvent) => {
-    e.preventDefault()
-    addQuest({
-      name: newQuest.name,
-      reward: newQuest.reward,
-      completed: false,
-      category: newQuest.category,
-      accepted: false
-    })
-    setNewQuest({ name: '', reward: 30, category: 'Wellness', completed: false, accepted: false })
-  }
-
   const handleQuestClick = (quest: Quest) => {
     setSelectedQuest(quest)
     setIsModalOpen(true)
   }
 
-  const handleAcceptQuest = async () => {
-    if (selectedQuest) {
-      await acceptQuest(selectedQuest.id)
+  const handleAcceptQuest = async (quest: Quest) => {
+    try {
+      await acceptQuest(quest.id)
       setIsModalOpen(false)
+    } catch (error) {
+      console.error('Failed to accept quest:', error)
+    }
+  }
+
+  const handleUnequipItem = async (slot: 'weapon' | 'armor' | 'accessory') => {
+    try {
+      await unequipItem(slot)
+    } catch (error) {
+      console.error('Failed to unequip item:', error)
     }
   }
 
@@ -140,12 +126,12 @@ export default function Dashboard() {
                 <div className="mt-4">
                   <div className="flex justify-between text-xs text-gray-400 mb-1">
                     <span>Experience: {character.experience}/{character.nextLevelXp}</span>
-                    <span>{completionPercentage}%</span>
+                    <span>{Math.round((character.experience / character.nextLevelXp) * 100)}%</span>
                   </div>
                   <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-accent-500" 
-                      style={{ width: `${completionPercentage}%` }}
+                      style={{ width: `${(character.experience / character.nextLevelXp) * 100}%` }}
                     ></div>
                   </div>
                 </div>
@@ -161,7 +147,7 @@ export default function Dashboard() {
                 </div>
                 <div className="bg-gray-800 rounded-lg p-3 text-center">
                   <div className="text-xl font-bold text-accent-400">
-                    {character.skills.length}
+                    {Object.keys(character.skills).length}
                   </div>
                   <div className="text-xs text-gray-400">Skills</div>
                 </div>
@@ -239,7 +225,7 @@ export default function Dashboard() {
                         ? 'bg-primary-600 text-white'
                         : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                     }`}
-                    onClick={() => setQuestFilter(category as any)}
+                    onClick={() => setQuestFilter(category as 'All' | QuestCategory)}
                   >
                     {category}
                   </button>
@@ -363,22 +349,22 @@ export default function Dashboard() {
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
                 <h3 className="text-lg font-medium text-white mb-4">Skills</h3>
                 <div className="space-y-4">
-                  {character.skills.length === 0 ? (
+                  {Object.keys(character.skills).length === 0 ? (
                     <div className="text-center py-8">
                       <p className="text-gray-400">No skills learned yet.</p>
                       <p className="text-sm text-gray-500 mt-1">Complete quests to level up your skills!</p>
                     </div>
                   ) : (
-                    character.skills.map((skill) => (
-                      <div key={skill.name}>
+                    Object.entries(character.skills).map(([skillName, level]) => (
+                      <div key={skillName}>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-white">{skill.name}</span>
-                          <span className="text-gray-400">Level {skill.level}</span>
+                          <span className="text-white">{skillName}</span>
+                          <span className="text-gray-400">Level {level}</span>
                         </div>
                         <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
                           <div 
                             className="h-full bg-primary-500" 
-                            style={{ width: `${skill.progress}%` }}
+                            style={{ width: `${(level / 10) * 100}%` }}
                           ></div>
                         </div>
                       </div>
@@ -392,7 +378,11 @@ export default function Dashboard() {
                 <h3 className="text-lg font-medium text-white mb-4">Equipment</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {Object.entries(character.equipment).map(([slot, item]) => (
-                    <div key={slot} className="bg-gray-700/50 rounded-lg p-4 relative">
+                    <div 
+                      key={slot} 
+                      className="bg-gray-700/50 rounded-lg p-4 relative cursor-pointer hover:border-gray-600 transition-colors"
+                      onClick={() => item && setSelectedItem(item)}
+                    >
                       {item ? (
                         <>
                           <div className="w-full h-16 mb-2 flex items-center justify-center">
@@ -431,7 +421,10 @@ export default function Dashboard() {
                           )}
 
                           <button
-                            onClick={() => unequipItem(slot as 'weapon' | 'armor' | 'accessory')}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUnequipItem(slot as 'weapon' | 'armor' | 'accessory');
+                            }}
                             className="mt-2 w-full py-1 text-xs bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors"
                           >
                             Unequip
@@ -462,7 +455,7 @@ export default function Dashboard() {
                         return (
                           <div key={set.name} className="bg-gray-700/30 rounded-lg p-3">
                             <div className="flex justify-between items-center mb-2">
-                              <p className="text-sm text-gray-300">{set.name}</p>
+                              <span className="text-sm text-white">{set.name}</span>
                               <span className="text-xs text-gray-400">
                                 {equippedPieces.length}/{set.pieces.length} pieces
                               </span>
@@ -498,7 +491,7 @@ export default function Dashboard() {
                   {character.titles.length === 0 ? (
                     <div className="text-center py-8">
                       <p className="text-gray-400">No titles earned yet.</p>
-                      <p className="text-sm text-gray-500 mt-1">Complete quests to earn titles!</p>
+                      <p className="text-sm text-gray-500 mt-1">Complete achievements to earn titles!</p>
                     </div>
                   ) : (
                     character.titles.map((title, index) => (
@@ -526,26 +519,27 @@ export default function Dashboard() {
                 <h3 className="text-lg font-medium text-white mb-4">Inventory</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {['Health Potion', 'Mana Potion', 'Strength Elixir', 'Magic Scroll'].map((item, index) => (
-                    <div key={index} className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
+                  {character.inventory.map((item) => (
+                    <div 
+                      key={item.id} 
+                      className="bg-gray-700/50 rounded-lg p-4 border border-gray-600 cursor-pointer hover:border-gray-500 transition-colors"
+                      onClick={() => setSelectedItem(item)}
+                    >
                       <div className="flex items-start">
                         <div className="w-12 h-12 bg-primary-900 rounded-md flex-shrink-0 flex items-center justify-center mr-3">
                           <Image 
-                            src={`/images/fire-emblem/item-${index + 1}.png`}
-                            alt={item}
+                            src={item.image}
+                            alt={item.name}
                             width={32}
                             height={32}
                           />
                         </div>
                         <div>
-                          <h4 className="text-white text-sm font-medium">{item}</h4>
-                          <p className="text-gray-400 text-xs mt-1">Quantity: {index + 1}</p>
+                          <h4 className="text-white text-sm font-medium">{item.name}</h4>
+                          <p className="text-gray-400 text-xs mt-1">Level {item.level}</p>
                           <div className="mt-2 flex items-center">
                             <span className="text-xs bg-primary-900/50 text-primary-300 px-2 py-1 rounded">
-                              {index === 0 ? 'Restores 50 HP' : 
-                               index === 1 ? 'Restores 30 MP' :
-                               index === 2 ? '+5 Strength for 1 hour' :
-                               'Teaches a new spell'}
+                              {item.type}
                             </span>
                           </div>
                         </div>
@@ -559,24 +553,24 @@ export default function Dashboard() {
                 <h3 className="text-lg font-medium text-white mb-4">Character Shop</h3>
                 
                 <div className="space-y-4">
-                  {['Magic Tome', 'Steel Sword', 'Healing Staff', 'Light Armor'].map((item, index) => (
+                  {['Magic Tome', 'Steel Sword', 'Healing Staff', 'Light Armor'].map((itemName, index) => (
                     <div key={index} className="bg-gray-700/50 rounded-lg p-3 flex items-center justify-between">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-accent-900/50 rounded-md flex items-center justify-center mr-3">
                           <Image 
                             src={`/images/fire-emblem/shop-${index + 1}.png`}
-                            alt={item}
+                            alt={itemName}
                             width={24}
                             height={24}
                           />
                         </div>
                         <div>
-                          <p className="text-white text-sm">{item}</p>
+                          <p className="text-white text-sm">{itemName}</p>
                           <p className="text-xs text-gray-400">+{index + 2} to stats</p>
                         </div>
                       </div>
-                      <button className="px-2 py-1 bg-accent-600 hover:bg-accent-500 text-white text-xs rounded">
-                        {(index + 1) * 200} Gold
+                      <button className="px-3 py-1 text-xs bg-primary-600 text-white rounded hover:bg-primary-500 transition-colors">
+                        Buy
                       </button>
                     </div>
                   ))}
@@ -587,13 +581,23 @@ export default function Dashboard() {
         </motion.div>
       </main>
 
-      {/* Quest Modal */}
-      <QuestModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        quest={selectedQuest}
-        onAccept={handleAcceptQuest}
-      />
+      {/* Modals */}
+      {selectedQuest && (
+        <QuestModal
+          isOpen={!!selectedQuest}
+          quest={selectedQuest}
+          onClose={() => setSelectedQuest(null)}
+          onAccept={handleAcceptQuest}
+        />
+      )}
+
+      {selectedItem && (
+        <ItemModal
+          isOpen={!!selectedItem}
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
     </div>
   )
 } 

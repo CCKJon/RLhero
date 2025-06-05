@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { useUserStore } from '@/store/userStore';
 import Image from 'next/image';
 import { Equipment, EquipmentRarity, ARMOR_SETS, ALL_EQUIPMENT } from '@/types/equipment';
+import ItemModal from '@/components/ItemModal';
 
 const rarityColors: Record<EquipmentRarity, string> = {
   common: 'text-gray-400',
@@ -20,6 +21,7 @@ export default function ShopPage() {
   const router = useRouter();
   const { character, actions } = useUserStore();
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'weapon' | 'armor' | 'accessory' | 'consumable'>('all');
+  const [selectedItem, setSelectedItem] = useState<Equipment | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange((user) => {
@@ -81,7 +83,11 @@ export default function ShopPage() {
           {/* Shop Items Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredItems.map((item) => (
-              <div key={item.id} className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
+              <div 
+                key={item.id} 
+                className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700 cursor-pointer hover:border-gray-600 transition-colors"
+                onClick={() => setSelectedItem(item)}
+              >
                 <div className="flex items-center justify-between mb-4">
                   <h3 className={`text-lg font-medium ${rarityColors[item.rarity]}`}>{item.name}</h3>
                   <span className="text-sm text-gray-400">Level {item.level}</span>
@@ -120,7 +126,10 @@ export default function ShopPage() {
                 )}
 
                 <button
-                  onClick={() => handlePurchase(item)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePurchase(item);
+                  }}
                   className="w-full py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors"
                 >
                   Purchase
@@ -130,6 +139,15 @@ export default function ShopPage() {
           </div>
         </motion.div>
       </div>
+
+      {/* Item Modal */}
+      {selectedItem && (
+        <ItemModal
+          isOpen={!!selectedItem}
+          onClose={() => setSelectedItem(null)}
+          item={selectedItem}
+        />
+      )}
     </div>
   );
 } 
