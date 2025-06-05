@@ -122,6 +122,30 @@ export default function Dashboard() {
                   Level {character.level} {character.race} • {character.titles[0] || 'Adventurer'}
                 </p>
                 
+                {/* Currency Display */}
+                <div className="mt-2 flex items-center space-x-4">
+                  <div className="flex items-center">
+                    <Image 
+                      src="/images/fire-emblem/gold-coin.png" 
+                      alt="Gold" 
+                      width={16} 
+                      height={16}
+                      className="mr-1"
+                    />
+                    <span className="text-sm text-yellow-400">{character.gold || 0}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Image 
+                      src="/images/fire-emblem/sp-coin.png" 
+                      alt="SP" 
+                      width={16} 
+                      height={16}
+                      className="mr-1"
+                    />
+                    <span className="text-sm text-purple-400">{character.sp || 0}</span>
+                  </div>
+                </div>
+                
                 {/* XP Bar */}
                 <div className="mt-4">
                   <div className="flex justify-between text-xs text-gray-400 mb-1">

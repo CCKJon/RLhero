@@ -19,6 +19,8 @@ export type Character = {
   level: number
   experience: number
   nextLevelXp: number
+  gold: number
+  sp: number
   stats: {
     strength: number
     intelligence: number

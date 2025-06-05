@@ -58,8 +58,30 @@ export default function ShopPage() {
         >
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-display text-white">Shop</h1>
-            <div className="text-white">
-              <span className="text-primary-400 font-bold">{character.experience || 0}</span> XP
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center">
+                <Image 
+                  src="/images/fire-emblem/gold-coin.png" 
+                  alt="Gold" 
+                  width={20} 
+                  height={20}
+                  className="mr-1"
+                />
+                <span className="text-yellow-400 font-bold">{character.gold || 0}</span>
+              </div>
+              <div className="flex items-center">
+                <Image 
+                  src="/images/fire-emblem/sp-coin.png" 
+                  alt="SP" 
+                  width={20} 
+                  height={20}
+                  className="mr-1"
+                />
+                <span className="text-purple-400 font-bold">{character.sp || 0}</span>
+              </div>
+              <div className="text-white">
+                <span className="text-primary-400 font-bold">{character.experience || 0}</span> XP
+              </div>
             </div>
           </div>
 
@@ -85,7 +107,7 @@ export default function ShopPage() {
             {filteredItems.map((item) => (
               <div 
                 key={item.id} 
-                className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700 cursor-pointer hover:border-gray-600 transition-colors"
+                className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700 cursor-pointer hover:border-gray-600 transition-colors flex flex-col h-full"
                 onClick={() => setSelectedItem(item)}
               >
                 <div className="flex items-center justify-between mb-4">
@@ -125,15 +147,17 @@ export default function ShopPage() {
                   </div>
                 )}
 
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePurchase(item);
-                  }}
-                  className="w-full py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors"
-                >
-                  Purchase
-                </button>
+                <div className="mt-auto">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePurchase(item);
+                    }}
+                    className="w-full py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors"
+                  >
+                    Purchase
+                  </button>
+                </div>
               </div>
             ))}
           </div>
