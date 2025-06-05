@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { useUserStore, Quest } from '@/store/userStore'
 import type { QuestCategory } from '@/store/userStore'
 import QuestModal from '@/components/QuestModal'
+import AddQuestModal from '@/components/AddQuestModal'
 
 export default function Quests() {
   const { quests, actions: { addQuest, acceptQuest } } = useUserStore()
@@ -14,12 +15,10 @@ export default function Quests() {
   const [questFilter, setQuestFilter] = useState<'All' | QuestCategory>('All')
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isAddQuestModalOpen, setIsAddQuestModalOpen] = useState(false)
   const [newQuest, setNewQuest] = useState({ 
     name: '', 
-    reward: 30, 
     category: 'Wellness' as QuestCategory,
-    completed: false,
-    accepted: false
   })
 
   const filteredQuests = quests.filter(
@@ -29,16 +28,25 @@ export default function Quests() {
   const acceptedQuests = filteredQuests.filter(q => q.accepted && !q.completed)
   const availableQuests = filteredQuests.filter(q => !q.accepted && !q.completed)
 
-  const handleAddQuest = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleAddQuest = (questData: {
+    name: string
+    category: QuestCategory
+    description: string
+    reward: number
+    goldReward: number
+    itemReward: string
+  }) => {
     addQuest({
-      name: newQuest.name,
-      reward: newQuest.reward,
+      name: questData.name,
+      reward: questData.reward,
       completed: false,
-      category: newQuest.category,
-      accepted: false
+      category: questData.category,
+      accepted: false,
+      description: questData.description,
+      goldReward: questData.goldReward,
+      itemReward: questData.itemReward
     })
-    setNewQuest({ name: '', reward: 30, category: 'Wellness', completed: false, accepted: false })
+    setIsAddQuestModalOpen(false)
   }
 
   const handleQuestClick = (quest: Quest) => {
@@ -147,14 +155,13 @@ export default function Quests() {
               {/* Add Quest Form */}
               <div className="mt-8">
                 <h3 className="text-sm font-medium text-white mb-3">Add Custom Quest</h3>
-                <form onSubmit={handleAddQuest} className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <input
                     type="text"
                     value={newQuest.name}
                     onChange={(e) => setNewQuest({ ...newQuest, name: e.target.value })}
                     placeholder="Enter quest name..."
                     className="flex-1 bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-white placeholder-gray-400 focus:ring-primary-500 focus:border-primary-500"
-                    required
                   />
                   <select
                     value={newQuest.category}
@@ -168,12 +175,13 @@ export default function Quests() {
                     <option value="Skills">Skills</option>
                   </select>
                   <button
-                    type="submit"
+                    onClick={() => setIsAddQuestModalOpen(true)}
                     className="btn btn-primary text-sm"
+                    disabled={!newQuest.name}
                   >
                     Add Quest
                   </button>
-                </form>
+                </div>
               </div>
             </div>
           )}
@@ -249,6 +257,13 @@ export default function Quests() {
         onClose={() => setIsModalOpen(false)}
         quest={selectedQuest}
         onAccept={handleAcceptQuest}
+      />
+
+      {/* Add Quest Modal */}
+      <AddQuestModal
+        isOpen={isAddQuestModalOpen}
+        onClose={() => setIsAddQuestModalOpen(false)}
+        onSubmit={handleAddQuest}
       />
     </div>
   )
