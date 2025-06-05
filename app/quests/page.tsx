@@ -11,7 +11,7 @@ import AddQuestModal from '@/components/AddQuestModal'
 
 export default function Quests() {
   const { quests, actions: { addQuest, acceptQuest } } = useUserStore()
-  const [selectedTab, setSelectedTab] = useState<'daily' | 'available' | 'accepted'>('daily')
+  const [selectedTab, setSelectedTab] = useState<'daily' | 'available' | 'accepted' | 'completed'>('daily')
   const [questFilter, setQuestFilter] = useState<'All' | QuestCategory>('All')
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -27,6 +27,7 @@ export default function Quests() {
 
   const acceptedQuests = filteredQuests.filter(q => q.accepted && !q.completed)
   const availableQuests = filteredQuests.filter(q => !q.accepted && !q.completed)
+  const completedQuests = filteredQuests.filter(q => q.completed)
 
   const handleAddQuest = (questData: {
     name: string
@@ -102,6 +103,16 @@ export default function Quests() {
           >
             Accepted Quests
           </button>
+          <button
+            className={`px-4 py-2 text-sm font-medium ${
+              selectedTab === 'completed' 
+                ? 'text-accent-400 border-b-2 border-accent-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+            onClick={() => setSelectedTab('completed')}
+          >
+            Completed Quests
+          </button>
         </div>
 
         {/* Quest Category Filter */}
@@ -130,7 +141,7 @@ export default function Quests() {
         >
           {selectedTab === 'daily' && (
             <div className="space-y-4">
-              {filteredQuests.map((quest) => (
+              {filteredQuests.filter(q => !q.completed).map((quest) => (
                 <div 
                   key={quest.id}
                   className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700 cursor-pointer hover:bg-gray-700/50 transition-colors"
@@ -242,6 +253,39 @@ export default function Quests() {
                       <span className="text-xs bg-accent-900/50 text-accent-300 px-2 py-1 rounded">
                         +{quest.reward} XP
                       </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {selectedTab === 'completed' && (
+            <div className="space-y-4">
+              {completedQuests.map((quest) => (
+                <div 
+                  key={quest.id}
+                  className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="ml-3">
+                        <h3 className="text-white font-medium">{quest.name}</h3>
+                        <p className="text-sm text-gray-400">{quest.category}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Completed on: {quest.dateCompleted ? new Date(quest.dateCompleted).toLocaleDateString() : 'Unknown'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs bg-accent-900/50 text-accent-300 px-2 py-1 rounded">
+                        +{quest.reward} XP
+                      </span>
+                      {quest.goldReward && (
+                        <span className="text-xs bg-yellow-900/50 text-yellow-300 px-2 py-1 rounded">
+                          +{quest.goldReward} Gold
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

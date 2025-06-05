@@ -88,6 +88,7 @@ type UserState = {
     addQuest: (quest: Omit<Quest, 'id' | 'dateCreated'>) => Promise<void>
     toggleQuestComplete: (id: string) => Promise<void>
     acceptQuest: (id: string) => Promise<void>
+    completeQuest: (id: string) => Promise<void>
     gainExperience: (amount: number) => Promise<void>
     levelUp: () => Promise<void>
     improveSkill: (skillName: string, amount: number) => Promise<void>
@@ -262,6 +263,84 @@ export const useUserStore = create<UserState>()(
           } catch (error: any) {
             set({ 
               error: error.message || 'Failed to accept quest',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        completeQuest: async (id) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
+            const quest = state.quests.find(q => q.id === id)
+            if (!quest) throw new Error('Quest not found')
+            if (!quest.accepted) throw new Error('Quest must be accepted before completing')
+            if (quest.completed) throw new Error('Quest is already completed')
+
+            const character = state.character
+            if (!character) throw new Error('No character found')
+
+            // Update quest status
+            const updatedQuest = {
+              ...quest,
+              completed: true,
+              dateCompleted: new Date()
+            }
+
+            // Update character with rewards
+            const updatedCharacter = {
+              ...character,
+              gold: character.gold + (quest.goldReward || 0),
+              completedQuests: [...(character.completedQuests || []), quest.id]
+            }
+
+            // Add item reward to inventory if present
+            if (quest.itemReward) {
+              const newItem: Equipment = {
+                id: Math.random().toString(36).substring(2, 9),
+                name: quest.itemReward,
+                type: 'consumable',
+                rarity: 'common',
+                level: 1,
+                stats: {},
+                description: `Reward from completing ${quest.name}`,
+                image: '/images/fire-emblem/consumable-1.png'
+              }
+              updatedCharacter.inventory = [...(character.inventory || []), newItem]
+            }
+
+            // Update database
+            const userRef = doc(db, 'users', user.uid)
+            
+            // Update both quest and character in a single transaction
+            await updateDoc(userRef, {
+              quests: state.quests.map(q => q.id === id ? updatedQuest : q),
+              character: {
+                ...character,
+                gold: updatedCharacter.gold,
+                completedQuests: updatedCharacter.completedQuests,
+                inventory: updatedCharacter.inventory
+              }
+            })
+
+            // Update local state
+            set((state) => ({
+              quests: state.quests.map(q => q.id === id ? updatedQuest : q),
+              character: updatedCharacter,
+              isLoading: false
+            }))
+
+            // Add XP reward
+            await get().actions.gainExperience(quest.reward)
+
+          } catch (error: any) {
+            console.error('Quest completion error:', error)
+            set({ 
+              error: error.message || 'Failed to complete quest',
               isLoading: false 
             })
             throw error

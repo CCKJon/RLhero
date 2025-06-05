@@ -11,7 +11,7 @@ interface QuestModalProps {
 }
 
 export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestModalProps) {
-  const { character } = useUserStore()
+  const { character, actions: { completeQuest } } = useUserStore()
   const [error, setError] = useState<string | null>(null)
   
   if (!quest || !character) return null
@@ -19,7 +19,25 @@ export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestMo
   const handleAccept = async () => {
     try {
       setError(null)
+      if (quest.completed) {
+        setError('This quest has already been completed')
+        return
+      }
       await onAccept(quest)
+    } catch (error: any) {
+      setError(error.message)
+    }
+  }
+
+  const handleComplete = async () => {
+    try {
+      setError(null)
+      if (quest.completed) {
+        setError('This quest has already been completed')
+        return
+      }
+      await completeQuest(quest.id)
+      onClose()
     } catch (error: any) {
       setError(error.message)
     }
@@ -150,6 +168,15 @@ export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestMo
                         onClick={handleAccept}
                       >
                         Accept Quest
+                      </button>
+                    )}
+                    {quest.accepted && !quest.completed && (
+                      <button
+                        type="button"
+                        className="btn btn-accent"
+                        onClick={handleComplete}
+                      >
+                        Complete Quest
                       </button>
                     )}
                   </div>
