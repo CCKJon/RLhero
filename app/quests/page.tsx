@@ -264,6 +264,7 @@ export default function Quests() {
         isOpen={isAddQuestModalOpen}
         onClose={() => setIsAddQuestModalOpen(false)}
         onSubmit={handleAddQuest}
+        initialQuestName={newQuest.name}
       />
     </div>
   )

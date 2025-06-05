@@ -1,5 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react'
-import { Fragment, useState } from 'react'
+import { Fragment, useState, useEffect } from 'react'
 import { QuestCategory } from '@/store/userStore'
 
 interface AddQuestModalProps {
@@ -13,17 +13,28 @@ interface AddQuestModalProps {
     goldReward: number
     itemReward: string
   }) => void
+  initialQuestName?: string
 }
 
-export default function AddQuestModal({ isOpen, onClose, onSubmit }: AddQuestModalProps) {
+export default function AddQuestModal({ isOpen, onClose, onSubmit, initialQuestName = '' }: AddQuestModalProps) {
   const [quest, setQuest] = useState({
-    name: '',
+    name: initialQuestName,
     category: 'Wellness' as QuestCategory,
     description: '',
     reward: 30,
     goldReward: 0,
     itemReward: ''
   })
+
+  // Reset form when modal opens with new initial quest name
+  useEffect(() => {
+    if (isOpen) {
+      setQuest(prev => ({
+        ...prev,
+        name: initialQuestName
+      }))
+    }
+  }, [isOpen, initialQuestName])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
