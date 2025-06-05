@@ -455,8 +455,13 @@ export const useUserStore = create<UserState>()(
             }
 
             const userData = userDoc.data()
+            const character = userData.character ? {
+              ...userData.character,
+              inventory: userData.character.inventory || []
+            } : null
+
             set({
-              character: userData.character || null,
+              character,
               quests: userData.quests || [],
               isCompetitive: userData.isCompetitive || false,
               partyId: userData.partyId || null,
