@@ -72,6 +72,9 @@ export type Quest = {
   isLocked?: boolean
 }
 
+// Maximum number of quests a player can have accepted at once
+const MAX_ACCEPTED_QUESTS = 25
+
 // User store types
 type UserState = {
   character: Character | null
@@ -228,6 +231,12 @@ export const useUserStore = create<UserState>()(
             const state = get()
             const quest = state.quests.find(q => q.id === id)
             if (!quest) throw new Error('Quest not found')
+
+            // Check if player has reached the quest limit
+            const acceptedQuestsCount = state.quests.filter(q => q.accepted && !q.completed).length
+            if (acceptedQuestsCount >= MAX_ACCEPTED_QUESTS) {
+              throw new Error(`You can only have ${MAX_ACCEPTED_QUESTS} active quests at a time. Complete some quests before accepting new ones.`)
+            }
 
             const updatedQuest = {
               ...quest,

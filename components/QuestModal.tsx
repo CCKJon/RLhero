@@ -1,5 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react'
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import { Quest, QuestPrerequisite } from '@/store/userStore'
 import { useUserStore } from '@/store/userStore'
 
@@ -12,8 +12,18 @@ interface QuestModalProps {
 
 export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestModalProps) {
   const { character } = useUserStore()
+  const [error, setError] = useState<string | null>(null)
   
   if (!quest || !character) return null
+
+  const handleAccept = async () => {
+    try {
+      setError(null)
+      await onAccept(quest)
+    } catch (error: any) {
+      setError(error.message)
+    }
+  }
 
   const isQuestLocked = () => {
     if (!quest.levelRequirement && !quest.prerequisites) return false
@@ -90,6 +100,12 @@ export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestMo
                 </Dialog.Title>
 
                 <div className="space-y-4">
+                  {error && (
+                    <div className="bg-red-900/50 text-red-200 px-4 py-2 rounded">
+                      {error}
+                    </div>
+                  )}
+
                   <p className="text-gray-400">{quest.description}</p>
 
                   {quest.levelRequirement && (
@@ -131,7 +147,7 @@ export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestMo
                       <button
                         type="button"
                         className="btn btn-primary"
-                        onClick={() => onAccept(quest)}
+                        onClick={handleAccept}
                       >
                         Accept Quest
                       </button>
