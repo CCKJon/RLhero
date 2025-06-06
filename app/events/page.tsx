@@ -12,6 +12,7 @@ interface Event {
   endDate: string;
   type: 'event' | 'item' | 'quest' | 'reward';
   imageUrl: string;
+  accepted?: boolean;
 }
 
 const mockEvents: Event[] = [
@@ -21,7 +22,8 @@ const mockEvents: Event[] = [
     description: 'Join the summer celebration with special quests and rewards!',
     endDate: '2024-08-31',
     type: 'event',
-    imageUrl: '/events/summer-festival.jpg'
+    imageUrl: '/events/summer-festival.jpg',
+    accepted: false
   },
   {
     id: '2',
@@ -29,7 +31,8 @@ const mockEvents: Event[] = [
     description: 'Limited time legendary weapon with unique abilities',
     endDate: '2024-07-15',
     type: 'item',
-    imageUrl: '/events/legendary-sword.jpg'
+    imageUrl: '/events/legendary-sword.jpg',
+    accepted: false
   },
   {
     id: '3',
@@ -37,7 +40,8 @@ const mockEvents: Event[] = [
     description: 'Special quest to defeat the ancient dragon',
     endDate: '2024-07-20',
     type: 'quest',
-    imageUrl: '/events/dragon-hunt.jpg'
+    imageUrl: '/events/dragon-hunt.jpg',
+    accepted: false
   },
   {
     id: '4',
@@ -45,7 +49,8 @@ const mockEvents: Event[] = [
     description: 'Exclusive rewards for VIP members',
     endDate: '2024-08-01',
     type: 'reward',
-    imageUrl: '/events/vip-rewards.jpg'
+    imageUrl: '/events/vip-rewards.jpg',
+    accepted: false
   }
 ];
 
@@ -97,10 +102,24 @@ const EventCard = ({ event, onViewDetails }: { event: Event; onViewDetails: (eve
 export default function EventsPage() {
   const [activeFilter, setActiveFilter] = useState<Event['type'] | 'all'>('all');
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [activeTab, setActiveTab] = useState<'available' | 'accepted'>('available');
+  const [events, setEvents] = useState<Event[]>(mockEvents);
 
   const filteredEvents = activeFilter === 'all'
-    ? mockEvents
-    : mockEvents.filter(event => event.type === activeFilter);
+    ? events
+    : events.filter(event => event.type === activeFilter);
+
+  const availableEvents = filteredEvents.filter(event => !event.accepted);
+  const acceptedEvents = filteredEvents.filter(event => event.accepted);
+
+  const handleAcceptEvent = (eventId: string) => {
+    setEvents(prevEvents =>
+      prevEvents.map(event =>
+        event.id === eventId ? { ...event, accepted: true } : event
+      )
+    );
+    setSelectedEvent(null);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-dark">
@@ -108,6 +127,30 @@ export default function EventsPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-display text-white">Limited Time Events</h1>
           <p className="text-gray-400">Discover special events, items, quests, and rewards</p>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex border-b border-gray-800 mb-6">
+          <button
+            className={`px-4 py-2 text-sm font-medium ${
+              activeTab === 'available' 
+                ? 'text-accent-400 border-b-2 border-accent-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+            onClick={() => setActiveTab('available')}
+          >
+            Available Events
+          </button>
+          <button
+            className={`px-4 py-2 text-sm font-medium ${
+              activeTab === 'accepted' 
+                ? 'text-accent-400 border-b-2 border-accent-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+            onClick={() => setActiveTab('accepted')}
+          >
+            Accepted Events
+          </button>
         </div>
         
         <div className="flex flex-wrap gap-2 mb-8">
@@ -164,7 +207,7 @@ export default function EventsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-          {filteredEvents.map((event) => (
+          {(activeTab === 'available' ? availableEvents : acceptedEvents).map((event) => (
             <EventCard 
               key={event.id} 
               event={event} 
@@ -179,6 +222,8 @@ export default function EventsPage() {
         isOpen={!!selectedEvent}
         onClose={() => setSelectedEvent(null)}
         event={selectedEvent}
+        onAccept={handleAcceptEvent}
+        isAccepted={selectedEvent?.accepted}
       />
     </div>
   );

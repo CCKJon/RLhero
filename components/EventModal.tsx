@@ -10,12 +10,15 @@ interface Event {
   endDate: string;
   type: 'event' | 'item' | 'quest' | 'reward';
   imageUrl: string;
+  accepted?: boolean;
 }
 
 interface EventModalProps {
   isOpen: boolean;
   onClose: () => void;
   event: Event | null;
+  onAccept: (eventId: string) => void;
+  isAccepted?: boolean;
 }
 
 const getIcon = (type: Event['type']) => {
@@ -31,7 +34,7 @@ const getIcon = (type: Event['type']) => {
   }
 };
 
-export default function EventModal({ isOpen, onClose, event }: EventModalProps) {
+export default function EventModal({ isOpen, onClose, event, onAccept, isAccepted }: EventModalProps) {
   if (!event) return null;
 
   return (
@@ -60,7 +63,7 @@ export default function EventModal({ isOpen, onClose, event }: EventModalProps) 
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-gray-800/95 p-6 shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-dark/90 p-6 text-left align-middle shadow-xl transition-all border border-gray-800">
                 <div className="relative h-64 mb-6 rounded-lg overflow-hidden">
                   <Image
                     src={event.imageUrl}
@@ -94,6 +97,12 @@ export default function EventModal({ isOpen, onClose, event }: EventModalProps) 
                           {new Date(event.endDate).toLocaleDateString()}
                         </span>
                       </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">Status</span>
+                        <span className={`${isAccepted ? 'text-green-400' : 'text-yellow-400'}`}>
+                          {isAccepted ? 'Accepted' : 'Available'}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -105,12 +114,15 @@ export default function EventModal({ isOpen, onClose, event }: EventModalProps) 
                     >
                       Close
                     </button>
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                    >
-                      Participate
-                    </button>
+                    {!isAccepted && (
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={() => onAccept(event.id)}
+                      >
+                        Accept Event
+                      </button>
+                    )}
                   </div>
                 </div>
               </Dialog.Panel>
