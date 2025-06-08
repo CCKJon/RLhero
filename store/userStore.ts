@@ -73,7 +73,16 @@ export type Quest = {
 }
 
 // Maximum number of quests a player can have accepted at once
-const MAX_ACCEPTED_QUESTS = 25
+const getMaxAcceptedQuests = (level: number) => {
+  // Base number of quests at level 1
+  const BASE_QUESTS = 3;
+  // Additional quests per level
+  const QUESTS_PER_LEVEL = 2;
+  // Maximum cap on quests
+  const MAX_QUEST_CAP = 25;
+  
+  return Math.min(BASE_QUESTS + (level - 1) * QUESTS_PER_LEVEL, MAX_QUEST_CAP);
+}
 
 // User store types
 type UserState = {
@@ -248,10 +257,11 @@ export const useUserStore = create<UserState>()(
             const quest = state.quests.find(q => q.id === id)
             if (!quest) throw new Error('Quest not found')
 
-            // Check if player has reached the quest limit
+            // Check if player has reached the quest limit based on their level
             const acceptedQuestsCount = state.quests.filter(q => q.accepted && !q.completed).length
-            if (acceptedQuestsCount >= MAX_ACCEPTED_QUESTS) {
-              throw new Error(`You can only have ${MAX_ACCEPTED_QUESTS} active quests at a time. Complete some quests before accepting new ones.`)
+            const maxQuests = getMaxAcceptedQuests(state.character?.level || 1)
+            if (acceptedQuestsCount >= maxQuests) {
+              throw new Error(`You can only have ${maxQuests} active quests at your current level. Complete some quests or level up to accept more.`)
             }
 
             const updatedQuest = {
