@@ -64,7 +64,7 @@ export default function ItemModal({ isOpen, onClose, item }: ItemModalProps) {
   }
 
   const isEquipped = character?.equipment[item.type]?.id === item.id
-  const isOwned = character?.inventory.some(i => i.id === item.id)
+  const isOwned = isEquipped || character?.inventory.some(i => i.id === item.id)
 
   return (
     <>

@@ -9,7 +9,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import BottomNav from '@/components/BottomNav';
 import { TITLE_BONUSES } from '@/lib/titles';
-import { ARMOR_SETS, ALL_EQUIPMENT } from '@/types/equipment';
+import { ARMOR_SETS, ALL_EQUIPMENT, Equipment } from '@/types/equipment';
+import ItemModal from '@/components/ItemModal';
 
 // Define available skills and their unlock levels
 const AVAILABLE_SKILLS = [
@@ -114,7 +115,9 @@ export default function ProfilePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
-  const { character, actions: { resetState, setAppliedTitle } } = useUserStore();
+  const { character, actions: { resetState, setAppliedTitle, equipItem, unequipItem, removeFromInventory } } = useUserStore();
+  const [selectedItem, setSelectedItem] = useState<Equipment | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange((user) => {
@@ -128,6 +131,15 @@ export default function ProfilePage() {
 
     return () => unsubscribe();
   }, [router]);
+
+  useEffect(() => {
+    // Remove broken Shadow Assassin's Hood from inventory if equipped
+    if (character && character.equipment && character.equipment.armor && character.equipment.armor.id === 'assassin-hood') {
+      if (character.inventory.some(item => item.id === 'assassin-hood')) {
+        removeFromInventory('assassin-hood');
+      }
+    }
+  }, [character, removeFromInventory]);
 
   const handleSignOut = async () => {
     await signOutUser();
@@ -240,7 +252,7 @@ export default function ProfilePage() {
                 <h3 className="text-lg font-medium text-white mb-4">Equipment</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {Object.entries(hydratedEquipment).map(([slot, item]) => (
-                    <div key={slot} className="bg-gray-700/50 rounded-lg p-4">
+                    <div key={slot} className="bg-gray-700/50 rounded-lg p-4 cursor-pointer hover:border-gray-500 transition-colors" onClick={() => item && setSelectedItem(item)}>
                       <label className="block text-sm font-medium text-gray-400 capitalize mb-2">{slot}</label>
                       {item ? (
                         <>
@@ -258,11 +270,7 @@ export default function ProfilePage() {
                               <p className="text-white font-medium">{item.name}</p>
                               <span className="text-xs text-gray-400">Level {item.level}</span>
                             </div>
-                            
-                            {/* Item Description */}
                             <p className="text-sm text-gray-400">{item.description}</p>
-                            
-                            {/* Item Stats */}
                             {item.stats && Object.entries(item.stats).length > 0 && (
                               <div className="mt-2 space-y-1">
                                 <p className="text-xs text-gray-400 font-medium">Stats:</p>
@@ -274,8 +282,6 @@ export default function ProfilePage() {
                                 ))}
                               </div>
                             )}
-                            
-                            {/* Set Bonus Info */}
                             {item.set && (
                               <div className="mt-2 p-2 bg-gray-700/30 rounded">
                                 <p className="text-xs text-gray-300 mb-1">Part of {item.set}</p>
@@ -291,6 +297,40 @@ export default function ProfilePage() {
                           <p className="text-gray-400">No {slot} equipped</p>
                         </div>
                       )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Inventory */}
+              <div className="bg-gray-800/50 rounded-lg p-6">
+                <h3 className="text-lg font-medium text-white mb-4">Inventory</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {character?.inventory.filter(item => !Object.values(character.equipment).some(equippedItem => equippedItem?.id === item.id)).map((item) => (
+                    <div 
+                      key={item.id} 
+                      className="bg-gray-700/50 rounded-lg p-4 border border-gray-600 cursor-pointer hover:border-gray-500 transition-colors"
+                      onClick={() => setSelectedItem(item)}
+                    >
+                      <div className="flex items-start">
+                        <div className="w-12 h-12 bg-primary-900 rounded-md flex-shrink-0 flex items-center justify-center mr-3">
+                          <Image 
+                            src={item.image}
+                            alt={item.name}
+                            width={32}
+                            height={32}
+                          />
+                        </div>
+                        <div>
+                          <h4 className="text-white text-sm font-medium">{item.name}</h4>
+                          <p className="text-gray-400 text-xs mt-1">Level {item.level}</p>
+                          <div className="mt-2 flex items-center">
+                            <span className="text-xs bg-primary-900/50 text-primary-300 px-2 py-1 rounded">
+                              {item.type}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -464,6 +504,14 @@ export default function ProfilePage() {
         </motion.div>
       </div>
       <BottomNav />
+      {/* Item Modal for Equip/Unequip */}
+      {selectedItem && (
+        <ItemModal
+          isOpen={!!selectedItem}
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
     </div>
   );
 } 

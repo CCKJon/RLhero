@@ -547,12 +547,14 @@ export default function Dashboard() {
           )}
           
           {selectedTab === 'inventory' && (
-            <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
-              <div className="lg:col-span-2 bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
+            <div className="grid gap-6 grid-cols-1">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
                 <h3 className="text-lg font-medium text-white mb-4">Inventory</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {character.inventory.map((item) => (
+                  {character.inventory
+                    .filter(item => !Object.values(character.equipment).some(equippedItem => equippedItem?.id === item.id))
+                    .map((item) => (
                     <div 
                       key={item.id} 
                       className="bg-gray-700/50 rounded-lg p-4 border border-gray-600 cursor-pointer hover:border-gray-500 transition-colors"
@@ -577,34 +579,6 @@ export default function Dashboard() {
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
-                <h3 className="text-lg font-medium text-white mb-4">Character Shop</h3>
-                
-                <div className="space-y-4">
-                  {['Magic Tome', 'Steel Sword', 'Healing Staff', 'Light Armor'].map((itemName, index) => (
-                    <div key={index} className="bg-gray-700/50 rounded-lg p-3 flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-accent-900/50 rounded-md flex items-center justify-center mr-3">
-                          <Image 
-                            src={`/images/fire-emblem/shop-${index + 1}.png`}
-                            alt={itemName}
-                            width={24}
-                            height={24}
-                          />
-                        </div>
-                        <div>
-                          <p className="text-white text-sm">{itemName}</p>
-                          <p className="text-xs text-gray-400">+{index + 2} to stats</p>
-                        </div>
-                      </div>
-                      <button className="px-3 py-1 text-xs bg-primary-600 text-white rounded hover:bg-primary-500 transition-colors">
-                        Buy
-                      </button>
                     </div>
                   ))}
                 </div>
