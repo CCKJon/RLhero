@@ -1,6 +1,6 @@
 import { Character } from '@/store/userStore'
 
-export type EquipmentSlot = 'weapon' | 'armor' | 'accessory' | 'consumable'
+export type EquipmentSlot = 'helm' | 'top' | 'bottom' | 'secondary' | 'weapon' | 'gloves' | 'shoes' | 'pendant' | 'consumable'
 
 export type EquipmentStats = {
   strength?: number
@@ -167,7 +167,7 @@ export const ALL_EQUIPMENT: Equipment[] = [
   {
     id: 'storm-bow',
     name: 'Storm Bow',
-    type: 'weapon',
+    type: 'secondary',
     rarity: 'rare',
     level: 12,
     stats: {
@@ -197,7 +197,7 @@ export const ALL_EQUIPMENT: Equipment[] = [
   {
     id: 'dragon-helmet',
     name: "Dragon Knight's Helmet",
-    type: 'armor',
+    type: 'helm',
     rarity: 'epic',
     level: 15,
     stats: {
@@ -212,7 +212,7 @@ export const ALL_EQUIPMENT: Equipment[] = [
   {
     id: 'dragon-chest',
     name: "Dragon Knight's Chestplate",
-    type: 'armor',
+    type: 'top',
     rarity: 'epic',
     level: 15,
     stats: {
@@ -228,7 +228,7 @@ export const ALL_EQUIPMENT: Equipment[] = [
   {
     id: 'sage-hat',
     name: "Mystic Sage's Hat",
-    type: 'armor',
+    type: 'helm',
     rarity: 'epic',
     level: 15,
     stats: {
@@ -244,7 +244,7 @@ export const ALL_EQUIPMENT: Equipment[] = [
   {
     id: 'assassin-hood',
     name: "Shadow Assassin's Hood",
-    type: 'armor',
+    type: 'helm',
     rarity: 'epic',
     level: 15,
     stats: {
@@ -260,7 +260,7 @@ export const ALL_EQUIPMENT: Equipment[] = [
   {
     id: 'wisdom-amulet',
     name: 'Wisdom Amulet',
-    type: 'accessory',
+    type: 'pendant',
     rarity: 'rare',
     level: 10,
     stats: {
@@ -290,7 +290,7 @@ export const ALL_EQUIPMENT: Equipment[] = [
   {
     id: 'shadow-cloak',
     name: 'Shadow Cloak',
-    type: 'accessory',
+    type: 'top',
     rarity: 'rare',
     level: 12,
     stats: {
@@ -305,7 +305,7 @@ export const ALL_EQUIPMENT: Equipment[] = [
   {
     id: 'healing-pendant',
     name: 'Healing Pendant',
-    type: 'accessory',
+    type: 'pendant',
     rarity: 'uncommon',
     level: 8,
     stats: {

@@ -111,6 +111,18 @@ const RACE_INFO = {
   }
 };
 
+const EQUIPMENT_SLOT_DISPLAY: Record<string, string> = {
+  helm: 'Helm',
+  top: 'Top',
+  bottom: 'Bottom',
+  secondary: 'Secondary',
+  weapon: 'Weapon',
+  gloves: 'Gloves',
+  shoes: 'Shoes',
+  pendant: 'Pendant',
+  consumable: 'Consumable',
+};
+
 export default function ProfilePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -134,7 +146,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     // Remove broken Shadow Assassin's Hood from inventory if equipped
-    if (character && character.equipment && character.equipment.armor && character.equipment.armor.id === 'assassin-hood') {
+    if (character && character.equipment && character.equipment.helm && character.equipment.helm.id === 'assassin-hood') {
       if (character.inventory.some(item => item.id === 'assassin-hood')) {
         removeFromInventory('assassin-hood');
       }
@@ -251,54 +263,32 @@ export default function ProfilePage() {
               <div className="bg-gray-800/50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-white mb-4">Equipment</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {Object.entries(hydratedEquipment).map(([slot, item]) => (
-                    <div key={slot} className="bg-gray-700/50 rounded-lg p-4 cursor-pointer hover:border-gray-500 transition-colors" onClick={() => item && setSelectedItem(item)}>
-                      <label className="block text-sm font-medium text-gray-400 capitalize mb-2">{slot}</label>
-                      {item ? (
-                        <>
-                          <div className="w-full h-16 mb-3 flex items-center justify-center">
-                            <Image 
-                              src={item.image} 
-                              alt={item.name} 
-                              width={48} 
-                              height={48} 
-                              className="opacity-90"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <p className="text-white font-medium">{item.name}</p>
-                              <span className="text-xs text-gray-400">Level {item.level}</span>
+                  {Object.entries(hydratedEquipment)
+                    .filter(([slot]) => Object.keys(EQUIPMENT_SLOT_DISPLAY).includes(slot))
+                    .map(([slot, item]) => (
+                      <div key={slot} className="bg-gray-700/50 rounded-lg p-4 cursor-pointer hover:border-gray-500 transition-colors h-[120px] flex flex-col items-center justify-center" onClick={() => item && setSelectedItem(item)}>
+                        <label className="block text-sm font-medium text-gray-400 capitalize mb-2">{EQUIPMENT_SLOT_DISPLAY[slot]}</label>
+                        {item ? (
+                          <>
+                            <div className="w-12 h-12 mb-2 flex items-center justify-center">
+                              <Image 
+                                src={item.image} 
+                                alt={item.name} 
+                                width={48} 
+                                height={48} 
+                                className="opacity-90"
+                              />
                             </div>
-                            <p className="text-sm text-gray-400">{item.description}</p>
-                            {item.stats && Object.entries(item.stats).length > 0 && (
-                              <div className="mt-2 space-y-1">
-                                <p className="text-xs text-gray-400 font-medium">Stats:</p>
-                                {Object.entries(item.stats).map(([stat, value]) => (
-                                  <div key={stat} className="flex justify-between text-xs">
-                                    <span className="text-gray-400 capitalize">{stat}</span>
-                                    <span className="text-primary-400">+{value}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                            {item.set && (
-                              <div className="mt-2 p-2 bg-gray-700/30 rounded">
-                                <p className="text-xs text-gray-300 mb-1">Part of {item.set}</p>
-                                <p className="text-xs text-gray-400">
-                                  {ARMOR_SETS.find(s => s.name === item.set)?.description}
-                                </p>
-                              </div>
-                            )}
+                            <p className="text-white text-sm text-center line-clamp-1">{item.name}</p>
+                            <p className="text-gray-400 text-xs mt-1">Level {item.level}</p>
+                          </>
+                        ) : (
+                          <div className="text-center">
+                            <p className="text-gray-400 text-sm">No {EQUIPMENT_SLOT_DISPLAY[slot]} equipped</p>
                           </div>
-                        </>
-                      ) : (
-                        <div className="text-center py-4">
-                          <p className="text-gray-400">No {slot} equipped</p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        )}
+                      </div>
+                    ))}
                 </div>
               </div>
 

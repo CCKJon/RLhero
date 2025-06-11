@@ -6,7 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useUserStore, Character, Quest, QuestCategory, getMaxAcceptedQuests } from '@/store/userStore'
 import { redirect } from 'next/navigation'
-import { Equipment, ARMOR_SETS, ArmorSet } from '@/types/equipment'
+import { Equipment, ARMOR_SETS, ArmorSet, EquipmentSlot } from '@/types/equipment'
 import QuestModal from '@/components/QuestModal'
 import ItemModal from '@/components/ItemModal'
 import LevelUpModal from '@/components/LevelUpModal'
@@ -60,7 +60,7 @@ export default function Dashboard() {
     }
   }
 
-  const handleUnequipItem = async (slot: 'weapon' | 'armor' | 'accessory') => {
+  const handleUnequipItem = async (slot: EquipmentSlot) => {
     try {
       await unequipItem(slot)
     } catch (error) {
@@ -413,12 +413,13 @@ export default function Dashboard() {
                   {Object.entries(character.equipment).map(([slot, item]) => (
                     <div 
                       key={slot} 
-                      className="bg-gray-700/50 rounded-lg p-4 relative cursor-pointer hover:border-gray-600 transition-colors"
+                      className="bg-gray-700/50 rounded-lg p-4 relative cursor-pointer hover:border-gray-600 transition-colors h-[120px] flex flex-col items-center justify-center"
                       onClick={() => item && setSelectedItem(item)}
                     >
+                      <label className="block text-sm font-medium text-gray-400 capitalize mb-2">{slot}</label>
                       {item ? (
                         <>
-                          <div className="w-full h-16 mb-2 flex items-center justify-center">
+                          <div className="w-12 h-12 mb-2 flex items-center justify-center">
                             <Image 
                               src={item.image} 
                               alt={item.name} 
@@ -427,46 +428,13 @@ export default function Dashboard() {
                               className="opacity-90"
                             />
                           </div>
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm text-white">{item.name}</p>
-                            <span className="text-xs text-gray-400">Level {item.level}</span>
-                          </div>
-                          
-                          {/* Stats */}
-                          <div className="space-y-1 mb-2">
-                            {typeof item === 'object' && item.stats ? (
-                              Object.entries(item.stats).map(([stat, value]) => (
-                                <div key={stat} className="flex justify-between text-xs">
-                                  <span className="text-gray-400 capitalize">{stat}</span>
-                                  <span className="text-primary-400">+{value}</span>
-                                </div>
-                              ))
-                            ) : (
-                              <div className="text-xs text-gray-400">No stats available</div>
-                            )}
-                          </div>
-
-                          {/* Set Info */}
-                          {item.set && (
-                            <div className="mt-2 p-2 bg-gray-600/30 rounded text-xs">
-                              <p className="text-gray-300">Part of {item.set}</p>
-                            </div>
-                          )}
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleUnequipItem(slot as 'weapon' | 'armor' | 'accessory');
-                            }}
-                            className="mt-2 w-full py-1 text-xs bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors"
-                          >
-                            Unequip
-                          </button>
+                          <p className="text-white text-sm text-center line-clamp-1">{item.name}</p>
+                          <p className="text-gray-400 text-xs mt-1">Level {item.level}</p>
                         </>
                       ) : (
-                        <div className="text-center py-4">
+                        <div className="text-center">
                           <p className="text-sm text-gray-400 capitalize">{slot}</p>
-                          <p className="text-xs text-gray-500 mt-1">Empty</p>
+                          <p className="text-xs text-gray-500">Empty</p>
                         </div>
                       )}
                     </div>

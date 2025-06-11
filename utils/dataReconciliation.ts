@@ -25,10 +25,15 @@ const DEFAULT_CHARACTER: Character = {
   },
   skills: {},
   equipment: {
+    helm: null,
+    top: null,
+    bottom: null,
+    shoes: null,
+    gloves: null,
+    pendant: null,
+    consumable: null,
     weapon: null,
-    armor: null,
-    accessory: null,
-    consumable: null
+    secondary: null
   },
   inventory: [],
   titles: [],

@@ -20,7 +20,7 @@ const rarityColors: Record<EquipmentRarity, string> = {
 export default function ShopPage() {
   const router = useRouter();
   const { character, actions } = useUserStore();
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'weapon' | 'armor' | 'accessory' | 'consumable'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'helm' | 'top' | 'bottom' | 'shoes' | 'gloves' | 'pendant' | 'consumable' | 'weapon' | 'secondary'>('all');
   const [selectedItem, setSelectedItem] = useState<Equipment | null>(null);
 
   useEffect(() => {

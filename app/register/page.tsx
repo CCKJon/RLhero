@@ -81,16 +81,21 @@ export default function Register() {
           },
           skills: {},
           equipment: {
+            helm: null,
+            top: null,
+            bottom: null,
+            shoes: null,
+            gloves: null,
+            pendant: null,
+            consumable: null,
             weapon: ALL_EQUIPMENT.find(e => e.name === getRaceDefaultWeapon(formData.race) && e.type === 'weapon') || ALL_EQUIPMENT.find(e => e.type === 'weapon')!,
-            armor: ALL_EQUIPMENT.find(e => e.name === 'Beginner Armor' && e.type === 'armor') || null,
-            accessory: ALL_EQUIPMENT.find(e => e.name === "Traveler's Pendant" && e.type === 'accessory') || null,
-            consumable: null
+            secondary: null
           },
           titles: ['Novice Adventurer'],
           appearance: formData.appearance,
           inventory: [
-            ALL_EQUIPMENT.find(e => e.name === 'Beginner Armor' && e.type === 'armor'),
-            ALL_EQUIPMENT.find(e => e.name === "Traveler's Pendant" && e.type === 'accessory')
+            ALL_EQUIPMENT.find(e => e.name === 'Beginner Armor' && e.type === 'top'),
+            ALL_EQUIPMENT.find(e => e.name === "Traveler's Pendant" && e.type === 'pendant')
           ].filter(Boolean) as typeof ALL_EQUIPMENT,
           appliedTitle: null,
           class: 'warrior',

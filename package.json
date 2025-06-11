@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "setup": "node scripts/setup.js",
-    "verify-env": "ts-node scripts/verify-env.ts"
+    "verify-env": "ts-node scripts/verify-env.ts",
+    "update-equipment": "ts-node scripts/updateEquipmentTypes.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
