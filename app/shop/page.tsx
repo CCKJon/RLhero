@@ -39,15 +39,6 @@ export default function ShopPage() {
     ? ALL_EQUIPMENT 
     : ALL_EQUIPMENT.filter(item => item.type === selectedCategory);
 
-  const handlePurchase = async (item: Equipment) => {
-    try {
-      await actions.addToInventory(item);
-      // You might want to add a currency system and deduct the cost here
-    } catch (error) {
-      console.error('Failed to purchase item:', error);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary-900 to-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -151,7 +142,7 @@ export default function ShopPage() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handlePurchase(item);
+                      setSelectedItem(item);
                     }}
                     className="w-full py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors"
                   >

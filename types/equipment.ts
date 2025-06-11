@@ -28,6 +28,7 @@ export type Equipment = {
   description: string
   image: string
   set?: string // Name of the set this piece belongs to
+  price: number // Price in gold
 }
 
 export type ArmorSet = {
@@ -145,7 +146,8 @@ export const ALL_EQUIPMENT: Equipment[] = [
       damage: 8
     },
     description: 'A sword imbued with ancient magic. Increases strength and intelligence.',
-    image: '/images/fire-emblem/weapon-1.png'
+    image: '/images/fire-emblem/weapon-1.png',
+    price: 500
   },
   {
     id: 'flame-sword',
@@ -159,7 +161,8 @@ export const ALL_EQUIPMENT: Equipment[] = [
       criticalChance: 3
     },
     description: 'A sword wreathed in eternal flames. Deals additional fire damage.',
-    image: '/images/fire-emblem/weapon-2.png'
+    image: '/images/fire-emblem/weapon-2.png',
+    price: 1000
   },
   {
     id: 'storm-bow',
@@ -173,7 +176,8 @@ export const ALL_EQUIPMENT: Equipment[] = [
       dodgeChance: 2
     },
     description: 'A bow that harnesses the power of storms. Increases accuracy and critical chance.',
-    image: '/images/fire-emblem/weapon-3.png'
+    image: '/images/fire-emblem/weapon-3.png',
+    price: 750
   },
   {
     id: 'arcane-staff',
@@ -187,7 +191,8 @@ export const ALL_EQUIPMENT: Equipment[] = [
       damage: 10
     },
     description: 'A staff imbued with powerful arcane magic. Enhances spell damage.',
-    image: '/images/fire-emblem/weapon-4.png'
+    image: '/images/fire-emblem/weapon-4.png',
+    price: 1200
   },
   {
     id: 'dragon-helmet',
@@ -201,7 +206,8 @@ export const ALL_EQUIPMENT: Equipment[] = [
     },
     description: "Part of the Dragon Knight's Regalia set. Provides excellent protection.",
     image: '/images/fire-emblem/armor-1.png',
-    set: "Dragon Knight's Regalia"
+    set: "Dragon Knight's Regalia",
+    price: 800
   },
   {
     id: 'dragon-chest',
@@ -216,7 +222,8 @@ export const ALL_EQUIPMENT: Equipment[] = [
     },
     description: "Part of the Dragon Knight's Regalia set. Provides excellent protection.",
     image: '/images/fire-emblem/armor-2.png',
-    set: "Dragon Knight's Regalia"
+    set: "Dragon Knight's Regalia",
+    price: 1000
   },
   {
     id: 'sage-hat',
@@ -231,7 +238,8 @@ export const ALL_EQUIPMENT: Equipment[] = [
     },
     description: "Part of the Mystic Sage's Attire set. Enhances magical abilities.",
     image: '/images/fire-emblem/armor-3.png',
-    set: "Mystic Sage's Attire"
+    set: "Mystic Sage's Attire",
+    price: 800
   },
   {
     id: 'assassin-hood',
@@ -246,7 +254,8 @@ export const ALL_EQUIPMENT: Equipment[] = [
     },
     description: "Part of the Shadow Assassin's Garb set. Enhances stealth and critical strikes.",
     image: '/images/fire-emblem/armor-4.png',
-    set: "Shadow Assassin's Garb"
+    set: "Shadow Assassin's Garb",
+    price: 800
   },
   {
     id: 'wisdom-amulet',
@@ -260,7 +269,8 @@ export const ALL_EQUIPMENT: Equipment[] = [
       magicDefense: 4
     },
     description: 'An amulet that enhances your magical abilities.',
-    image: '/images/fire-emblem/accessory-1.png'
+    image: '/images/fire-emblem/accessory-1.png',
+    price: 600
   },
   {
     id: 'berserker-ring',
@@ -274,7 +284,8 @@ export const ALL_EQUIPMENT: Equipment[] = [
       criticalChance: 4
     },
     description: 'A ring that channels the fury of ancient warriors. Increases physical damage.',
-    image: '/images/fire-emblem/accessory-2.png'
+    image: '/images/fire-emblem/accessory-2.png',
+    price: 900
   },
   {
     id: 'shadow-cloak',
@@ -288,7 +299,8 @@ export const ALL_EQUIPMENT: Equipment[] = [
       criticalChance: 3
     },
     description: 'A cloak woven with shadows. Enhances stealth and evasion.',
-    image: '/images/fire-emblem/accessory-3.png'
+    image: '/images/fire-emblem/accessory-3.png',
+    price: 700
   },
   {
     id: 'healing-pendant',
@@ -301,7 +313,8 @@ export const ALL_EQUIPMENT: Equipment[] = [
       wisdom: 3
     },
     description: 'A pendant that enhances natural healing abilities.',
-    image: '/images/fire-emblem/accessory-4.png'
+    image: '/images/fire-emblem/accessory-4.png',
+    price: 400
   },
   {
     id: 'health-potion',
@@ -313,7 +326,8 @@ export const ALL_EQUIPMENT: Equipment[] = [
       constitution: 10
     },
     description: 'Restores 50 HP when consumed.',
-    image: '/images/fire-emblem/potion-1.png'
+    image: '/images/fire-emblem/potion-1.png',
+    price: 50
   },
   {
     id: 'mana-potion',
@@ -325,7 +339,8 @@ export const ALL_EQUIPMENT: Equipment[] = [
       intelligence: 10
     },
     description: 'Restores 30 MP when consumed.',
-    image: '/images/fire-emblem/potion-2.png'
+    image: '/images/fire-emblem/potion-2.png',
+    price: 50
   },
   {
     id: 'strength-elixir',
@@ -337,7 +352,8 @@ export const ALL_EQUIPMENT: Equipment[] = [
       strength: 5
     },
     description: 'Temporarily increases strength by 5 for 1 hour.',
-    image: '/images/fire-emblem/potion-3.png'
+    image: '/images/fire-emblem/potion-3.png',
+    price: 150
   },
   {
     id: 'magic-scroll',
@@ -350,6 +366,7 @@ export const ALL_EQUIPMENT: Equipment[] = [
       wisdom: 5
     },
     description: 'Teaches a new spell when used.',
-    image: '/images/fire-emblem/scroll-1.png'
+    image: '/images/fire-emblem/scroll-1.png',
+    price: 300
   }
 ]; 
