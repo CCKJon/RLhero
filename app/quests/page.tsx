@@ -4,13 +4,13 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useUserStore, Quest } from '@/store/userStore'
+import { useUserStore, Quest, getMaxAcceptedQuests } from '@/store/userStore'
 import type { QuestCategory } from '@/store/userStore'
 import QuestModal from '@/components/QuestModal'
 import AddQuestModal from '@/components/AddQuestModal'
 
 export default function Quests() {
-  const { quests, actions: { addQuest, acceptQuest } } = useUserStore()
+  const { quests, character, actions: { addQuest, acceptQuest } } = useUserStore()
   const [selectedTab, setSelectedTab] = useState<'daily' | 'available' | 'accepted' | 'completed'>('daily')
   const [questFilter, setQuestFilter] = useState<'All' | QuestCategory>('All')
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
@@ -69,6 +69,12 @@ export default function Quests() {
         <div className="mb-8">
           <h1 className="text-3xl font-display text-white">Quests</h1>
           <p className="text-gray-400">Complete quests to gain experience and rewards</p>
+          <div className="mt-2 px-4 py-2 bg-dark/50 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg inline-block">
+            <p className="text-sm font-medium text-gray-300">Accepted Quests</p>
+            <p className="text-2xl font-bold text-white">
+              {acceptedQuests.length}/{getMaxAcceptedQuests(character?.level || 1)}
+            </p>
+          </div>
         </div>
 
         {/* Tab Navigation */}

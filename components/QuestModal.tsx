@@ -1,6 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment, useState } from 'react'
-import { Quest, QuestPrerequisite } from '@/store/userStore'
+import { Quest, QuestPrerequisite, getMaxAcceptedQuests } from '@/store/userStore'
 import { useUserStore } from '@/store/userStore'
 
 interface QuestModalProps {
@@ -11,7 +11,7 @@ interface QuestModalProps {
 }
 
 export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestModalProps) {
-  const { character, actions: { completeQuest } } = useUserStore()
+  const { character, quests, actions: { completeQuest } } = useUserStore()
   const [error, setError] = useState<string | null>(null)
   
   if (!quest || !character) return null
@@ -152,6 +152,16 @@ export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestMo
                       </div>
                     </div>
                   </div>
+
+                  {/* Quest Count Display */}
+                  {!quest.accepted && (
+                    <div className="mt-4 px-4 py-2 bg-dark/50 backdrop-blur-sm rounded-lg border border-gray-700">
+                      <p className="text-sm font-medium text-gray-300">Accepted Quests</p>
+                      <p className="text-2xl font-bold text-white">
+                        {quests.filter((q: Quest) => q.accepted && !q.completed).length}/{getMaxAcceptedQuests(character.level)}
+                      </p>
+                    </div>
+                  )}
 
                   <div className="mt-6 flex justify-end gap-3">
                     <button

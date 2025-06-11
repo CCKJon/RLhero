@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useUserStore, Character, Quest, QuestCategory } from '@/store/userStore'
+import { useUserStore, Character, Quest, QuestCategory, getMaxAcceptedQuests } from '@/store/userStore'
 import { redirect } from 'next/navigation'
 import { Equipment, ARMOR_SETS, ArmorSet } from '@/types/equipment'
 import QuestModal from '@/components/QuestModal'
@@ -137,8 +137,8 @@ export default function Dashboard() {
                     <Image 
                       src="/images/fire-emblem/gold-coin.png" 
                       alt="Gold" 
-                      width={16} 
-                      height={16}
+                      width={20} 
+                      height={20}
                       className="mr-1"
                     />
                     <span className="text-sm text-yellow-400">{character.gold || 0}</span>
@@ -147,8 +147,8 @@ export default function Dashboard() {
                     <Image 
                       src="/images/fire-emblem/sp-coin.png" 
                       alt="SP" 
-                      width={16} 
-                      height={16}
+                      width={20} 
+                      height={20}
                       className="mr-1"
                     />
                     <span className="text-sm text-purple-400">{character.sp || 0}</span>
@@ -195,12 +195,12 @@ export default function Dashboard() {
           </motion.div>
         </div>
         
-        {/* Daily Quests Completed sign moved here, above available quests, right-aligned */}
+        {/* Quest Count Display */}
         <div className="flex justify-end mb-4">
           <div className="px-4 py-2 bg-dark/50 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg">
-            <p className="text-sm font-medium text-gray-300">Daily Quests Completed</p>
+            <p className="text-sm font-medium text-gray-300">Accepted Quests</p>
             <p className="text-2xl font-bold text-white">
-              {quests.filter(q => q.completed).length}/{quests.length}
+              {acceptedQuests.length}/{getMaxAcceptedQuests(character.level)}
             </p>
           </div>
         </div>

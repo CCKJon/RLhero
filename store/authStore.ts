@@ -9,6 +9,7 @@ import {
   User
 } from 'firebase/auth'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
+import { reconcileUserData } from '@/utils/dataReconciliation'
 
 type AuthState = {
   user: User | null
@@ -37,6 +38,14 @@ export const useAuthStore = create<AuthState>()(
           try {
             set({ isLoading: true, error: null })
             const userCredential = await signInWithEmailAndPassword(auth, email, password)
+            
+            // Get user data and reconcile it
+            const userRef = doc(db, 'users', userCredential.user.uid)
+            const userDoc = await getDoc(userRef)
+            if (userDoc.exists()) {
+              await reconcileUserData(userCredential.user.uid, userDoc.data())
+            }
+            
             set({ user: userCredential.user, isLoading: false })
           } catch (error: any) {
             set({ 

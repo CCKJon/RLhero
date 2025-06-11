@@ -51,8 +51,8 @@ export default function LevelUpModal({ isOpen, onClose, newLevel, rewards }: Lev
                       <Image 
                         src="/images/fire-emblem/gold-coin.png" 
                         alt="Gold" 
-                        width={24} 
-                        height={24}
+                        width={20} 
+                        height={20}
                         className="mr-2"
                       />
                       <span className="text-yellow-400">{rewards.gold} Gold</span>

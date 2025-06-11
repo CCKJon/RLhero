@@ -73,13 +73,13 @@ export type Quest = {
 }
 
 // Maximum number of quests a player can have accepted at once
-const getMaxAcceptedQuests = (level: number) => {
+export const getMaxAcceptedQuests = (level: number) => {
   // Base number of quests at level 1
-  const BASE_QUESTS = 3;
+  const BASE_QUESTS = 5;
   // Additional quests per level
-  const QUESTS_PER_LEVEL = 2;
+  const QUESTS_PER_LEVEL = 3;
   // Maximum cap on quests
-  const MAX_QUEST_CAP = 25;
+  const MAX_QUEST_CAP = 35;
   
   return Math.min(BASE_QUESTS + (level - 1) * QUESTS_PER_LEVEL, MAX_QUEST_CAP);
 }
