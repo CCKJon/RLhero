@@ -100,7 +100,15 @@ export const useAuthStore = create<AuthState>()(
 
 // Initialize auth state listener
 if (typeof window !== 'undefined') {
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      // Get user data and reconcile it
+      const userRef = doc(db, 'users', user.uid)
+      const userDoc = await getDoc(userRef)
+      if (userDoc.exists()) {
+        await reconcileUserData(user.uid, userDoc.data())
+      }
+    }
     useAuthStore.setState({ user, isLoading: false })
   })
 } 

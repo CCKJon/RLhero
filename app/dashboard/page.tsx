@@ -5,11 +5,12 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useUserStore, Character, Quest, QuestCategory, getMaxAcceptedQuests } from '@/store/userStore'
-import { redirect } from 'next/navigation'
+import { useAuthStore } from '@/store/authStore'
 import { Equipment, ARMOR_SETS, ArmorSet, EquipmentSlot } from '@/types/equipment'
 import QuestModal from '@/components/QuestModal'
 import ItemModal from '@/components/ItemModal'
 import LevelUpModal from '@/components/LevelUpModal'
+import { useRouter } from 'next/navigation'
 
 export default function Dashboard() {
   const { 
@@ -17,6 +18,7 @@ export default function Dashboard() {
     quests, 
     showLevelUpModal,
     levelUpRewards,
+    isLoading,
     actions: { 
       toggleQuestComplete, 
       addQuest,
@@ -27,18 +29,30 @@ export default function Dashboard() {
     } 
   } = useUserStore()
   
+  const { isLoading: isAuthLoading } = useAuthStore()
+  
+  const router = useRouter()
+  
   const [selectedTab, setSelectedTab] = useState<'quests' | 'stats' | 'inventory'>('quests')
   const [questFilter, setQuestFilter] = useState<'All' | QuestCategory>('All')
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<Equipment | null>(null)
   
-  // If no character, redirect to registration
+  // If no character and not loading, redirect to registration
   useEffect(() => {
-    if (!character) {
-      redirect('/register')
+    if (!character && !isLoading && !isAuthLoading) {
+      router.push('/register')
     }
-  }, [character])
+  }, [character, isLoading, isAuthLoading])
+  
+  if (isLoading || isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-primary-900 to-dark flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+      </div>
+    )
+  }
   
   if (!character) return null // Prevent rendering during redirect
   

@@ -886,9 +886,10 @@ export const useUserStore = create<UserState>()(
 if (typeof window !== 'undefined') {
   useAuthStore.subscribe((state) => {
     if (state.user) {
+      useUserStore.setState({ isLoading: true })
       useUserStore.getState().actions.loadUserData()
     } else {
-      useUserStore.setState(initialState)
+      useUserStore.setState({ ...initialState, isLoading: false })
     }
   })
 } 

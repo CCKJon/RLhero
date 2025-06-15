@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
@@ -14,7 +14,8 @@ import CharacterCustomizer from '../components/CharacterCustomizer'
 export default function Register() {
   const router = useRouter()
   const { actions: userActions } = useUserStore()
-  const { actions: authActions } = useAuthStore()
+  const { actions: authActions, isLoading: isAuthLoading } = useAuthStore()
+  const { character, isLoading: isUserLoading } = useUserStore()
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     email: '',
@@ -30,6 +31,21 @@ export default function Register() {
       eyeColor: [] as Array<{ original: string; replacement: string }>,
     }
   })
+
+  // If user already has a character and not loading, redirect to dashboard
+  useEffect(() => {
+    if (character && !isUserLoading && !isAuthLoading) {
+      router.push('/dashboard')
+    }
+  }, [character, isUserLoading, isAuthLoading, router])
+
+  if (isUserLoading || isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-primary-900 to-dark flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+      </div>
+    )
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
