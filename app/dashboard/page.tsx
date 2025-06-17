@@ -6,11 +6,23 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useUserStore, Character, Quest, QuestCategory, getMaxAcceptedQuests } from '@/store/userStore'
 import { useAuthStore } from '@/store/authStore'
-import { Equipment, ARMOR_SETS, ArmorSet, EquipmentSlot } from '@/types/equipment'
+import { Equipment, ARMOR_SETS, ArmorSet, EquipmentSlot, ALL_EQUIPMENT } from '@/types/equipment'
 import QuestModal from '@/components/QuestModal'
 import ItemModal from '@/components/ItemModal'
 import LevelUpModal from '@/components/LevelUpModal'
 import { useRouter } from 'next/navigation'
+
+const EQUIPMENT_SLOT_DISPLAY: Record<string, string> = {
+  helm: 'Helm',
+  top: 'Top',
+  bottom: 'Bottom',
+  secondary: 'Secondary',
+  weapon: 'Weapon',
+  gloves: 'Gloves',
+  shoes: 'Shoes',
+  pendant: 'Pendant',
+  accessory: 'Accessory',
+};
 
 export default function Dashboard() {
   const { 
@@ -89,6 +101,14 @@ export default function Dashboard() {
   const displayedExperience = Math.max(0, character.experience);
   const displayedNextLevelXp = character.nextLevelXp;
   const displayedPercent = Math.max(0, Math.round((displayedExperience / displayedNextLevelXp) * 100));
+
+  // Hydrate equipment with full item data
+  const hydratedEquipment = Object.fromEntries(
+    Object.entries(character?.equipment || {}).map(([slot, item]) => [
+      slot,
+      item && typeof item === 'object' && item.id ? item : ALL_EQUIPMENT.find(e => e.id === (item?.id || item)) || null
+    ])
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-dark">
@@ -424,13 +444,15 @@ export default function Dashboard() {
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
                 <h3 className="text-lg font-medium text-white mb-4">Equipment</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {Object.entries(character.equipment).map(([slot, item]) => (
+                  {Object.entries(hydratedEquipment)
+                    .filter(([slot]) => Object.keys(EQUIPMENT_SLOT_DISPLAY).includes(slot))
+                    .map(([slot, item]) => (
                     <div 
                       key={slot} 
                       className="bg-gray-700/50 rounded-lg p-4 relative cursor-pointer hover:border-gray-600 transition-colors h-[120px] flex flex-col items-center justify-center"
                       onClick={() => item && setSelectedItem(item)}
                     >
-                      <label className="block text-sm font-medium text-gray-400 capitalize mb-2">{slot}</label>
+                      <label className="block text-sm font-medium text-gray-400 capitalize mb-2">{EQUIPMENT_SLOT_DISPLAY[slot]}</label>
                       {item ? (
                         <>
                           <div className="w-12 h-12 mb-2 flex items-center justify-center">
@@ -447,8 +469,7 @@ export default function Dashboard() {
                         </>
                       ) : (
                         <div className="text-center">
-                          <p className="text-sm text-gray-400 capitalize">{slot}</p>
-                          <p className="text-xs text-gray-500">Empty</p>
+                          <p className="text-sm text-gray-400">No {EQUIPMENT_SLOT_DISPLAY[slot]} equipped</p>
                         </div>
                       )}
                     </div>
