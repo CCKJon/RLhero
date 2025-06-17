@@ -1,6 +1,6 @@
 import { Character } from '@/store/userStore'
 
-export type EquipmentSlot = 'helm' | 'top' | 'bottom' | 'secondary' | 'weapon' | 'gloves' | 'shoes' | 'pendant' | 'consumable'
+export type EquipmentSlot = 'helm' | 'top' | 'bottom' | 'secondary' | 'weapon' | 'gloves' | 'shoes' | 'pendant' | 'consumable' | 'accessory'
 
 export type EquipmentStats = {
   strength?: number
@@ -369,4 +369,30 @@ export const ALL_EQUIPMENT: Equipment[] = [
     image: '/images/fire-emblem/scroll-1.png',
     price: 300
   }
-]; 
+];
+
+export interface Item {
+  id: string;
+  name: string;
+  description: string;
+  cost: number;
+  stats: {
+    strength?: number;
+    intelligence?: number;
+    dexterity?: number;
+    wisdom?: number;
+    constitution?: number;
+    charisma?: number;
+    damage?: number;
+    defense?: number;
+    magicDefense?: number;
+    criticalChance?: number;
+    dodgeChance?: number;
+  };
+  specialEffects?: string[];
+  imageUrl: string;
+  slot: EquipmentSlot;
+  rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+  createdAt: string;
+  updatedAt: string;
+} 
