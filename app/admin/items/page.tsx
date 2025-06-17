@@ -64,7 +64,7 @@ export default function AdminItems() {
         ...prev,
         stats: {
           ...prev.stats,
-          [statName]: parseInt(value) || 0
+          [statName]: Number(value) || 0
         }
       }))
     } else {
@@ -137,7 +137,7 @@ export default function AdminItems() {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-black"
               />
             </div>
 
@@ -149,7 +149,7 @@ export default function AdminItems() {
                 value={formData.description}
                 onChange={handleChange}
                 rows={3}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-black"
               />
             </div>
 
@@ -162,7 +162,7 @@ export default function AdminItems() {
                 min="0"
                 value={formData.cost}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-black"
               />
             </div>
 
@@ -213,7 +213,7 @@ export default function AdminItems() {
                       name={`stats.${stat}`}
                       value={formData.stats?.[stat as keyof typeof formData.stats] || 0}
                       onChange={handleChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-black"
                     />
                   </div>
                 ))}
