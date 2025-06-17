@@ -120,6 +120,7 @@ const EQUIPMENT_SLOT_DISPLAY: Record<string, string> = {
   gloves: 'Gloves',
   shoes: 'Shoes',
   pendant: 'Pendant',
+  accessory: 'Accessory',
   consumable: 'Consumable',
 };
 

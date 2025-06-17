@@ -33,7 +33,8 @@ const DEFAULT_CHARACTER: Character = {
     pendant: null,
     consumable: null,
     weapon: null,
-    secondary: null
+    secondary: null,
+    accessory: null
   },
   inventory: [],
   titles: [],
