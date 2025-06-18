@@ -114,8 +114,24 @@ type SearchResult = {
   };
 }
 
+// Add mock data for pending requests
+const PENDING_FRIEND_REQUESTS = [
+  { id: 'fr1', name: 'Alice', level: 15, sentAt: '2h ago' },
+  { id: 'fr2', name: 'Bob', level: 12, sentAt: '1d ago' },
+]
+
+const PENDING_PARTY_REQUESTS = [
+  { id: 'pr1', partyName: 'The Code Breakers', level: 8, sentAt: '3h ago' },
+  { id: 'pr2', partyName: 'Morning Risers', level: 15, sentAt: '5h ago' },
+]
+
+const PENDING_GUILD_REQUESTS = [
+  { id: 'gr1', guildName: 'Creative Minds', level: 12, sentAt: '1h ago' },
+  { id: 'gr2', guildName: 'Fitness Warriors', level: 20, sentAt: '4h ago' },
+]
+
 export default function Social() {
-  const [activeTab, setActiveTab] = useState<'my-friends' | 'find-friends' | 'my-party' | 'find-party' | 'my-guild' | 'find-guild'>('my-friends')
+  const [activeTab, setActiveTab] = useState<'my-friends' | 'find-friends' | 'my-party' | 'find-party' | 'my-guild' | 'find-guild' | 'pending-requests'>('my-friends')
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -258,6 +274,16 @@ export default function Social() {
             onClick={() => setActiveTab('find-guild')}
           >
             Find Guild
+          </button>
+          <button
+            className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${
+              activeTab === 'pending-requests' 
+                ? 'text-accent-400 border-b-2 border-accent-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+            onClick={() => setActiveTab('pending-requests')}
+          >
+            Pending Requests
           </button>
         </div>
         
@@ -669,6 +695,82 @@ export default function Social() {
                   <button className="btn btn-primary">
                     Create Guild
                   </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {activeTab === 'pending-requests' && (
+            <div className="space-y-8">
+              {/* Pending Friend Requests */}
+              <div>
+                <h3 className="text-xl font-medium text-white mb-4">Pending Friend Requests</h3>
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 divide-y divide-gray-700">
+                  {PENDING_FRIEND_REQUESTS.map(request => (
+                    <div key={request.id} className="p-4 flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
+                          {request.name.charAt(0)}
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-white font-medium">{request.name}</p>
+                          <p className="text-xs text-gray-400">Level {request.level} • {request.sentAt}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button className="btn btn-primary text-sm">Accept</button>
+                        <button className="btn btn-secondary text-sm">Decline</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pending Party Requests */}
+              <div>
+                <h3 className="text-xl font-medium text-white mb-4">Pending Party Requests</h3>
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 divide-y divide-gray-700">
+                  {PENDING_PARTY_REQUESTS.map(request => (
+                    <div key={request.id} className="p-4 flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
+                          {request.partyName.charAt(0)}
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-white font-medium">{request.partyName}</p>
+                          <p className="text-xs text-gray-400">Level {request.level} • {request.sentAt}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button className="btn btn-primary text-sm">Accept</button>
+                        <button className="btn btn-secondary text-sm">Decline</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pending Guild Requests */}
+              <div>
+                <h3 className="text-xl font-medium text-white mb-4">Pending Guild Requests</h3>
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 divide-y divide-gray-700">
+                  {PENDING_GUILD_REQUESTS.map(request => (
+                    <div key={request.id} className="p-4 flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
+                          {request.guildName.charAt(0)}
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-white font-medium">{request.guildName}</p>
+                          <p className="text-xs text-gray-400">Level {request.level} • {request.sentAt}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button className="btn btn-primary text-sm">Accept</button>
+                        <button className="btn btn-secondary text-sm">Decline</button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
