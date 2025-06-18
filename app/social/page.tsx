@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { db } from '@/lib/firebase'
+import { collection, query as firestoreQuery, where, getDocs, DocumentData } from 'firebase/firestore'
 
 // Mock data
 const CURRENT_PARTY = {
@@ -103,9 +105,89 @@ const SUGGESTED_FRIENDS = [
   { id: 'sf3', name: 'John', level: 11, mutualFriends: 2 },
 ]
 
+type SearchResult = {
+  id: string;
+  username?: string;
+  email?: string;
+  character?: {
+    level?: number;
+  };
+}
+
 export default function Social() {
   const [activeTab, setActiveTab] = useState<'my-friends' | 'find-friends' | 'my-party' | 'find-party' | 'my-guild' | 'find-guild'>('my-friends')
-  
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([])
+      return
+    }
+
+    setIsSearching(true)
+    try {
+      const usersRef = collection(db, 'users')
+      const searchTerm = query.toLowerCase()
+      console.log('Searching for:', searchTerm)
+      
+      // Get all users and filter in memory for email matches
+      const allUsersSnapshot = await getDocs(usersRef)
+      const emailMatches = allUsersSnapshot.docs.filter(doc => {
+        const data = doc.data()
+        const email = data.email?.toLowerCase()
+        console.log('Comparing with:', email)
+        return email === searchTerm
+      })
+      
+      // For username searches, we want partial matches
+      const usernameQuery = firestoreQuery(
+        usersRef,
+        where('username', '>=', searchTerm),
+        where('username', '<=', searchTerm + '\uf8ff')
+      )
+      
+      // Execute username query
+      const usernameSnapshot = await getDocs(usernameQuery)
+      
+      // Combine and deduplicate results
+      const results = new Map()
+      
+      // Process email results first
+      emailMatches.forEach(doc => {
+        const data = doc.data() as DocumentData
+        console.log('Found email match:', data.email)
+        results.set(doc.id, {
+          id: doc.id,
+          username: data.username,
+          email: data.email,
+          character: data.character
+        })
+      })
+      
+      // Then process username results
+      usernameSnapshot.docs.forEach(doc => {
+        const data = doc.data() as DocumentData
+        console.log('Found username match:', data.username)
+        results.set(doc.id, {
+          id: doc.id,
+          username: data.username,
+          email: data.email,
+          character: data.character
+        })
+      })
+      
+      const finalResults = Array.from(results.values())
+      console.log('Final results:', finalResults)
+      setSearchResults(finalResults)
+    } catch (error) {
+      console.error('Error searching users:', error)
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-dark pb-20">
       {/* Main Content */}
@@ -222,34 +304,72 @@ export default function Social() {
                     type="text"
                     className="input w-full pr-10"
                     placeholder="Search for friends..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value)
+                      handleSearch(e.target.value)
+                    }}
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                    {isSearching ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-primary-500"></div>
+                    ) : (
+                      <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    )}
                   </div>
                 </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {SUGGESTED_FRIENDS.map(friend => (
-                  <div key={friend.id} className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
-                          {friend.name.charAt(0)}
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-white font-medium">{friend.name}</p>
-                          <p className="text-xs text-gray-400">Level {friend.level} • {friend.mutualFriends} mutual friends</p>
+                {searchQuery ? (
+                  searchResults.length > 0 ? (
+                    searchResults.map(user => (
+                      <div key={user.id} className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
+                              {user.username?.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="ml-3">
+                              <p className="text-white font-medium">{user.username}</p>
+                              <p className="text-xs text-gray-400">
+                                <span>Level {user.character?.level || 1}</span>
+                              </p>
+                            </div>
+                          </div>
+                          <button className="btn btn-primary text-sm">
+                            Add Friend
+                          </button>
                         </div>
                       </div>
-                      <button className="btn btn-primary text-sm">
-                        Add Friend
-                      </button>
+                    ))
+                  ) : (
+                    <div className="col-span-full text-center text-gray-400">
+                      No users found
                     </div>
-                  </div>
-                ))}
+                  )
+                ) : (
+                  SUGGESTED_FRIENDS.map(friend => (
+                    <div key={friend.id} className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
+                            {friend.name.charAt(0)}
+                          </div>
+                          <div className="ml-3">
+                            <p className="text-white font-medium">{friend.name}</p>
+                            <p className="text-xs text-gray-400">Level {friend.level} • {friend.mutualFriends} mutual friends</p>
+                          </div>
+                        </div>
+                        <button className="btn btn-primary text-sm">
+                          Add Friend
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
