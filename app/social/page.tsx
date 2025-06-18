@@ -1,10 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { db } from '@/lib/firebase'
 import { collection, query as firestoreQuery, where, getDocs, DocumentData } from 'firebase/firestore'
+import { useAuthStore } from '@/store/authStore'
+import { 
+  sendFriendRequest, 
+  acceptFriendRequest, 
+  declineFriendRequest,
+  getPendingFriendRequests,
+  getFriendsList,
+  type FriendRequest,
+  type FriendData
+} from '@/lib/friends'
 
 // Mock data
 const CURRENT_PARTY = {
@@ -135,6 +145,58 @@ export default function Social() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
+  const [pendingRequests, setPendingRequests] = useState<FriendRequest[]>([])
+  const [friends, setFriends] = useState<FriendData[]>([])
+  const [sentRequests, setSentRequests] = useState<Set<string>>(new Set())
+  const { user } = useAuthStore()
+
+  useEffect(() => {
+    if (user) {
+      loadPendingRequests()
+      loadFriends()
+    }
+  }, [user])
+
+  const loadPendingRequests = async () => {
+    if (!user) return
+    const requests = await getPendingFriendRequests(user.uid)
+    setPendingRequests(requests)
+  }
+
+  const loadFriends = async () => {
+    if (!user) return
+    const friendsList = await getFriendsList(user.uid)
+    setFriends(friendsList)
+  }
+
+  const handleSendFriendRequest = async (toUserId: string) => {
+    if (!user) return
+    try {
+      await sendFriendRequest(user.uid, toUserId)
+      setSentRequests(prev => new Set(Array.from(prev).concat(toUserId)))
+    } catch (error) {
+      console.error('Error sending friend request:', error)
+    }
+  }
+
+  const handleAcceptRequest = async (requestId: string) => {
+    try {
+      await acceptFriendRequest(requestId)
+      await loadPendingRequests()
+      await loadFriends()
+    } catch (error) {
+      console.error('Error accepting friend request:', error)
+    }
+  }
+
+  const handleDeclineRequest = async (requestId: string) => {
+    try {
+      await declineFriendRequest(requestId)
+      await loadPendingRequests()
+    } catch (error) {
+      console.error('Error declining friend request:', error)
+    }
+  }
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
@@ -296,21 +358,20 @@ export default function Social() {
         >
           {activeTab === 'my-friends' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {MY_FRIENDS.map(friend => (
+              {friends.map(friend => (
                 <div key={friend.id} className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <div className="relative">
                         <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
-                          {friend.name.charAt(0)}
+                          {friend.username.charAt(0).toUpperCase()}
                         </div>
-                        {friend.online && (
-                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-800"></div>
-                        )}
                       </div>
                       <div className="ml-3">
-                        <p className="text-white font-medium">{friend.name}</p>
-                        <p className="text-xs text-gray-400">Level {friend.level} • {friend.lastActive}</p>
+                        <p className="text-white font-medium">{friend.username}</p>
+                        <p className="text-xs text-gray-400">
+                          Level {friend.character?.level || 1}
+                        </p>
                       </div>
                     </div>
                     <button className="text-sm text-primary-400 hover:text-primary-300">
@@ -319,6 +380,11 @@ export default function Social() {
                   </div>
                 </div>
               ))}
+              {friends.length === 0 && (
+                <div className="col-span-full text-center text-gray-400">
+                  No friends yet. Search for users to add friends!
+                </div>
+              )}
             </div>
           )}
           
@@ -365,8 +431,16 @@ export default function Social() {
                               </p>
                             </div>
                           </div>
-                          <button className="btn btn-primary text-sm">
-                            Add Friend
+                          <button 
+                            className={`btn text-sm ${
+                              sentRequests.has(user.id) 
+                                ? 'btn-secondary' 
+                                : 'btn-primary'
+                            }`}
+                            onClick={() => handleSendFriendRequest(user.id)}
+                            disabled={sentRequests.has(user.id)}
+                          >
+                            {sentRequests.has(user.id) ? 'Request Sent!' : 'Add Friend'}
                           </button>
                         </div>
                       </div>
@@ -377,24 +451,9 @@ export default function Social() {
                     </div>
                   )
                 ) : (
-                  SUGGESTED_FRIENDS.map(friend => (
-                    <div key={friend.id} className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
-                            {friend.name.charAt(0)}
-                          </div>
-                          <div className="ml-3">
-                            <p className="text-white font-medium">{friend.name}</p>
-                            <p className="text-xs text-gray-400">Level {friend.level} • {friend.mutualFriends} mutual friends</p>
-                          </div>
-                        </div>
-                        <button className="btn btn-primary text-sm">
-                          Add Friend
-                        </button>
-                      </div>
-                    </div>
-                  ))
+                  <div className="col-span-full text-center text-gray-400">
+                    Search for users to add as friends
+                  </div>
                 )}
               </div>
             </div>
@@ -702,75 +761,43 @@ export default function Social() {
           
           {activeTab === 'pending-requests' && (
             <div className="space-y-8">
-              {/* Pending Friend Requests */}
               <div>
                 <h3 className="text-xl font-medium text-white mb-4">Pending Friend Requests</h3>
                 <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 divide-y divide-gray-700">
-                  {PENDING_FRIEND_REQUESTS.map(request => (
+                  {pendingRequests.map(request => (
                     <div key={request.id} className="p-4 flex items-center justify-between">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
-                          {request.name.charAt(0)}
+                          {request.fromUserId.charAt(0).toUpperCase()}
                         </div>
                         <div className="ml-3">
-                          <p className="text-white font-medium">{request.name}</p>
-                          <p className="text-xs text-gray-400">Level {request.level} • {request.sentAt}</p>
+                          <p className="text-white font-medium">{request.fromUserId}</p>
+                          <p className="text-xs text-gray-400">
+                            {new Date(request.createdAt).toLocaleDateString()}
+                          </p>
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <button className="btn btn-primary text-sm">Accept</button>
-                        <button className="btn btn-secondary text-sm">Decline</button>
+                        <button 
+                          className="btn btn-primary text-sm"
+                          onClick={() => handleAcceptRequest(request.id)}
+                        >
+                          Accept
+                        </button>
+                        <button 
+                          className="btn btn-secondary text-sm"
+                          onClick={() => handleDeclineRequest(request.id)}
+                        >
+                          Decline
+                        </button>
                       </div>
                     </div>
                   ))}
-                </div>
-              </div>
-
-              {/* Pending Party Requests */}
-              <div>
-                <h3 className="text-xl font-medium text-white mb-4">Pending Party Requests</h3>
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 divide-y divide-gray-700">
-                  {PENDING_PARTY_REQUESTS.map(request => (
-                    <div key={request.id} className="p-4 flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
-                          {request.partyName.charAt(0)}
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-white font-medium">{request.partyName}</p>
-                          <p className="text-xs text-gray-400">Level {request.level} • {request.sentAt}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <button className="btn btn-primary text-sm">Accept</button>
-                        <button className="btn btn-secondary text-sm">Decline</button>
-                      </div>
+                  {pendingRequests.length === 0 && (
+                    <div className="p-4 text-center text-gray-400">
+                      No pending friend requests
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Pending Guild Requests */}
-              <div>
-                <h3 className="text-xl font-medium text-white mb-4">Pending Guild Requests</h3>
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 divide-y divide-gray-700">
-                  {PENDING_GUILD_REQUESTS.map(request => (
-                    <div key={request.id} className="p-4 flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
-                          {request.guildName.charAt(0)}
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-white font-medium">{request.guildName}</p>
-                          <p className="text-xs text-gray-400">Level {request.level} • {request.sentAt}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <button className="btn btn-primary text-sm">Accept</button>
-                        <button className="btn btn-secondary text-sm">Decline</button>
-                      </div>
-                    </div>
-                  ))}
+                  )}
                 </div>
               </div>
             </div>
