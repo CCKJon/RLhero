@@ -60,12 +60,12 @@ export default function TopNav() {
               Quests
             </Link>
             <Link 
-              href="/party" 
+              href="/social" 
               className={`text-sm ${
-                pathname === '/party' ? 'text-accent-400' : 'text-gray-500 hover:text-gray-300'
+                pathname === '/social' ? 'text-accent-400' : 'text-gray-500 hover:text-gray-300'
               }`}
             >
-              Party
+              Social
             </Link>
             <Link 
               href="/shop" 
