@@ -374,9 +374,17 @@ export default function Social() {
                         </p>
                       </div>
                     </div>
-                    <button className="text-sm text-primary-400 hover:text-primary-300">
-                      Message
-                    </button>
+                    <div className="flex gap-2">
+                      <button className="text-sm text-primary-400 hover:text-primary-300">
+                        Message
+                      </button>
+                      <Link 
+                        href={`/profile/${friend.id}`}
+                        className="text-sm text-accent-400 hover:text-accent-300"
+                      >
+                        Profile
+                      </Link>
+                    </div>
                   </div>
                 </div>
               ))}
