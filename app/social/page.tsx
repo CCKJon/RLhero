@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { db } from '@/lib/firebase'
 import { collection, query as firestoreQuery, where, getDocs, DocumentData } from 'firebase/firestore'
 import { useAuthStore } from '@/store/authStore'
+import { useMessagingStore } from '@/store/messagingStore'
 import { 
   sendFriendRequest, 
   acceptFriendRequest, 
@@ -149,6 +150,7 @@ export default function Social() {
   const [friends, setFriends] = useState<FriendData[]>([])
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set())
   const { user } = useAuthStore()
+  const { actions: messagingActions } = useMessagingStore()
 
   useEffect(() => {
     if (user) {
@@ -266,6 +268,10 @@ export default function Social() {
     }
   }
 
+  const handleMessageFriend = (friend: FriendData) => {
+    messagingActions.openConversation(friend)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-dark pb-20">
       {/* Main Content */}
@@ -375,7 +381,10 @@ export default function Social() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button className="text-sm text-primary-400 hover:text-primary-300">
+                      <button 
+                        onClick={() => handleMessageFriend(friend)}
+                        className="text-sm text-primary-400 hover:text-primary-300"
+                      >
                         Message
                       </button>
                       <Link 

@@ -221,21 +221,6 @@ export default function UserProfilePage() {
                     {character.experience || 0} / {character.nextLevelXp || 100} XP
                   </p>
                 </div>
-                {character.titles && character.titles.length > 0 && (
-                  <div className="bg-gray-800/50 rounded-lg p-6 mt-6">
-                    <h3 className="text-lg font-medium text-white mb-4">Titles</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {character.titles.map((title) => (
-                        <div key={title} className="bg-gray-700/50 rounded-lg p-4">
-                          <h4 className="text-white font-medium">{title}</h4>
-                          {character.appliedTitle === title && (
-                            <p className="text-xs text-accent-400 mt-1">Currently Applied</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -331,6 +316,23 @@ export default function UserProfilePage() {
                         <p className="text-xs text-gray-400 mt-1">
                           Max Level: 10
                         </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Titles */}
+              {currentUser && currentUser.uid === userId && character.titles && character.titles.length > 0 && (
+                <div className="bg-gray-800/50 rounded-lg p-6">
+                  <h3 className="text-lg font-medium text-white mb-4">Titles</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {character.titles.map((title) => (
+                      <div key={title} className="bg-gray-700/50 rounded-lg p-4">
+                        <h4 className="text-white font-medium">{title}</h4>
+                        {character.appliedTitle === title && (
+                          <p className="text-xs text-accent-400 mt-1">Currently Applied</p>
+                        )}
                       </div>
                     ))}
                   </div>

@@ -2,6 +2,7 @@
 
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
+import MessagingWidget from '@/components/MessagingWidget'
 
 export default function ClientLayout({
   children,
@@ -13,6 +14,7 @@ export default function ClientLayout({
       <TopNav />
       {children}
       <BottomNav />
+      <MessagingWidget />
     </>
   )
 } 
