@@ -16,6 +16,7 @@ import {
   type FriendRequest,
   type FriendData
 } from '@/lib/friends'
+import { getOrCreateConversation } from '@/lib/messaging'
 
 // Mock data
 const CURRENT_PARTY = {
@@ -268,8 +269,15 @@ export default function Social() {
     }
   }
 
-  const handleMessageFriend = (friend: FriendData) => {
-    messagingActions.openConversation(friend)
+  const handleMessageFriend = async (friend: FriendData) => {
+    if (!user) return
+    
+    try {
+      const conversationId = await getOrCreateConversation(user.uid, friend.id)
+      messagingActions.openConversation(friend, conversationId)
+    } catch (error) {
+      console.error('Error opening conversation:', error)
+    }
   }
 
   return (

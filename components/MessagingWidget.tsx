@@ -1,20 +1,17 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiMessageCircle, FiX, FiSend, FiChevronLeft } from 'react-icons/fi'
+import { FiMessageCircle, FiX } from 'react-icons/fi'
 import { useAuthStore } from '@/store/authStore'
 import { useMessagingStore } from '@/store/messagingStore'
 import { getFriendsList, type FriendData } from '@/lib/friends'
 import { 
   getOrCreateConversation, 
-  sendMessage, 
-  subscribeToMessages, 
   subscribeToConversations,
-  markMessagesAsRead,
-  type Message, 
   type Conversation 
 } from '@/lib/messaging'
+import ChatWindow from './ChatWindow'
 
 interface MessagingWidgetProps {
   className?: string
@@ -23,13 +20,8 @@ interface MessagingWidgetProps {
 export default function MessagingWidget({ className = '' }: MessagingWidgetProps) {
   const [friends, setFriends] = useState<FriendData[]>([])
   const [conversations, setConversations] = useState<Conversation[]>([])
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [newMessage, setNewMessage] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
   const { user } = useAuthStore()
-  const { isOpen, activeView, selectedFriend, actions } = useMessagingStore()
+  const { isOpen, activeView, openChats, actions } = useMessagingStore()
 
   useEffect(() => {
     if (user && isOpen) {
@@ -39,16 +31,6 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
   }, [user, isOpen])
 
   useEffect(() => {
-    if (currentConversationId) {
-      const unsubscribe = subscribeToMessages(currentConversationId, (newMessages) => {
-        setMessages(newMessages)
-        scrollToBottom()
-      })
-      return unsubscribe
-    }
-  }, [currentConversationId])
-
-  useEffect(() => {
     if (user) {
       const unsubscribe = subscribeToConversations(user.uid, (newConversations) => {
         setConversations(newConversations)
@@ -56,13 +38,6 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
       return unsubscribe
     }
   }, [user])
-
-  // Handle opening conversation from store
-  useEffect(() => {
-    if (selectedFriend && activeView === 'conversation' && user) {
-      handleOpenConversation(selectedFriend)
-    }
-  }, [selectedFriend, activeView, user])
 
   const loadFriends = async () => {
     if (!user) return
@@ -79,49 +54,15 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
     // Conversations are loaded via real-time subscription
   }
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
   const handleOpenConversation = async (friend: FriendData) => {
     if (!user) return
     
-    setIsLoading(true)
     try {
       const conversationId = await getOrCreateConversation(user.uid, friend.id)
-      setCurrentConversationId(conversationId)
-      
-      // Mark messages as read
-      await markMessagesAsRead(conversationId, user.uid)
+      actions.openConversation(friend, conversationId)
     } catch (error) {
       console.error('Error opening conversation:', error)
-    } finally {
-      setIsLoading(false)
     }
-  }
-
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !currentConversationId || !user) return
-    
-    try {
-      await sendMessage(currentConversationId, user.uid, newMessage.trim())
-      setNewMessage('')
-    } catch (error) {
-      console.error('Error sending message:', error)
-    }
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
-    }
-  }
-
-  const formatTime = (timestamp: any) => {
-    if (!timestamp) return ''
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
 
   const getUnreadCount = (conversation: Conversation) => {
@@ -134,6 +75,8 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
     return friends.find(friend => friend.id === friendId)
   }
 
+  const totalUnreadCount = conversations.reduce((total, conv) => total + getUnreadCount(conv), 0)
+
   return (
     <div className={`fixed bottom-4 right-4 z-50 ${className}`}>
       {/* Floating Action Button */}
@@ -144,14 +87,14 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
         className="w-14 h-14 bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
       >
         <FiMessageCircle size={24} />
-        {conversations.some(conv => getUnreadCount(conv) > 0) && (
+        {totalUnreadCount > 0 && (
           <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-            {conversations.reduce((total, conv) => total + getUnreadCount(conv), 0)}
+            {totalUnreadCount}
           </div>
         )}
       </motion.button>
 
-      {/* Pop-up Menu */}
+      {/* Main Messaging Interface */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -159,35 +102,29 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="absolute bottom-16 right-0 w-80 h-96 bg-gray-900 border border-gray-700 rounded-lg shadow-xl flex flex-col"
+            className="absolute bottom-16 right-0 flex items-end space-x-2"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
-              <div className="flex items-center">
-                {activeView === 'conversation' && (
-                  <button
-                    onClick={() => actions.goBackToFriends()}
-                    className="mr-2 p-1 hover:bg-gray-700 rounded"
-                  >
-                    <FiChevronLeft size={20} className="text-gray-300" />
-                  </button>
-                )}
-                <h3 className="text-white font-medium">
-                  {activeView === 'friends' ? 'Messages' : selectedFriend?.username}
-                </h3>
-              </div>
-              <button
-                onClick={() => actions.closeMessaging()}
-                className="p-1 hover:bg-gray-700 rounded"
+            {/* Friends List */}
+            {activeView === 'friends' && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="w-80 h-96 bg-gray-900 border border-gray-700 rounded-lg shadow-xl flex flex-col"
               >
-                <FiX size={20} className="text-gray-300" />
-              </button>
-            </div>
+                {/* Header */}
+                <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                  <h3 className="text-white font-medium">Messages</h3>
+                  <button
+                    onClick={() => actions.closeMessaging()}
+                    className="p-1 hover:bg-gray-700 rounded"
+                  >
+                    <FiX size={20} className="text-gray-300" />
+                  </button>
+                </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-hidden">
-              {activeView === 'friends' && (
-                <div className="h-full overflow-y-auto">
+                {/* Friends List */}
+                <div className="flex-1 overflow-y-auto">
                   {conversations.length > 0 ? (
                     <div className="p-2">
                       {conversations.map(conversation => {
@@ -197,7 +134,7 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
                         return (
                           <div
                             key={conversation.id}
-                            onClick={() => actions.openConversation(friend)}
+                            onClick={() => handleOpenConversation(friend)}
                             className="flex items-center p-3 hover:bg-gray-800 rounded-lg cursor-pointer transition-colors"
                           >
                             <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white mr-3">
@@ -228,65 +165,21 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
                     </div>
                   )}
                 </div>
-              )}
+              </motion.div>
+            )}
 
-              {activeView === 'conversation' && (
-                <div className="h-full flex flex-col">
-                  {/* Messages */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                    {isLoading ? (
-                      <div className="flex items-center justify-center h-full">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
-                      </div>
-                    ) : (
-                      <>
-                        {messages.map(message => (
-                          <div
-                            key={message.id}
-                            className={`flex ${message.senderId === user?.uid ? 'justify-end' : 'justify-start'}`}
-                          >
-                            <div
-                              className={`max-w-xs px-3 py-2 rounded-lg ${
-                                message.senderId === user?.uid
-                                  ? 'bg-primary-600 text-white'
-                                  : 'bg-gray-700 text-gray-200'
-                              }`}
-                            >
-                              <p className="text-sm">{message.content}</p>
-                              <p className="text-xs opacity-70 mt-1">
-                                {formatTime(message.timestamp)}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                        <div ref={messagesEndRef} />
-                      </>
-                    )}
-                  </div>
-
-                  {/* Message Input */}
-                  <div className="p-4 border-t border-gray-700">
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="text"
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Type a message..."
-                        className="flex-1 bg-gray-800 text-white px-3 py-2 rounded-lg border border-gray-600 focus:border-primary-500 focus:outline-none"
-                      />
-                      <button
-                        onClick={handleSendMessage}
-                        disabled={!newMessage.trim()}
-                        className="p-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-                      >
-                        <FiSend size={16} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Chat Windows */}
+            <AnimatePresence>
+              {openChats.map((chat, index) => (
+                <ChatWindow
+                  key={chat.friend.id}
+                  friend={chat.friend}
+                  conversationId={chat.conversationId}
+                  onClose={() => actions.closeChat(chat.friend.id)}
+                  isActive={index === 0}
+                />
+              ))}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
