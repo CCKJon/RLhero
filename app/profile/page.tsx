@@ -7,7 +7,6 @@ import { useUserStore } from '@/store/userStore';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import BottomNav from '@/components/BottomNav';
 import { TITLE_BONUSES } from '@/lib/titles';
 import { ARMOR_SETS, ALL_EQUIPMENT, Equipment } from '@/types/equipment';
 import ItemModal from '@/components/ItemModal';
@@ -494,7 +493,6 @@ export default function ProfilePage() {
           </div>
         </motion.div>
       </div>
-      <BottomNav />
       {/* Item Modal for Equip/Unequip */}
       {selectedItem && (
         <ItemModal

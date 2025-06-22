@@ -10,7 +10,6 @@ import { db } from '@/lib/firebase'
 import { useAuthStore } from '@/store/authStore'
 import { Character, Race, CharacterClass, Gender } from '@/store/userStore'
 import { ALL_EQUIPMENT, Equipment } from '@/types/equipment'
-import BottomNav from '@/components/BottomNav'
 
 // Race descriptions and bonuses
 const RACE_INFO = {
@@ -342,7 +341,6 @@ export default function UserProfilePage() {
           </div>
         </motion.div>
       </div>
-      <BottomNav />
     </div>
   )
 } 
