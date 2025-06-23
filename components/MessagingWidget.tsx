@@ -77,6 +77,11 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
 
   const totalUnreadCount = conversations.reduce((total, conv) => total + getUnreadCount(conv), 0)
 
+  // Don't render anything if user is not logged in
+  if (!user) {
+    return null
+  }
+
   return (
     <div className={`fixed bottom-4 right-4 z-50 ${className}`}>
       {/* Floating Action Button */}
