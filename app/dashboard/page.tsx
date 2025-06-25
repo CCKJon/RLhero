@@ -11,6 +11,7 @@ import QuestModal from '@/components/QuestModal'
 import ItemModal from '@/components/ItemModal'
 import LevelUpModal from '@/components/LevelUpModal'
 import { useRouter } from 'next/navigation'
+import { getCharacterImagePathWithSeed } from '@/utils/characterImage'
 
 const EQUIPMENT_SLOT_DISPLAY: Record<string, string> = {
   helm: 'Helm',
@@ -149,7 +150,7 @@ export default function Dashboard() {
               {/* Character Portrait */}
               <div className="relative w-32 h-32 overflow-hidden rounded-lg border-2 border-accent-500 flex-shrink-0">
                 <Image 
-                  src={`/images/fire-emblem/character-${character.race}.png`}
+                  src={getCharacterImagePathWithSeed(character.race, character.gender, character.id)}
                   alt={character.name}
                   width={128}
                   height={128}

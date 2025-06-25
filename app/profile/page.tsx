@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { TITLE_BONUSES } from '@/lib/titles';
 import { ARMOR_SETS, ALL_EQUIPMENT, Equipment } from '@/types/equipment';
 import ItemModal from '@/components/ItemModal';
+import { getCharacterImagePathWithSeed } from '@/utils/characterImage';
 
 // Define available skills and their unlock levels
 const AVAILABLE_SKILLS = [
@@ -198,7 +199,7 @@ export default function ProfilePage() {
             <div className="flex-shrink-0">
               <div className="relative w-48 h-48 rounded-lg overflow-hidden border-2 border-primary-500">
                 <Image 
-                  src={`/images/fire-emblem/character-${character?.race || 'human'}.png`}
+                  src={getCharacterImagePathWithSeed(character?.race || 'human', character?.gender || 'male', character?.id)}
                   alt="Profile"
                   width={192}
                   height={192}

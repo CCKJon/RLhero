@@ -10,6 +10,7 @@ import { db } from '@/lib/firebase'
 import { useAuthStore } from '@/store/authStore'
 import { Character, Race, CharacterClass, Gender } from '@/store/userStore'
 import { ALL_EQUIPMENT, Equipment } from '@/types/equipment'
+import { getCharacterImagePathWithSeed } from '@/utils/characterImage'
 
 // Race descriptions and bonuses
 const RACE_INFO = {
@@ -194,7 +195,7 @@ export default function UserProfilePage() {
             <div className="flex-shrink-0">
               <div className="relative w-48 h-48 rounded-lg overflow-hidden border-2 border-primary-500">
                 <Image 
-                  src={`/images/fire-emblem/character-${character.race || 'human'}.png`}
+                  src={getCharacterImagePathWithSeed(character.race || 'human', character.gender || 'male', character.id)}
                   alt="Profile"
                   width={192}
                   height={192}

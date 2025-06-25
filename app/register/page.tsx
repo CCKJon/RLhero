@@ -10,6 +10,7 @@ import Image from 'next/image'
 import { useAuthStore } from '@/store/authStore'
 import { ALL_EQUIPMENT } from '@/types/equipment'
 import CharacterCustomizer from '../components/CharacterCustomizer'
+import { getCharacterImagePath } from '@/utils/characterImage'
 
 export default function Register() {
   const router = useRouter()
@@ -104,6 +105,7 @@ export default function Register() {
             gloves: null,
             pendant: null,
             consumable: null,
+            accessory: null,
             weapon: ALL_EQUIPMENT.find(e => e.name === getRaceDefaultWeapon(formData.race) && e.type === 'weapon') || ALL_EQUIPMENT.find(e => e.type === 'weapon')!,
             secondary: null
           },
@@ -532,7 +534,7 @@ export default function Register() {
                       Customize Appearance
                     </label>
                     <CharacterCustomizer
-                      baseImageUrl={`/images/fire-emblem/character-${formData.race}.png`}
+                      baseImageUrl={getCharacterImagePath(formData.race, formData.gender)}
                       onColorChange={(colorMappings) => {
                         setFormData(prev => ({
                           ...prev,

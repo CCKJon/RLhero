@@ -348,7 +348,8 @@ export const useUserStore = create<UserState>()(
                 level: 1,
                 stats: {},
                 description: `Reward from completing ${quest.name}`,
-                image: '/images/fire-emblem/consumable-1.png'
+                image: '/images/fire-emblem/consumable-1.png',
+                price: 0
               }
               updatedCharacter.inventory = [...(character.inventory || []), newItem]
             }
