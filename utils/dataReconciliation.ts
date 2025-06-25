@@ -69,7 +69,7 @@ export async function reconcileUserData(userId: string, currentData: UserData): 
 
     // Check and update character data
     if (currentData.character) {
-      const characterUpdates: Partial<Character> = {}
+      const characterUpdates: any = {}
       
       // Check each field in the character schema
       for (const [key, defaultValue] of Object.entries(DEFAULT_CHARACTER)) {
@@ -116,7 +116,7 @@ export async function reconcileUserData(userId: string, currentData: UserData): 
       }
 
       if (currentData.character.appearance) {
-        const appearanceUpdates: Partial<typeof DEFAULT_CHARACTER.appearance> = {}
+        const appearanceUpdates: any = {}
         for (const [appearanceKey, defaultValue] of Object.entries(DEFAULT_CHARACTER.appearance)) {
           const typedKey = appearanceKey as keyof typeof DEFAULT_CHARACTER.appearance
           if (currentData.character.appearance[typedKey] === undefined) {
