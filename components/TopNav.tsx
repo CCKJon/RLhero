@@ -76,6 +76,14 @@ export default function TopNav() {
               Shop
             </Link>
             <Link 
+              href="/crafting" 
+              className={`text-sm ${
+                pathname === '/crafting' ? 'text-accent-400' : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              Crafting
+            </Link>
+            <Link 
               href="/events" 
               className={`text-sm relative ${
                 pathname === '/events' ? 'text-accent-400' : 'text-gray-500 hover:text-gray-300'

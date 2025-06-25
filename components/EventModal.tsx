@@ -106,7 +106,7 @@ export default function EventModal({ isOpen, onClose, event, onAccept, isAccepte
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-3">
+                  <div className="flex justify-between gap-3">
                     <button
                       type="button"
                       className="btn btn-secondary"

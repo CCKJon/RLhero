@@ -15,6 +15,7 @@ type MessagingState = {
   actions: {
     openMessaging: () => void
     closeMessaging: () => void
+    toggleMessaging: () => void
     openConversation: (friend: FriendData, conversationId: string) => void
     closeChat: (friendId: string) => void
     goBackToFriends: () => void
@@ -36,6 +37,19 @@ export const useMessagingStore = create<MessagingState>()(
           selectedFriend: null,
           openChats: []
         }),
+        toggleMessaging: () => {
+          const { isOpen } = get()
+          if (isOpen) {
+            set({ 
+              isOpen: false, 
+              activeView: 'friends', 
+              selectedFriend: null,
+              openChats: []
+            })
+          } else {
+            set({ isOpen: true, activeView: 'friends' })
+          }
+        },
         openConversation: (friend: FriendData, conversationId: string) => {
           const { openChats } = get()
           const existingChatIndex = openChats.findIndex(chat => chat.friend.id === friend.id)

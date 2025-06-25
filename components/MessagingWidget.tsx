@@ -113,7 +113,7 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
       <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        onClick={() => actions.openMessaging()}
+        onClick={() => actions.toggleMessaging()}
         className="w-14 h-14 bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
       >
         <FiMessageCircle size={24} />
