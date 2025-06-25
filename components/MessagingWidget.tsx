@@ -26,7 +26,6 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
   useEffect(() => {
     if (user && isOpen) {
       loadFriends()
-      loadConversations()
     }
   }, [user, isOpen])
 
@@ -49,11 +48,6 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
     }
   }
 
-  const loadConversations = async () => {
-    if (!user) return
-    // Conversations are loaded via real-time subscription
-  }
-
   const handleOpenConversation = async (friend: FriendData) => {
     if (!user) return
     
@@ -74,6 +68,37 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
     const friendId = conversation.participants.find(id => id !== user.uid)
     return friends.find(friend => friend.id === friendId)
   }
+
+  const getConversationForFriend = (friend: FriendData) => {
+    return conversations.find(conversation => {
+      const conversationFriend = getConversationFriend(conversation)
+      return conversationFriend?.id === friend.id
+    })
+  }
+
+  // Sort friends by conversation activity (most recent first)
+  const sortedFriends = friends.sort((a, b) => {
+    const conversationA = getConversationForFriend(a)
+    const conversationB = getConversationForFriend(b)
+    
+    // If both have conversations, sort by last message timestamp
+    if (conversationA?.lastMessage?.timestamp && conversationB?.lastMessage?.timestamp) {
+      const timeA = conversationA.lastMessage.timestamp.toMillis?.() || 0
+      const timeB = conversationB.lastMessage.timestamp.toMillis?.() || 0
+      return timeB - timeA
+    }
+    
+    // If only one has conversation, prioritize it
+    if (conversationA?.lastMessage?.timestamp && !conversationB?.lastMessage?.timestamp) {
+      return -1
+    }
+    if (!conversationA?.lastMessage?.timestamp && conversationB?.lastMessage?.timestamp) {
+      return 1
+    }
+    
+    // If neither has conversation, sort alphabetically
+    return a.username.localeCompare(b.username)
+  })
 
   const totalUnreadCount = conversations.reduce((total, conv) => total + getUnreadCount(conv), 0)
 
@@ -130,15 +155,14 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
 
                 {/* Friends List */}
                 <div className="flex-1 overflow-y-auto">
-                  {conversations.length > 0 ? (
+                  {sortedFriends.length > 0 ? (
                     <div className="p-2">
-                      {conversations.map(conversation => {
-                        const friend = getConversationFriend(conversation)
-                        if (!friend) return null
+                      {sortedFriends.map(friend => {
+                        const conversation = getConversationForFriend(friend)
                         
                         return (
                           <div
-                            key={conversation.id}
+                            key={friend.id}
                             onClick={() => handleOpenConversation(friend)}
                             className="flex items-center p-3 hover:bg-gray-800 rounded-lg cursor-pointer transition-colors"
                           >
@@ -148,15 +172,19 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
                                 <p className="text-white font-medium truncate">{friend.username}</p>
-                                {getUnreadCount(conversation) > 0 && (
+                                {conversation && getUnreadCount(conversation) > 0 && (
                                   <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                                     {getUnreadCount(conversation)}
                                   </span>
                                 )}
                               </div>
-                              {conversation.lastMessage && (
+                              {conversation?.lastMessage ? (
                                 <p className="text-gray-400 text-sm truncate">
                                   {conversation.lastMessage.content}
+                                </p>
+                              ) : (
+                                <p className="text-gray-500 text-sm truncate">
+                                  No messages yet
                                 </p>
                               )}
                             </div>
@@ -166,7 +194,7 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
                     </div>
                   ) : (
                     <div className="flex items-center justify-center h-full text-gray-400">
-                      <p>No conversations yet</p>
+                      <p>No friends yet</p>
                     </div>
                   )}
                 </div>
