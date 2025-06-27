@@ -25,6 +25,7 @@ export interface FriendData {
   username: string
   character?: {
     level?: number
+    name?: string
   }
 }
 

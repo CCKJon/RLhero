@@ -123,6 +123,7 @@ type SearchResult = {
   email?: string;
   character?: {
     level?: number;
+    name?: string;
   };
 }
 
@@ -210,58 +211,54 @@ export default function Social() {
     setIsSearching(true)
     try {
       const usersRef = collection(db, 'users')
-      const searchTerm = query.toLowerCase()
+      const searchTerm = query.toLowerCase().trim()
       console.log('Searching for:', searchTerm)
       
-      // Get all users and filter in memory for email matches
+      // Get all users and filter in memory for both email and character name matches
       const allUsersSnapshot = await getDocs(usersRef)
-      const emailMatches = allUsersSnapshot.docs.filter(doc => {
+      const matches = allUsersSnapshot.docs.filter(doc => {
         const data = doc.data()
         const email = data.email?.toLowerCase()
-        console.log('Comparing with:', email)
-        return email === searchTerm
+        const characterName = data.character?.name?.toLowerCase()
+        const username = data.username?.toLowerCase()
+        
+        // Check for exact email match
+        if (email === searchTerm) {
+          console.log('Found exact email match:', data.email)
+          return true
+        }
+        
+        // Check for partial character name match
+        if (characterName && characterName.includes(searchTerm)) {
+          console.log('Found character name match:', data.character?.name)
+          return true
+        }
+        
+        // Check for partial username match
+        if (username && username.includes(searchTerm)) {
+          console.log('Found username match:', data.username)
+          return true
+        }
+        
+        return false
       })
       
-      // For username searches, we want partial matches
-      const usernameQuery = firestoreQuery(
-        usersRef,
-        where('username', '>=', searchTerm),
-        where('username', '<=', searchTerm + '\uf8ff')
-      )
-      
-      // Execute username query
-      const usernameSnapshot = await getDocs(usernameQuery)
-      
-      // Combine and deduplicate results
-      const results = new Map()
-      
-      // Process email results first
-      emailMatches.forEach(doc => {
+      // Convert matches to search results
+      const results = matches.map(doc => {
         const data = doc.data() as DocumentData
-        console.log('Found email match:', data.email)
-        results.set(doc.id, {
+        return {
           id: doc.id,
           username: data.username,
           email: data.email,
           character: data.character
-        })
+        }
       })
       
-      // Then process username results
-      usernameSnapshot.docs.forEach(doc => {
-        const data = doc.data() as DocumentData
-        console.log('Found username match:', data.username)
-        results.set(doc.id, {
-          id: doc.id,
-          username: data.username,
-          email: data.email,
-          character: data.character
-        })
-      })
+      // Filter out the current user from results
+      const filteredResults = results.filter(result => result.id !== user?.uid)
       
-      const finalResults = Array.from(results.values())
-      console.log('Final results:', finalResults)
-      setSearchResults(finalResults)
+      console.log('Final results:', filteredResults)
+      setSearchResults(filteredResults)
     } catch (error) {
       console.error('Error searching users:', error)
     } finally {
@@ -383,6 +380,11 @@ export default function Social() {
                       </div>
                       <div className="ml-3">
                         <p className="text-white font-medium">{friend.username}</p>
+                        {friend.character?.name && friend.character.name !== friend.username && (
+                          <p className="text-xs text-accent-400">
+                            "{friend.character.name}"
+                          </p>
+                        )}
                         <p className="text-xs text-gray-400">
                           Level {friend.character?.level || 1}
                         </p>
@@ -420,7 +422,7 @@ export default function Social() {
                   <input
                     type="text"
                     className="input w-full pr-10"
-                    placeholder="Search for friends..."
+                    placeholder="Search by username, character name, or email..."
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value)
@@ -451,8 +453,13 @@ export default function Social() {
                             </div>
                             <div className="ml-3">
                               <p className="text-white font-medium">{user.username}</p>
+                              {user.character?.name && user.character.name !== user.username && (
+                                <p className="text-xs text-accent-400">
+                                  "{user.character.name}"
+                                </p>
+                              )}
                               <p className="text-xs text-gray-400">
-                                <span>Level {user.character?.level || 1}</span>
+                                Level {user.character?.level || 1}
                               </p>
                             </div>
                           </div>
@@ -477,7 +484,7 @@ export default function Social() {
                   )
                 ) : (
                   <div className="col-span-full text-center text-gray-400">
-                    Search for users to add as friends
+                    Search for users by username, character name, or email
                   </div>
                 )}
               </div>
