@@ -8,6 +8,7 @@ import { useUserStore } from '@/store/userStore';
 import Image from 'next/image';
 import { Equipment, EquipmentRarity, ARMOR_SETS, ALL_EQUIPMENT } from '@/types/equipment';
 import ItemModal from '@/components/ItemModal';
+import CurrencyIcon from '@/components/CurrencyIcon';
 
 const rarityColors: Record<EquipmentRarity, string> = {
   common: 'text-gray-400',
@@ -51,21 +52,17 @@ export default function ShopPage() {
             <h1 className="text-3xl font-display text-white">Shop</h1>
             <div className="flex items-center space-x-6">
               <div className="flex items-center">
-                <Image 
-                  src="/images/fire-emblem/gold-coin.png" 
-                  alt="Gold" 
-                  width={20} 
-                  height={20}
+                <CurrencyIcon 
+                  type="gold"
+                  size={20}
                   className="mr-1"
                 />
                 <span className="text-yellow-400 font-bold">{character.gold || 0}</span>
               </div>
               <div className="flex items-center">
-                <Image 
-                  src="/images/fire-emblem/sp-coin.png" 
-                  alt="SP" 
-                  width={20} 
-                  height={20}
+                <CurrencyIcon 
+                  type="sp"
+                  size={20}
                   className="mr-1"
                 />
                 <span className="text-purple-400 font-bold">{character.sp || 0}</span>

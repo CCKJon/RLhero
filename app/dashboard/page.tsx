@@ -10,6 +10,7 @@ import { Equipment, ARMOR_SETS, ArmorSet, EquipmentSlot, ALL_EQUIPMENT } from '@
 import QuestModal from '@/components/QuestModal'
 import ItemModal from '@/components/ItemModal'
 import LevelUpModal from '@/components/LevelUpModal'
+import CurrencyIcon from '@/components/CurrencyIcon'
 import { useRouter } from 'next/navigation'
 import { getCharacterImagePathWithSeed } from '@/utils/characterImage'
 
@@ -169,21 +170,17 @@ export default function Dashboard() {
                 {/* Currency Display */}
                 <div className="mt-2 flex items-center space-x-4">
                   <div className="flex items-center">
-                    <Image 
-                      src="/images/fire-emblem/gold-coin.png" 
-                      alt="Gold" 
-                      width={20} 
-                      height={20}
+                    <CurrencyIcon 
+                      type="gold"
+                      size={20}
                       className="mr-1"
                     />
                     <span className="text-sm text-yellow-400">{character.gold || 0}</span>
                   </div>
                   <div className="flex items-center">
-                    <Image 
-                      src="/images/fire-emblem/sp-coin.png" 
-                      alt="SP" 
-                      width={20} 
-                      height={20}
+                    <CurrencyIcon 
+                      type="sp"
+                      size={20}
                       className="mr-1"
                     />
                     <span className="text-sm text-purple-400">{character.sp || 0}</span>
