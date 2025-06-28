@@ -22,99 +22,6 @@ import {
 } from '@/lib/friends'
 import { getOrCreateConversation } from '@/lib/messaging'
 
-// Mock data
-const CURRENT_PARTY = {
-  id: 'p1',
-  name: "The Code Breakers",
-  level: 8,
-  members: [
-    { id: 'u1', name: 'Hiroshi', level: 12, role: 'Leader', avatar: '/images/avatars/avatar1.png', online: true },
-    { id: 'u2', name: 'Yuki', level: 10, role: 'Member', avatar: '/images/avatars/avatar2.png', online: false },
-    { id: 'u3', name: 'Akira', level: 9, role: 'Member', avatar: '/images/avatars/avatar3.png', online: true },
-  ],
-  description: "A party of programmers and learners pushing each other to improve daily.",
-  quests: [
-    { id: 'q1', name: 'Party Study Session', progress: 70, reward: 'Tome of Collective Knowledge' },
-    { id: 'q2', name: 'Team Exercise Challenge', progress: 45, reward: '200 Party XP' }
-  ]
-}
-
-const AVAILABLE_PARTIES = [
-  {
-    id: 'p2',
-    name: "Morning Risers",
-    level: 15,
-    members: 8,
-    focus: "Early morning productivity, fitness",
-    openInvitations: true
-  },
-  {
-    id: 'p3',
-    name: "Creative Minds",
-    level: 12,
-    members: 6,
-    focus: "Art, writing, music, design",
-    openInvitations: false
-  },
-  {
-    id: 'p4',
-    name: "Fitness Warriors",
-    level: 20,
-    members: 12,
-    focus: "Exercise, nutrition, health",
-    openInvitations: true
-  }
-]
-
-const CURRENT_GUILD = {
-  id: 'g1',
-  name: "The Code Breakers",
-  level: 8,
-  members: [
-    { id: 'u1', name: 'Hiroshi', level: 12, role: 'Leader', avatar: '/images/avatars/avatar1.png', online: true },
-    { id: 'u2', name: 'Yuki', level: 10, role: 'Member', avatar: '/images/avatars/avatar2.png', online: false },
-    { id: 'u3', name: 'Akira', level: 9, role: 'Member', avatar: '/images/avatars/avatar3.png', online: true },
-  ],
-  description: "A guild of programmers and learners pushing each other to improve daily.",
-  quests: [
-    { id: 'q1', name: 'Guild Study Session', progress: 70, reward: 'Tome of Collective Knowledge' },
-    { id: 'q2', name: 'Team Exercise Challenge', progress: 45, reward: '200 Guild XP' }
-  ]
-}
-
-const AVAILABLE_GUILDS = [
-  {
-    id: 'g2',
-    name: "Morning Risers",
-    level: 15,
-    members: 8,
-    focus: "Early morning productivity, fitness",
-    openInvitations: true
-  },
-  {
-    id: 'g3',
-    name: "Creative Minds",
-    level: 12,
-    members: 6,
-    focus: "Art, writing, music, design",
-    openInvitations: false
-  },
-  {
-    id: 'g4',
-    name: "Fitness Warriors",
-    level: 20,
-    members: 12,
-    focus: "Exercise, nutrition, health",
-    openInvitations: true
-  }
-]
-
-const MY_FRIENDS = [
-  { id: 'f1', name: 'Sarah', level: 15, online: true, lastActive: '2m ago' },
-  { id: 'f2', name: 'Mike', level: 12, online: false, lastActive: '1h ago' },
-  { id: 'f3', name: 'Emma', level: 18, online: true, lastActive: '5m ago' },
-]
-
 type SearchResult = {
   id: string
   username?: string
@@ -124,24 +31,8 @@ type SearchResult = {
     name?: string
   }
   isFriend?: boolean
-  requestStatus?: 'pending' | 'declined'
+  requestStatus?: 'pending' | 'declined' | 'accepted'
 }
-
-// Add mock data for pending requests
-const PENDING_FRIEND_REQUESTS = [
-  { id: 'fr1', name: 'Alice', level: 15, sentAt: '2h ago' },
-  { id: 'fr2', name: 'Bob', level: 12, sentAt: '1d ago' },
-]
-
-const PENDING_PARTY_REQUESTS = [
-  { id: 'pr1', partyName: 'The Code Breakers', level: 8, sentAt: '3h ago' },
-  { id: 'pr2', partyName: 'Morning Risers', level: 15, sentAt: '5h ago' },
-]
-
-const PENDING_GUILD_REQUESTS = [
-  { id: 'gr1', guildName: 'Creative Minds', level: 12, sentAt: '1h ago' },
-  { id: 'gr2', guildName: 'Fitness Warriors', level: 20, sentAt: '4h ago' },
-]
 
 export default function Social() {
   const [activeTab, setActiveTab] = useState<'my-friends' | 'find-friends' | 'my-party' | 'find-party' | 'my-guild' | 'find-guild' | 'pending-requests'>('my-friends')
@@ -155,6 +46,8 @@ export default function Social() {
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set())
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [partySearchQuery, setPartySearchQuery] = useState('')
+  const [guildSearchQuery, setGuildSearchQuery] = useState('')
   const { user } = useAuthStore()
   const { actions: messagingActions } = useMessagingStore()
 
@@ -320,7 +213,7 @@ export default function Social() {
       })
       
       // Convert matches to search results
-      const results = matches.map(doc => {
+      const results: SearchResult[] = matches.map(doc => {
         const data = doc.data() as DocumentData
         return {
           id: doc.id,
@@ -339,20 +232,15 @@ export default function Social() {
           const isFriend = await areUsersFriends(user.uid, result.id)
           const requestStatus = await getFriendRequestStatus(user.uid, result.id)
           
-          if (isFriend) {
-            (result as SearchResult).isFriend = true
-          } else if (requestStatus === 'pending') {
-            (result as SearchResult).requestStatus = 'pending'
-          } else if (requestStatus === 'declined') {
-            (result as SearchResult).requestStatus = 'declined'
-          }
+          result.isFriend = isFriend
+          result.requestStatus = requestStatus === 'none' ? undefined : requestStatus
         }
       }
       
-      console.log('Final results:', filteredResults)
       setSearchResults(filteredResults)
     } catch (error) {
       console.error('Error searching users:', error)
+      setSearchResults([])
     } finally {
       setIsSearching(false)
     }
@@ -514,51 +402,35 @@ export default function Social() {
             <div className="space-y-4">
               <div className="bg-gray-800/60 border border-gray-700 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-white font-medium">{CURRENT_PARTY.name}</h3>
-                  <span className="text-xs text-gray-400">Level {CURRENT_PARTY.level}</span>
+                  <h3 className="text-white font-medium">My Party</h3>
                 </div>
-                <p className="text-gray-400 text-sm mb-4">{CURRENT_PARTY.description}</p>
-                
-                <div className="space-y-2">
-                  <h4 className="text-white text-sm font-medium">Members ({CURRENT_PARTY.members.length})</h4>
-                  {CURRENT_PARTY.members.map(member => (
-                    <div key={member.id} className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-primary-700 flex items-center justify-center text-white text-xs font-bold">
-                        {member.name.charAt(0)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-white text-sm">{member.name}</div>
-                        <div className="text-xs text-gray-400">Level {member.level} • {member.role}</div>
-                      </div>
-                      <div className={`w-2 h-2 rounded-full ${member.online ? 'bg-green-400' : 'bg-gray-500'}`}></div>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-gray-400 text-sm mb-4">You haven't joined any parties yet.</p>
               </div>
             </div>
           )}
 
           {activeTab === 'find-party' && (
             <div className="space-y-3">
-              {AVAILABLE_PARTIES.map(party => (
-                <div key={party.id} className="bg-gray-800/60 border border-gray-700 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-white font-medium">{party.name}</h3>
-                    <span className="text-xs text-gray-400">Level {party.level}</span>
-                  </div>
-                  <p className="text-gray-400 text-sm mb-3">{party.focus}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400">{party.members} members</span>
-                    {party.openInvitations ? (
-                      <button className="btn btn-primary btn-mobile text-xs px-3 py-1">
-                        Join Party
-                      </button>
-                    ) : (
-                      <span className="text-xs text-gray-500">Invite Only</span>
-                    )}
-                  </div>
+              {/* Search Bar */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search parties..."
+                  value={partySearchQuery}
+                  onChange={(e) => setPartySearchQuery(e.target.value)}
+                  className="w-full bg-gray-800/60 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
                 </div>
-              ))}
+              </div>
+
+              {/* Empty State */}
+              <div className="text-gray-400 text-center py-8">
+                No parties available to join at the moment.
+              </div>
             </div>
           )}
 
@@ -566,51 +438,35 @@ export default function Social() {
             <div className="space-y-4">
               <div className="bg-gray-800/60 border border-gray-700 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-white font-medium">{CURRENT_GUILD.name}</h3>
-                  <span className="text-xs text-gray-400">Level {CURRENT_GUILD.level}</span>
+                  <h3 className="text-white font-medium">My Guild</h3>
                 </div>
-                <p className="text-gray-400 text-sm mb-4">{CURRENT_GUILD.description}</p>
-                
-                <div className="space-y-2">
-                  <h4 className="text-white text-sm font-medium">Members ({CURRENT_GUILD.members.length})</h4>
-                  {CURRENT_GUILD.members.map(member => (
-                    <div key={member.id} className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-primary-700 flex items-center justify-center text-white text-xs font-bold">
-                        {member.name.charAt(0)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-white text-sm">{member.name}</div>
-                        <div className="text-xs text-gray-400">Level {member.level} • {member.role}</div>
-                      </div>
-                      <div className={`w-2 h-2 rounded-full ${member.online ? 'bg-green-400' : 'bg-gray-500'}`}></div>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-gray-400 text-sm mb-4">You haven't joined any guilds yet.</p>
               </div>
             </div>
           )}
 
           {activeTab === 'find-guild' && (
             <div className="space-y-3">
-              {AVAILABLE_GUILDS.map(guild => (
-                <div key={guild.id} className="bg-gray-800/60 border border-gray-700 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-white font-medium">{guild.name}</h3>
-                    <span className="text-xs text-gray-400">Level {guild.level}</span>
-                  </div>
-                  <p className="text-gray-400 text-sm mb-3">{guild.focus}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400">{guild.members} members</span>
-                    {guild.openInvitations ? (
-                      <button className="btn btn-primary btn-mobile text-xs px-3 py-1">
-                        Join Guild
-                      </button>
-                    ) : (
-                      <span className="text-xs text-gray-500">Invite Only</span>
-                    )}
-                  </div>
+              {/* Search Bar */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search guilds..."
+                  value={guildSearchQuery}
+                  onChange={(e) => setGuildSearchQuery(e.target.value)}
+                  className="w-full bg-gray-800/60 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
                 </div>
-              ))}
+              </div>
+
+              {/* Empty State */}
+              <div className="text-gray-400 text-center py-8">
+                No guilds available to join at the moment.
+              </div>
             </div>
           )}
 
@@ -657,54 +513,14 @@ export default function Social() {
 
               {/* Party Requests */}
               <div>
-                <h3 className="text-white font-medium mb-3">Party Requests ({PENDING_PARTY_REQUESTS.length})</h3>
-                {PENDING_PARTY_REQUESTS.length === 0 ? (
-                  <div className="text-gray-400 text-center py-4">No pending party requests</div>
-                ) : (
-                  <div className="space-y-3">
-                    {PENDING_PARTY_REQUESTS.map(request => (
-                      <div key={request.id} className="bg-gray-800/60 border border-gray-700 rounded-lg flex items-center px-3 py-2 gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary-700 flex items-center justify-center text-white font-bold text-base">
-                          {request.partyName.charAt(0)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-white text-sm font-medium truncate">{request.partyName}</div>
-                          <div className="text-xs text-gray-400 truncate">Level {request.level} • {request.sentAt}</div>
-                        </div>
-                        <div className="flex gap-2">
-                          <button className="btn btn-primary btn-mobile text-xs px-3 py-1">Accept</button>
-                          <button className="btn btn-secondary btn-mobile text-xs px-3 py-1">Decline</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <h3 className="text-white font-medium mb-3">Party Requests (0)</h3>
+                <div className="text-gray-400 text-center py-4">No pending party requests</div>
               </div>
 
               {/* Guild Requests */}
               <div>
-                <h3 className="text-white font-medium mb-3">Guild Requests ({PENDING_GUILD_REQUESTS.length})</h3>
-                {PENDING_GUILD_REQUESTS.length === 0 ? (
-                  <div className="text-gray-400 text-center py-4">No pending guild requests</div>
-                ) : (
-                  <div className="space-y-3">
-                    {PENDING_GUILD_REQUESTS.map(request => (
-                      <div key={request.id} className="bg-gray-800/60 border border-gray-700 rounded-lg flex items-center px-3 py-2 gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary-700 flex items-center justify-center text-white font-bold text-base">
-                          {request.guildName.charAt(0)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-white text-sm font-medium truncate">{request.guildName}</div>
-                          <div className="text-xs text-gray-400 truncate">Level {request.level} • {request.sentAt}</div>
-                        </div>
-                        <div className="flex gap-2">
-                          <button className="btn btn-primary btn-mobile text-xs px-3 py-1">Accept</button>
-                          <button className="btn btn-secondary btn-mobile text-xs px-3 py-1">Decline</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <h3 className="text-white font-medium mb-3">Guild Requests (0)</h3>
+                <div className="text-gray-400 text-center py-4">No pending guild requests</div>
               </div>
             </div>
           )}
