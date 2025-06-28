@@ -84,30 +84,30 @@ export default function ChatWindow({ friend, conversationId, onClose, isActive }
       animate={{ opacity: 1, scale: 1, x: 0 }}
       exit={{ opacity: 0, scale: 0.8, x: 20 }}
       transition={{ duration: 0.2 }}
-      className={`w-80 h-96 bg-gray-900 border border-gray-700 rounded-lg shadow-xl flex flex-col ${
+      className={`w-72 sm:w-80 h-80 sm:h-96 bg-gray-900 border border-gray-700 rounded-lg shadow-xl flex flex-col ${
         isActive ? 'ring-2 ring-primary-500' : ''
       }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-700">
-        <div className="flex items-center">
-          <div className="w-8 h-8 bg-primary-800 rounded-full flex items-center justify-center text-white text-sm mr-2">
+      <div className="flex items-center justify-between p-2 sm:p-3 border-b border-gray-700">
+        <div className="flex items-center flex-1 min-w-0">
+          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary-800 rounded-full flex items-center justify-center text-white text-xs sm:text-sm mr-2 flex-shrink-0">
             {friend.username.charAt(0).toUpperCase()}
           </div>
-          <h3 className="text-white font-medium text-sm truncate max-w-32">
+          <h3 className="text-white font-medium text-sm truncate max-w-32 sm:max-w-40">
             {friend.username}
           </h3>
         </div>
         <button
           onClick={onClose}
-          className="p-1 hover:bg-gray-700 rounded text-gray-300 hover:text-white"
+          className="p-1 hover:bg-gray-700 rounded text-gray-300 hover:text-white flex-shrink-0"
         >
           <FiX size={16} />
         </button>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+      <div className="flex-1 overflow-y-auto p-2 sm:p-3 space-y-2">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-500"></div>
@@ -120,13 +120,13 @@ export default function ChatWindow({ friend, conversationId, onClose, isActive }
                 className={`flex ${message.senderId === user?.uid ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-48 px-2 py-1 rounded-lg text-xs ${
+                  className={`max-w-40 sm:max-w-48 px-2 py-1 rounded-lg text-xs ${
                     message.senderId === user?.uid
                       ? 'bg-primary-600 text-white'
                       : 'bg-gray-700 text-gray-200'
                   }`}
                 >
-                  <p className="text-xs">{message.content}</p>
+                  <p className="text-xs break-words">{message.content}</p>
                   <p className="text-xs opacity-70 mt-1">
                     {formatTime(message.timestamp)}
                   </p>
@@ -139,7 +139,7 @@ export default function ChatWindow({ friend, conversationId, onClose, isActive }
       </div>
 
       {/* Message Input */}
-      <div className="p-3 border-t border-gray-700">
+      <div className="p-2 sm:p-3 border-t border-gray-700">
         <div className="flex items-center space-x-2">
           <input
             type="text"
@@ -152,7 +152,7 @@ export default function ChatWindow({ friend, conversationId, onClose, isActive }
           <button
             onClick={handleSendMessage}
             disabled={!newMessage.trim()}
-            className="p-1 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded transition-colors"
+            className="p-1 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded transition-colors flex-shrink-0"
           >
             <FiSend size={12} />
           </button>

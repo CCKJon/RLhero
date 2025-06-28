@@ -168,6 +168,14 @@ export default function ProfilePage() {
     );
   }
 
+  if (!character) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-primary-900 to-dark flex items-center justify-center">
+        <div className="text-white">No character data available</div>
+      </div>
+    );
+  }
+
   const raceInfo = RACE_INFO[character?.race as keyof typeof RACE_INFO];
 
   // Hydrate equipment with full item data
@@ -180,147 +188,76 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary-900 to-dark">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
         <motion.div 
-          className="bg-dark/50 backdrop-blur-sm rounded-xl p-8 border border-gray-800"
+          className="bg-dark/50 backdrop-blur-sm rounded-xl p-4 sm:p-8 border border-gray-800"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           {/* Navigation */}
-          <div className="flex justify-between items-center mb-8">
-            <Link href="/dashboard" className="text-primary-400 hover:text-primary-300">
+          <div className="flex justify-between items-center mb-6 sm:mb-8">
+            <Link href="/dashboard" className="text-primary-400 hover:text-primary-300 text-sm sm:text-base">
               ← Back to Dashboard
             </Link>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-8">
+          <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
             {/* Profile Image and Basic Info */}
             <div className="flex-shrink-0">
-              <div className="relative w-48 h-48 rounded-lg overflow-hidden border-2 border-primary-500">
+              <div className="relative w-32 h-32 sm:w-48 sm:h-48 rounded-lg overflow-hidden border-2 border-primary-500 mx-auto lg:mx-0">
                 <Image 
-                  src={getCharacterImagePathWithSeed(character?.race || 'human', character?.gender || 'male', character?.id)}
-                  alt="Profile"
+                  src={getCharacterImagePathWithSeed(character.race, character.gender, character.id)}
+                  alt={character.name}
                   width={192}
                   height={192}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="mt-4 text-center">
-                <h2 className="text-xl font-display text-white">{character?.name || 'Adventurer'}</h2>
-                <p className="text-sm text-gray-400">Level {character?.level || 1} {character?.race || 'Human'}</p>
-                <div className="mt-2">
-                  <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-primary-500" 
-                      style={{ width: `${((character?.experience || 0) / (character?.nextLevelXp || 100)) * 100}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {character?.experience || 0} / {character?.nextLevelXp || 100} XP
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Character Information */}
-            <div className="flex-1 space-y-6">
-              {/* Race Description */}
-              <div className="bg-gray-800/50 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-white mb-2">Race: {character?.race}</h3>
-                <p className="text-gray-300">{raceInfo?.description}</p>
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">Racial Bonuses:</h4>
+              
+              <div className="mt-4 sm:mt-6 text-center lg:text-left">
+                <h1 className="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
+                  {character.name}
+                </h1>
+                <p className="text-gray-400 text-sm sm:text-base mb-2">
+                  Level {character.level} {character.race}
+                </p>
+                <p className="text-gray-500 text-xs sm:text-sm mb-4">
+                  {raceInfo?.description}
+                </p>
+                
+                {/* Race Bonuses */}
+                <div className="bg-gray-800/50 rounded-lg p-3 sm:p-4 mb-4">
+                  <h3 className="text-sm sm:text-base font-medium text-white mb-2">Race Bonuses</h3>
                   <div className="grid grid-cols-2 gap-2">
                     {Object.entries(raceInfo?.bonuses || {}).map(([stat, bonus]) => (
-                      <div key={stat} className="flex items-center justify-between bg-gray-700/50 rounded px-3 py-1">
-                        <span className="text-gray-300 capitalize">{stat}</span>
+                      <div key={stat} className="flex justify-between text-xs sm:text-sm">
+                        <span className="text-gray-400 capitalize">{stat}</span>
                         <span className="text-primary-400">+{bonus}</span>
                       </div>
                     ))}
                   </div>
+                  </div>
                 </div>
               </div>
 
+            {/* Character Details */}
+            <div className="flex-1 space-y-6 sm:space-y-8">
               {/* Stats */}
-              <div className="bg-gray-800/50 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-white mb-4">Character Stats</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {Object.entries(character?.stats || {}).map(([stat, value]) => (
-                    <div key={stat} className="bg-gray-700/50 rounded-lg p-4">
-                      <label className="block text-sm font-medium text-gray-400 capitalize">{stat}</label>
-                      <p className="mt-1 text-xl font-bold text-primary-400">{value}</p>
-                      {raceInfo?.bonuses[stat as keyof typeof raceInfo.bonuses] && (
-                        <p className="text-xs text-primary-300">
-                          +{raceInfo.bonuses[stat as keyof typeof raceInfo.bonuses]} from race
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Equipment */}
-              <div className="bg-gray-800/50 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-white mb-4">Equipment</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {Object.entries(hydratedEquipment)
-                    .filter(([slot]) => Object.keys(EQUIPMENT_SLOT_DISPLAY).includes(slot))
-                    .map(([slot, item]) => (
-                      <div key={slot} className="bg-gray-700/50 rounded-lg p-4 cursor-pointer hover:border-gray-500 transition-colors h-[120px] flex flex-col items-center justify-center" onClick={() => item && setSelectedItem(item)}>
-                        <label className="block text-sm font-medium text-gray-400 capitalize mb-2">{EQUIPMENT_SLOT_DISPLAY[slot]}</label>
-                        {item ? (
-                          <>
-                            <div className="w-12 h-12 mb-2 flex items-center justify-center">
-                              <Image 
-                                src={item.image} 
-                                alt={item.name} 
-                                width={48} 
-                                height={48} 
-                                className="opacity-90"
-                              />
-                            </div>
-                            <p className="text-white text-sm text-center line-clamp-1">{item.name}</p>
-                            <p className="text-gray-400 text-xs mt-1">Level {item.level}</p>
-                          </>
-                        ) : (
-                          <div className="text-center">
-                            <p className="text-gray-400 text-sm">No {EQUIPMENT_SLOT_DISPLAY[slot]} equipped</p>
-                          </div>
-                        )}
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-gray-700">
+                <h2 className="text-lg sm:text-xl font-medium text-white mb-4">Character Stats</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  {Object.entries(character.stats).map(([stat, value]) => (
+                    <div key={stat} className="bg-gray-700/50 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-gray-400 capitalize">{stat}</span>
+                        <span className="text-sm font-medium text-white">{value}</span>
                       </div>
-                    ))}
-                </div>
-              </div>
-
-              {/* Inventory */}
-              <div className="bg-gray-800/50 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-white mb-4">Inventory</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {character?.inventory.filter(item => !Object.values(character.equipment).some(equippedItem => equippedItem?.id === item.id)).map((item) => (
-                    <div 
-                      key={item.id} 
-                      className="bg-gray-700/50 rounded-lg p-4 border border-gray-600 cursor-pointer hover:border-gray-500 transition-colors"
-                      onClick={() => setSelectedItem(item)}
-                    >
-                      <div className="flex items-start">
-                        <div className="w-12 h-12 bg-primary-900 rounded-md flex-shrink-0 flex items-center justify-center mr-3">
-                          <Image 
-                            src={item.image}
-                            alt={item.name}
-                            width={32}
-                            height={32}
-                          />
-                        </div>
-                        <div>
-                          <h4 className="text-white text-sm font-medium">{item.name}</h4>
-                          <p className="text-gray-400 text-xs mt-1">Level {item.level}</p>
-                          <div className="mt-2 flex items-center">
-                            <span className="text-xs bg-primary-900/50 text-primary-300 px-2 py-1 rounded">
-                              {item.type}
-                            </span>
-                          </div>
-                        </div>
+                      <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-accent-500" 
+                          style={{ width: `${(Number(value) / 20) * 100}%` }}
+                        ></div>
                       </div>
                     </div>
                   ))}
@@ -328,178 +265,150 @@ export default function ProfilePage() {
               </div>
 
               {/* Skills */}
-              <div className="bg-gray-800/50 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-white mb-4">Skills</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {AVAILABLE_SKILLS.map((skill) => {
-                    const isUnlocked = (character?.level ?? 0) >= skill.unlockLevel;
-                    const currentSkillLevel = character?.skills[skill.name] ?? 0;
-                    
-                    return (
-                      <div key={skill.name} className={`bg-gray-700/50 rounded-lg p-4 ${!isUnlocked ? 'opacity-60' : ''}`}>
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h4 className="text-white font-medium">{skill.name}</h4>
-                            <p className="text-sm text-gray-400">{skill.description}</p>
-                          </div>
-                          {!isUnlocked ? (
-                            <span className="text-sm font-medium text-gray-500">Unlocks at Level {skill.unlockLevel}</span>
-                          ) : (
-                            <span className="text-primary-400">Level {currentSkillLevel}/10</span>
-                          )}
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-gray-700">
+                <h2 className="text-lg sm:text-xl font-medium text-white mb-4">Skills</h2>
+                <div className="space-y-3 sm:space-y-4">
+                  {Object.keys(character.skills).length === 0 ? (
+                    <div className="text-center py-6 sm:py-8">
+                      <p className="text-gray-400">No skills learned yet.</p>
+                      <p className="text-sm text-gray-500 mt-1">Complete quests to level up your skills!</p>
+                    </div>
+                  ) : (
+                    Object.entries(character.skills).map(([skillName, level]) => (
+                      <div key={skillName}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-white truncate">{skillName}</span>
+                          <span className="text-gray-400 flex-shrink-0 ml-2">Level {level}</span>
                         </div>
-                        {isUnlocked ? (
+                        <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-primary-500" 
+                            style={{ width: `${(level / 10) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Equipment */}
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-gray-700">
+                <h2 className="text-lg sm:text-xl font-medium text-white mb-4">Equipment</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                  {Object.entries(hydratedEquipment)
+                    .filter(([slot]) => Object.keys(EQUIPMENT_SLOT_DISPLAY).includes(slot))
+                    .map(([slot, item]) => (
+                    <div 
+                      key={slot} 
+                      className="bg-gray-700/50 rounded-lg p-3 sm:p-4 relative cursor-pointer hover:border-gray-600 transition-colors h-[100px] sm:h-[120px] flex flex-col items-center justify-center"
+                      onClick={() => item && setSelectedItem(item)}
+                    >
+                      <label className="block text-xs sm:text-sm font-medium text-gray-400 capitalize mb-1 sm:mb-2 text-center">{EQUIPMENT_SLOT_DISPLAY[slot]}</label>
+                        {item ? (
                           <>
-                            <div className="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-primary-500" 
-                                style={{ width: `${(currentSkillLevel / 10) * 100}%` }}
-                              ></div>
+                          <div className="w-8 h-8 sm:w-12 sm:h-12 mb-1 sm:mb-2 flex items-center justify-center">
+                              <Image 
+                                src={item.image} 
+                                alt={item.name} 
+                                width={48} 
+                                height={48} 
+                              className="opacity-90 w-full h-full object-contain"
+                              />
                             </div>
-                            <p className="text-xs text-gray-400 mt-1">
-                              Max Level: 10
-                            </p>
+                          <p className="text-white text-xs sm:text-sm text-center line-clamp-1">{item.name}</p>
+                            <p className="text-gray-400 text-xs mt-1">Level {item.level}</p>
                           </>
                         ) : (
-                          <div className="mt-2">
-                            <div className="flex items-center justify-between text-sm text-gray-400 mb-1">
-                              <span>Current Level</span>
-                              <span>{character?.level ?? 0}</span>
+                          <div className="text-center">
+                          <p className="text-xs sm:text-sm text-gray-400">No {EQUIPMENT_SLOT_DISPLAY[slot]} equipped</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Set Bonuses */}
+                {Object.values(character.equipment).some(item => item?.set) && (
+                  <div className="mt-4 sm:mt-6">
+                    <h4 className="text-sm font-medium text-white mb-3">Active Set Bonuses</h4>
+                    <div className="space-y-3">
+                      {ARMOR_SETS.map((set) => {
+                        const equippedPieces = Object.values(character.equipment).filter(
+                          item => item?.set === set.name
+                        );
+                        
+                        if (equippedPieces.length === 0) return null;
+                    
+                    return (
+                          <div key={set.name} className="bg-gray-700/30 rounded-lg p-3">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm text-white">{set.name}</span>
+                              <span className="text-xs text-gray-400">
+                                {equippedPieces.length}/{set.pieces.length} pieces
+                              </span>
                             </div>
-                            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-gray-600" 
-                                style={{ width: `${((character?.level ?? 0) / skill.unlockLevel) * 100}%` }}
-                              ></div>
+                            
+                            {Object.entries(set.bonuses).map(([pieceCount, bonus]) => {
+                              const isActive = equippedPieces.length >= parseInt(pieceCount);
+                              return (
+                                <div 
+                                  key={pieceCount} 
+                                  className={`text-xs ${isActive ? 'text-primary-400' : 'text-gray-500'}`}
+                                >
+                                  {pieceCount} pieces: {Object.entries(bonus as Record<string, number>).map(([stat, value]) => (
+                                    <span key={stat} className="mr-2">
+                                      +{value} {stat}
+                                    </span>
+                                  ))}
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {skill.unlockLevel - (character?.level ?? 0)} levels remaining
-                            </p>
-                          </div>
-                        )}
+                              );
+                            })}
                       </div>
                     );
                   })}
                 </div>
+                  </div>
+                )}
               </div>
 
               {/* Titles */}
-              <div className="bg-gray-800/50 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-white mb-4">Titles</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
-                    {
-                      name: "Novice Adventurer",
-                      description: "Your first step into the world of adventure",
-                      requirements: "Complete the tutorial",
-                      unlockLevel: 1
-                    },
-                    {
-                      name: "Master of the Blade",
-                      description: "Awarded for reaching level 10 in any combat skill",
-                      requirements: "Level 10 in any combat skill",
-                      unlockLevel: 10
-                    },
-                    {
-                      name: "Arcane Scholar",
-                      description: "Awarded for mastering three magic skills",
-                      requirements: "Level 5 in three magic skills",
-                      unlockLevel: 15
-                    },
-                    {
-                      name: "Guild Leader",
-                      description: "Awarded for leading a successful party",
-                      requirements: "Complete 10 party quests as leader",
-                      unlockLevel: 20
-                    },
-                    {
-                      name: "Legendary Hero",
-                      description: "The highest honor for completing all major quests",
-                      requirements: "Complete all main story quests",
-                      unlockLevel: 30
-                    }
-                  ].map((title) => {
-                    const isUnlocked = character?.titles.includes(title.name);
-                    const canUnlock = (character?.level ?? 0) >= title.unlockLevel;
-                    const isApplied = character?.appliedTitle === title.name;
-                    const titleBonus = TITLE_BONUSES[title.name];
-                    
-                    return (
-                      <div key={title.name} className={`bg-gray-700/50 rounded-lg p-4 ${!canUnlock ? 'opacity-60' : ''}`}>
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h4 className="text-white font-medium">{title.name}</h4>
-                            <p className="text-sm text-gray-400">{title.description}</p>
-                            <p className="text-xs text-gray-500 mt-1">Requirements: {title.requirements}</p>
-                            {isUnlocked && titleBonus && (
-                              <div className="mt-2">
-                                <p className="text-xs text-accent-400 font-medium">Bonuses:</p>
-                                {Object.entries(titleBonus.statBonus).map(([stat, value]) => (
-                                  <p key={stat} className="text-xs text-gray-300">
-                                    +{value} {stat.charAt(0).toUpperCase() + stat.slice(1)}
-                                  </p>
-                                ))}
-                                {titleBonus.xpBonus && (
-                                  <p className="text-xs text-gray-300">
-                                    +{titleBonus.xpBonus}% XP Gain
-                                  </p>
-                                )}
-                              </div>
-                            )}
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-gray-700">
+                <h2 className="text-lg sm:text-xl font-medium text-white mb-4">Titles</h2>
+                <div className="grid grid-cols-1 gap-3">
+                  {character.titles.length === 0 ? (
+                    <div className="text-center py-6 sm:py-8">
+                      <p className="text-gray-400">No titles earned yet.</p>
+                      <p className="text-sm text-gray-500 mt-1">Complete achievements to earn titles!</p>
                           </div>
-                          <div className="flex flex-col items-end gap-2">
-                            {!canUnlock ? (
-                              <span className="text-sm font-medium text-gray-500">Unlocks at Level {title.unlockLevel}</span>
-                            ) : isUnlocked ? (
-                              <>
-                                {isApplied ? (
-                                  <span className="text-primary-400">Applied</span>
-                                ) : (
-                                  <button
-                                    onClick={() => setAppliedTitle(title.name)}
-                                    className="text-sm bg-primary-600 hover:bg-primary-700 text-white px-3 py-1 rounded"
-                                  >
-                                    Apply
-                                  </button>
-                                )}
-                              </>
-                            ) : (
-                              <span className="text-gray-400">Available</span>
-                            )}
-                          </div>
+                  ) : (
+                    character.titles.map((title, index) => (
+                      <div 
+                        key={index} 
+                        className="bg-gray-700/50 rounded-lg p-3 flex items-center"
+                      >
+                        <div className="w-8 h-8 bg-primary-800 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                          <span className="text-primary-300 text-sm">
+                            {index + 1}
+                          </span>
                         </div>
-                        {!canUnlock && (
-                          <div className="mt-2">
-                            <div className="flex items-center justify-between text-sm text-gray-400 mb-1">
-                              <span>Current Level</span>
-                              <span>{character?.level ?? 0}</span>
-                            </div>
-                            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-gray-600" 
-                                style={{ width: `${((character?.level ?? 0) / title.unlockLevel) * 100}%` }}
-                              ></div>
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {title.unlockLevel - (character?.level ?? 0)} levels remaining
-                            </p>
-                          </div>
-                        )}
+                        <span className="text-white truncate">{title}</span>
                       </div>
-                    );
-                  })}
+                    ))
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </motion.div>
       </div>
-      {/* Item Modal for Equip/Unequip */}
+
+      {/* Item Modal */}
       {selectedItem && (
         <ItemModal
           isOpen={!!selectedItem}
-          item={selectedItem}
           onClose={() => setSelectedItem(null)}
+          item={selectedItem}
         />
       )}
     </div>

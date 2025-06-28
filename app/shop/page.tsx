@@ -42,22 +42,22 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary-900 to-dark">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-display text-white">Shop</h1>
-            <div className="flex items-center space-x-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
+            <h1 className="text-2xl sm:text-3xl font-display text-white">Shop</h1>
+            <div className="flex items-center space-x-4 sm:space-x-6 flex-wrap gap-2">
               <div className="flex items-center">
                 <CurrencyIcon 
                   type="gold"
                   size={20}
                   className="mr-1"
                 />
-                <span className="text-yellow-400 font-bold">{character.gold || 0}</span>
+                <span className="text-yellow-400 font-bold text-sm sm:text-base">{character.gold || 0}</span>
               </div>
               <div className="flex items-center">
                 <CurrencyIcon 
@@ -65,21 +65,21 @@ export default function ShopPage() {
                   size={20}
                   className="mr-1"
                 />
-                <span className="text-purple-400 font-bold">{character.sp || 0}</span>
+                <span className="text-purple-400 font-bold text-sm sm:text-base">{character.sp || 0}</span>
               </div>
               <div className="text-white">
-                <span className="text-primary-400 font-bold">{character.experience || 0}</span> XP
+                <span className="text-primary-400 font-bold text-sm sm:text-base">{character.experience || 0}</span> XP
               </div>
             </div>
           </div>
 
           {/* Category Filter */}
-          <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+          <div className="flex gap-2 mb-6 sm:mb-8 overflow-x-auto pb-2">
             {['all', 'weapon', 'armor', 'accessory', 'consumable'].map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category as any)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${
+                className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${
                   selectedCategory === category
                     ? 'bg-primary-500 text-white'
                     : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
@@ -91,34 +91,34 @@ export default function ShopPage() {
           </div>
 
           {/* Shop Items Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredItems.map((item) => (
               <div 
                 key={item.id} 
-                className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700 cursor-pointer hover:border-gray-600 transition-colors flex flex-col h-full"
+                className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-gray-700 cursor-pointer hover:border-gray-600 transition-colors flex flex-col h-full"
                 onClick={() => setSelectedItem(item)}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className={`text-lg font-medium ${rarityColors[item.rarity]}`}>{item.name}</h3>
-                  <span className="text-sm text-gray-400">Level {item.level}</span>
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <h3 className={`text-base sm:text-lg font-medium ${rarityColors[item.rarity]} truncate`}>{item.name}</h3>
+                  <span className="text-sm text-gray-400 flex-shrink-0 ml-2">Level {item.level}</span>
                 </div>
                 
-                <div className="w-full h-32 mb-4 flex items-center justify-center bg-gray-700/50 rounded-lg">
+                <div className="w-full h-24 sm:h-32 mb-3 sm:mb-4 flex items-center justify-center bg-gray-700/50 rounded-lg">
                   <Image 
                     src={item.image}
                     alt={item.name}
                     width={96}
                     height={96}
-                    className="opacity-90"
+                    className="opacity-90 w-16 h-16 sm:w-20 sm:h-20 object-contain"
                   />
                 </div>
 
-                <p className="text-gray-400 text-sm mb-4">{item.description}</p>
+                <p className="text-gray-400 text-sm mb-3 sm:mb-4 line-clamp-2">{item.description}</p>
 
                 {/* Stats */}
-                <div className="space-y-2 mb-4">
+                <div className="space-y-1 sm:space-y-2 mb-3 sm:mb-4">
                   {Object.entries(item.stats).map(([stat, value]) => (
-                    <div key={stat} className="flex justify-between text-sm">
+                    <div key={stat} className="flex justify-between text-xs sm:text-sm">
                       <span className="text-gray-400 capitalize">{stat}</span>
                       <span className="text-primary-400">+{value}</span>
                     </div>
@@ -127,9 +127,9 @@ export default function ShopPage() {
 
                 {/* Set Bonus Info */}
                 {item.set && (
-                  <div className="mb-4 p-3 bg-gray-700/30 rounded-lg">
-                    <p className="text-sm text-gray-300 mb-2">Part of {item.set}</p>
-                    <div className="text-xs text-gray-400">
+                  <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-gray-700/30 rounded-lg">
+                    <p className="text-sm text-gray-300 mb-1 sm:mb-2">Part of {item.set}</p>
+                    <div className="text-xs text-gray-400 line-clamp-2">
                       {ARMOR_SETS.find(s => s.name === item.set)?.description}
                     </div>
                   </div>
@@ -141,7 +141,7 @@ export default function ShopPage() {
                       e.stopPropagation();
                       setSelectedItem(item);
                     }}
-                    className="w-full py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors"
+                    className="w-full py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors text-sm sm:text-base"
                   >
                     Purchase
                   </button>

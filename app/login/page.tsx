@@ -74,15 +74,15 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-900 to-dark flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-primary-900 to-dark flex items-center justify-center px-4 py-8 sm:py-12">
       <motion.div 
-        className="w-full max-w-md bg-white dark:bg-dark rounded-xl shadow-lg overflow-hidden"
+        className="w-full max-w-sm sm:max-w-md bg-white dark:bg-dark rounded-xl shadow-lg overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="p-8">
-          <h2 className="text-3xl font-display text-primary-600 dark:text-primary-400 mb-6 text-center">
+        <div className="p-6 sm:p-8">
+          <h2 className="text-2xl sm:text-3xl font-display text-primary-600 dark:text-primary-400 mb-4 sm:mb-6 text-center">
             Resume Your Quest
           </h2>
           
@@ -127,7 +127,7 @@ export default function Login() {
               />
             </div>
             
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center">
                 <input
                   id="remember-me"
@@ -167,7 +167,7 @@ export default function Login() {
           </form>
         </div>
         
-        <div className="bg-gray-50 dark:bg-gray-800 p-4 text-center border-t border-gray-200 dark:border-gray-700">
+        <div className="bg-gray-50 dark:bg-gray-800 p-4 sm:p-6 text-center border-t border-gray-200 dark:border-gray-700">
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Need an account?{' '}
             <Link href="/register" className="text-primary-600 dark:text-primary-400 font-medium hover:underline">

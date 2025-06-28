@@ -184,12 +184,12 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => actions.toggleMessaging()}
-        className="w-14 h-14 bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+        className="w-12 h-12 sm:w-14 sm:h-14 bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
       >
-        <FiMessageCircle size={24} />
+        <FiMessageCircle size={20} className="sm:w-6 sm:h-6" />
         {totalUnreadCount > 0 && (
-          <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-            {totalUnreadCount}
+          <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+            {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
           </div>
         )}
       </motion.button>
@@ -210,10 +210,10 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                className="w-80 h-96 bg-gray-900 border border-gray-700 rounded-lg shadow-xl flex flex-col"
+                className="w-72 sm:w-80 h-80 sm:h-96 bg-gray-900 border border-gray-700 rounded-lg shadow-xl flex flex-col"
               >
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-700">
                   <h3 className="text-white font-medium">Messages</h3>
                   <button
                     onClick={() => actions.closeMessaging()}
@@ -235,28 +235,28 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
                           <div
                             key={friend.id}
                             onClick={() => handleOpenConversation(friend)}
-                            className="flex items-center p-3 hover:bg-gray-800 rounded-lg cursor-pointer transition-colors"
+                            className="flex items-center p-2 sm:p-3 hover:bg-gray-800 rounded-lg cursor-pointer transition-colors"
                           >
-                            <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white mr-3">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary-800 rounded-full flex items-center justify-center text-white mr-2 sm:mr-3 flex-shrink-0">
                               {friend.username.charAt(0).toUpperCase()}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
-                                <p className="text-white font-medium truncate">{friend.character?.name}</p>
+                                <p className="text-white font-medium truncate text-sm sm:text-base">{friend.character?.name}</p>
                                 {conversation && getUnreadCount(conversation) > 0 && (
-                                  <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                                    {getUnreadCount(conversation)}
+                                  <span className="bg-red-500 text-white text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full flex-shrink-0 ml-2">
+                                    {getUnreadCount(conversation) > 99 ? '99+' : getUnreadCount(conversation)}
                                   </span>
                                 )}
                               </div>
                               {displayMessage ? (
-                                <p className="text-gray-400 text-sm truncate max-w-48">
-                                  {displayMessage.content.length > 50 
-                                    ? `${displayMessage.content.substring(0, 50)}...` 
+                                <p className="text-gray-400 text-xs sm:text-sm truncate max-w-32 sm:max-w-48">
+                                  {displayMessage.content.length > 40 
+                                    ? `${displayMessage.content.substring(0, 40)}...` 
                                     : displayMessage.content}
                                 </p>
                               ) : (
-                                <p className="text-gray-500 text-sm truncate">
+                                <p className="text-gray-500 text-xs sm:text-sm truncate">
                                   No messages yet
                                 </p>
                               )}

@@ -65,22 +65,22 @@ export default function Quests() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-dark">
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-display text-white">Quests</h1>
-          <p className="text-gray-400">Complete quests to gain experience and rewards</p>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-display text-white">Quests</h1>
+          <p className="text-gray-400 text-sm sm:text-base">Complete quests to gain experience and rewards</p>
           <div className="mt-2 px-4 py-2 bg-dark/50 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg inline-block">
             <p className="text-sm font-medium text-gray-300">Accepted Quests</p>
-            <p className="text-2xl font-bold text-white">
+            <p className="text-xl sm:text-2xl font-bold text-white">
               {acceptedQuests.length}/{getMaxAcceptedQuests(character?.level || 1)}
             </p>
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-gray-800 mb-6">
+        <div className="flex border-b border-gray-800 mb-6 overflow-x-auto">
           <button
-            className={`px-4 py-2 text-sm font-medium ${
+            className={`px-3 sm:px-4 py-2 text-sm font-medium whitespace-nowrap ${
               selectedTab === 'daily' 
                 ? 'text-accent-400 border-b-2 border-accent-400' 
                 : 'text-gray-400 hover:text-gray-300'
@@ -90,7 +90,7 @@ export default function Quests() {
             Daily Quests
           </button>
           <button
-            className={`px-4 py-2 text-sm font-medium ${
+            className={`px-3 sm:px-4 py-2 text-sm font-medium whitespace-nowrap ${
               selectedTab === 'available' 
                 ? 'text-accent-400 border-b-2 border-accent-400' 
                 : 'text-gray-400 hover:text-gray-300'
@@ -100,7 +100,7 @@ export default function Quests() {
             Available Quests
           </button>
           <button
-            className={`px-4 py-2 text-sm font-medium ${
+            className={`px-3 sm:px-4 py-2 text-sm font-medium whitespace-nowrap ${
               selectedTab === 'accepted' 
                 ? 'text-accent-400 border-b-2 border-accent-400' 
                 : 'text-gray-400 hover:text-gray-300'
@@ -110,7 +110,7 @@ export default function Quests() {
             Accepted Quests
           </button>
           <button
-            className={`px-4 py-2 text-sm font-medium ${
+            className={`px-3 sm:px-4 py-2 text-sm font-medium whitespace-nowrap ${
               selectedTab === 'completed' 
                 ? 'text-accent-400 border-b-2 border-accent-400' 
                 : 'text-gray-400 hover:text-gray-300'
@@ -122,11 +122,11 @@ export default function Quests() {
         </div>
 
         {/* Quest Category Filter */}
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6 overflow-x-auto pb-2">
           {['All', 'Wellness', 'Education', 'Fitness', 'Health', 'Skills'].map((category) => (
             <button
               key={category}
-              className={`px-3 py-1 text-xs font-medium rounded-full ${
+              className={`px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
                 questFilter === category
                   ? 'bg-primary-600 text-white'
                   : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
@@ -146,22 +146,22 @@ export default function Quests() {
           transition={{ duration: 0.3 }}
         >
           {selectedTab === 'daily' && (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {filteredQuests.filter(q => !q.completed).map((quest) => (
                 <div 
                   key={quest.id}
-                  className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700 cursor-pointer hover:bg-gray-700/50 transition-colors"
+                  className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-gray-700 cursor-pointer hover:bg-gray-700/50 transition-colors"
                   onClick={() => handleQuestClick(quest)}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="ml-3">
-                        <h3 className="text-white font-medium">{quest.name}</h3>
+                    <div className="flex items-center flex-1 min-w-0">
+                      <div className="ml-3 flex-1 min-w-0">
+                        <h3 className="text-white font-medium truncate">{quest.name}</h3>
                         <p className="text-sm text-gray-400">{quest.category}</p>
                       </div>
                     </div>
-                    <div className="flex items-center">
-                      <span className="text-xs bg-accent-900/50 text-accent-300 px-2 py-1 rounded">
+                    <div className="flex items-center ml-2">
+                      <span className="text-xs bg-accent-900/50 text-accent-300 px-2 py-1 rounded whitespace-nowrap">
                         +{quest.reward} XP
                       </span>
                     </div>
@@ -170,7 +170,7 @@ export default function Quests() {
               ))}
 
               {/* Add Quest Form */}
-              <div className="mt-8">
+              <div className="mt-6 sm:mt-8">
                 <h3 className="text-sm font-medium text-white mb-3">Add Custom Quest</h3>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <input

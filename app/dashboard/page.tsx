@@ -115,7 +115,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-dark">
       {/* Hero Banner */}
-      <div className="relative w-full h-64 overflow-hidden">
+      <div className="relative w-full h-48 sm:h-64 overflow-hidden">
         {/* Banner background overlay - ensure z-0 so header is above */}
         <div className="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-accent-900/80 z-0 pointer-events-none"></div>
         <Image 
@@ -128,9 +128,9 @@ export default function Dashboard() {
           aria-hidden="true"
         />
         {/* Banner content overlay - ensure z-10 so header (z-10 sticky) is above */}
-        <div className="absolute inset-0 z-10 flex items-center px-8">
+        <div className="absolute inset-0 z-10 flex items-center px-4 sm:px-8">
           <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-white drop-shadow-lg">
+            <h1 className="text-xl sm:text-3xl md:text-4xl font-display font-bold text-white drop-shadow-lg">
               Welcome back, <span className="text-accent-400">{character.name}</span>
             </h1>
           </div>
@@ -138,18 +138,18 @@ export default function Dashboard() {
       </div>
       
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Character Summary */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <motion.div 
-            className="bg-dark/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
+            className="bg-dark/50 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-gray-800"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
               {/* Character Portrait */}
-              <div className="relative w-32 h-32 overflow-hidden rounded-lg border-2 border-accent-500 flex-shrink-0">
+              <div className="relative w-24 h-24 sm:w-32 sm:h-32 overflow-hidden rounded-lg border-2 border-accent-500 flex-shrink-0 mx-auto sm:mx-0">
                 <Image 
                   src={getCharacterImagePathWithSeed(character.race, character.gender, character.id)}
                   alt={character.name}
@@ -159,8 +159,8 @@ export default function Dashboard() {
                 />
               </div>
               
-              <div className="flex-1">
-                <h1 className="text-2xl font-display font-bold text-white">
+              <div className="flex-1 text-center sm:text-left">
+                <h1 className="text-xl sm:text-2xl font-display font-bold text-white">
                   {character.name}
                 </h1>
                 <p className="text-sm text-gray-400">
@@ -168,7 +168,7 @@ export default function Dashboard() {
                 </p>
                 
                 {/* Currency Display */}
-                <div className="mt-2 flex items-center space-x-4">
+                <div className="mt-2 flex items-center justify-center sm:justify-start space-x-4">
                   <div className="flex items-center">
                     <CurrencyIcon 
                       type="gold"
@@ -203,21 +203,21 @@ export default function Dashboard() {
               </div>
               
               {/* Quick Stats */}
-              <div className="grid grid-cols-3 gap-3 md:w-auto w-full">
-                <div className="bg-gray-800 rounded-lg p-3 text-center">
-                  <div className="text-xl font-bold text-primary-400">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full sm:w-auto">
+                <div className="bg-gray-800 rounded-lg p-2 sm:p-3 text-center">
+                  <div className="text-lg sm:text-xl font-bold text-primary-400">
                     {Object.values(character.stats).reduce((sum, stat) => sum + stat, 0)}
                   </div>
                   <div className="text-xs text-gray-400">Total Stats</div>
                 </div>
-                <div className="bg-gray-800 rounded-lg p-3 text-center">
-                  <div className="text-xl font-bold text-accent-400">
+                <div className="bg-gray-800 rounded-lg p-2 sm:p-3 text-center">
+                  <div className="text-lg sm:text-xl font-bold text-accent-400">
                     {Object.keys(character.skills).length}
                   </div>
                   <div className="text-xs text-gray-400">Skills</div>
                 </div>
-                <div className="bg-gray-800 rounded-lg p-3 text-center">
-                  <div className="text-xl font-bold text-secondary-400">
+                <div className="bg-gray-800 rounded-lg p-2 sm:p-3 text-center">
+                  <div className="text-lg sm:text-xl font-bold text-secondary-400">
                     {character.titles.length || 1}
                   </div>
                   <div className="text-xs text-gray-400">Titles</div>
@@ -228,7 +228,7 @@ export default function Dashboard() {
         </div>
         
         {/* Quest Count Display */}
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-center sm:justify-end mb-4">
           <div className="px-4 py-2 bg-dark/50 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg">
             <p className="text-sm font-medium text-gray-300">Accepted Quests</p>
             <p className="text-2xl font-bold text-white">
@@ -238,9 +238,9 @@ export default function Dashboard() {
         </div>
         
         {/* Tab Navigation */}
-        <div className="flex border-b border-gray-800 mb-6">
+        <div className="flex border-b border-gray-800 mb-6 overflow-x-auto">
           <button
-            className={`px-4 py-2 text-sm font-medium ${
+            className={`px-3 sm:px-4 py-2 text-sm font-medium whitespace-nowrap ${
               selectedTab === 'quests' 
                 ? 'text-accent-400 border-b-2 border-accent-400' 
                 : 'text-gray-400 hover:text-gray-300'
@@ -250,7 +250,7 @@ export default function Dashboard() {
             Daily Quests
           </button>
           <button
-            className={`px-4 py-2 text-sm font-medium ${
+            className={`px-3 sm:px-4 py-2 text-sm font-medium whitespace-nowrap ${
               selectedTab === 'stats' 
                 ? 'text-accent-400 border-b-2 border-accent-400' 
                 : 'text-gray-400 hover:text-gray-300'
@@ -260,7 +260,7 @@ export default function Dashboard() {
             Character Stats
           </button>
           <button
-            className={`px-4 py-2 text-sm font-medium ${
+            className={`px-3 sm:px-4 py-2 text-sm font-medium whitespace-nowrap ${
               selectedTab === 'inventory' 
                 ? 'text-accent-400 border-b-2 border-accent-400' 
                 : 'text-gray-400 hover:text-gray-300'
@@ -281,11 +281,11 @@ export default function Dashboard() {
           {selectedTab === 'quests' && (
             <div>
               {/* Quest Category Filter */}
-              <div className="flex flex-wrap gap-2 mb-6">
+              <div className="flex flex-wrap gap-2 mb-6 overflow-x-auto pb-2">
                 {['All', 'Wellness', 'Education', 'Fitness', 'Health', 'Skills'].map((category) => (
                   <button
                     key={category}
-                    className={`px-3 py-1 text-xs font-medium rounded-full ${
+                    className={`px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
                       questFilter === category
                         ? 'bg-primary-600 text-white'
                         : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
@@ -299,17 +299,17 @@ export default function Dashboard() {
               
               {/* Accepted Quests */}
               {acceptedQuests.length > 0 && (
-                <div className="mb-8">
+                <div className="mb-6 sm:mb-8">
                   <h3 className="text-lg font-medium text-white mb-4">Accepted Quests</h3>
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {acceptedQuests.map((quest) => (
                       <div 
                         key={quest.id}
-                        className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700 cursor-pointer hover:bg-gray-700/50 transition-colors"
+                        className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-gray-700 cursor-pointer hover:bg-gray-700/50 transition-colors"
                         onClick={() => handleQuestClick(quest)}
                       >
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center">
+                          <div className="flex items-center flex-1 min-w-0">
                             <input
                               type="checkbox"
                               checked={quest.completed}
@@ -317,15 +317,15 @@ export default function Dashboard() {
                                 e.stopPropagation()
                                 handleQuestToggle(quest.id)
                               }}
-                              className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-600 rounded bg-gray-700"
+                              className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-600 rounded bg-gray-700 flex-shrink-0"
                             />
-                            <div className="ml-3">
-                              <h3 className="text-white font-medium">{quest.name}</h3>
+                            <div className="ml-3 flex-1 min-w-0">
+                              <h3 className="text-white font-medium truncate">{quest.name}</h3>
                               <p className="text-sm text-gray-400">{quest.category}</p>
                             </div>
                           </div>
-                          <div className="flex items-center">
-                            <span className="text-xs bg-accent-900/50 text-accent-300 px-2 py-1 rounded">
+                          <div className="flex items-center ml-2">
+                            <span className="text-xs bg-accent-900/50 text-accent-300 px-2 py-1 rounded whitespace-nowrap">
                               +{quest.reward} XP
                             </span>
                           </div>
@@ -337,17 +337,17 @@ export default function Dashboard() {
               )}
 
               {/* Available Quests */}
-              <div className="mt-8">
+              <div className="mt-6 sm:mt-8">
                 <h3 className="text-lg font-medium text-white mb-4">Available Quests</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {availableQuests.map((quest) => (
                     <div 
                       key={quest.id} 
-                      className="bg-gray-700/50 rounded-lg p-4 border border-gray-600 cursor-pointer hover:bg-gray-600/50 transition-colors"
+                      className="bg-gray-700/50 rounded-lg p-3 sm:p-4 border border-gray-600 cursor-pointer hover:bg-gray-600/50 transition-colors"
                       onClick={() => handleQuestClick(quest)}
                     >
                       <div className="flex items-start">
-                        <div className="w-12 h-12 bg-primary-900 rounded-md flex-shrink-0 flex items-center justify-center mr-3">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-900 rounded-md flex-shrink-0 flex items-center justify-center mr-3">
                           <Image 
                             src={`/images/fire-emblem/quest-${Math.floor(Math.random() * 4) + 1}.png`}
                             alt="Quest"
@@ -355,11 +355,11 @@ export default function Dashboard() {
                             height={32}
                           />
                         </div>
-                        <div>
-                          <h4 className="text-white text-sm font-medium">{quest.name}</h4>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-white text-sm font-medium truncate">{quest.name}</h4>
                           <p className="text-gray-400 text-xs mt-1">Category: {quest.category}</p>
-                          <div className="mt-2 flex items-center">
-                            <span className="text-xs bg-primary-900/50 text-primary-300 px-2 py-1 rounded mr-2">
+                          <div className="mt-2 flex items-center flex-wrap gap-1">
+                            <span className="text-xs bg-primary-900/50 text-primary-300 px-2 py-1 rounded">
                               +{quest.reward} XP
                             </span>
                             {quest.goldReward && (
@@ -378,11 +378,11 @@ export default function Dashboard() {
           )}
           
           {selectedTab === 'stats' && (
-            <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
               {/* Stats */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-gray-700">
                 <h3 className="text-lg font-medium text-white mb-4">Character Stats</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {Object.entries(character.stats).map(([stat, value]) => (
                     <div key={stat} className="bg-gray-700/50 rounded-lg p-3">
                       <div className="flex items-center justify-between mb-1">
@@ -405,17 +405,17 @@ export default function Dashboard() {
                     alt="Character stats visualization" 
                     width={250} 
                     height={200} 
-                    className="opacity-90"
+                    className="opacity-90 w-48 sm:w-64"
                   />
                 </div>
               </div>
               
               {/* Skills */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-gray-700">
                 <h3 className="text-lg font-medium text-white mb-4">Skills</h3>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {Object.keys(character.skills).length === 0 ? (
-                    <div className="text-center py-8">
+                    <div className="text-center py-6 sm:py-8">
                       <p className="text-gray-400">No skills learned yet.</p>
                       <p className="text-sm text-gray-500 mt-1">Complete quests to level up your skills!</p>
                     </div>
@@ -423,8 +423,8 @@ export default function Dashboard() {
                     Object.entries(character.skills).map(([skillName, level]) => (
                       <div key={skillName}>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-white">{skillName}</span>
-                          <span className="text-gray-400">Level {level}</span>
+                          <span className="text-white truncate">{skillName}</span>
+                          <span className="text-gray-400 flex-shrink-0 ml-2">Level {level}</span>
                         </div>
                         <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
                           <div 
@@ -439,35 +439,35 @@ export default function Dashboard() {
               </div>
               
               {/* Equipment */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-gray-700">
                 <h3 className="text-lg font-medium text-white mb-4">Equipment</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                   {Object.entries(hydratedEquipment)
                     .filter(([slot]) => Object.keys(EQUIPMENT_SLOT_DISPLAY).includes(slot))
                     .map(([slot, item]) => (
                     <div 
                       key={slot} 
-                      className="bg-gray-700/50 rounded-lg p-4 relative cursor-pointer hover:border-gray-600 transition-colors h-[120px] flex flex-col items-center justify-center"
+                      className="bg-gray-700/50 rounded-lg p-3 sm:p-4 relative cursor-pointer hover:border-gray-600 transition-colors h-[100px] sm:h-[120px] flex flex-col items-center justify-center"
                       onClick={() => item && setSelectedItem(item)}
                     >
-                      <label className="block text-sm font-medium text-gray-400 capitalize mb-2">{EQUIPMENT_SLOT_DISPLAY[slot]}</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-400 capitalize mb-1 sm:mb-2 text-center">{EQUIPMENT_SLOT_DISPLAY[slot]}</label>
                       {item ? (
                         <>
-                          <div className="w-12 h-12 mb-2 flex items-center justify-center">
+                          <div className="w-8 h-8 sm:w-12 sm:h-12 mb-1 sm:mb-2 flex items-center justify-center">
                             <Image 
                               src={item.image} 
                               alt={item.name} 
                               width={48} 
                               height={48} 
-                              className="opacity-90"
+                              className="opacity-90 w-full h-full object-contain"
                             />
                           </div>
-                          <p className="text-white text-sm text-center line-clamp-1">{item.name}</p>
+                          <p className="text-white text-xs sm:text-sm text-center line-clamp-1">{item.name}</p>
                           <p className="text-gray-400 text-xs mt-1">Level {item.level}</p>
                         </>
                       ) : (
                         <div className="text-center">
-                          <p className="text-sm text-gray-400">No {EQUIPMENT_SLOT_DISPLAY[slot]} equipped</p>
+                          <p className="text-xs sm:text-sm text-gray-400">No {EQUIPMENT_SLOT_DISPLAY[slot]} equipped</p>
                         </div>
                       )}
                     </div>
@@ -476,7 +476,7 @@ export default function Dashboard() {
 
                 {/* Set Bonuses */}
                 {Object.values(character.equipment).some(item => item?.set) && (
-                  <div className="mt-6">
+                  <div className="mt-4 sm:mt-6">
                     <h4 className="text-sm font-medium text-white mb-3">Active Set Bonuses</h4>
                     <div className="space-y-3">
                       {ARMOR_SETS.map((set: ArmorSet) => {
@@ -519,11 +519,11 @@ export default function Dashboard() {
               </div>
               
               {/* Titles */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-gray-700">
                 <h3 className="text-lg font-medium text-white mb-4">Titles</h3>
                 <div className="grid grid-cols-1 gap-3">
                   {character.titles.length === 0 ? (
-                    <div className="text-center py-8">
+                    <div className="text-center py-6 sm:py-8">
                       <p className="text-gray-400">No titles earned yet.</p>
                       <p className="text-sm text-gray-500 mt-1">Complete achievements to earn titles!</p>
                     </div>
@@ -533,12 +533,12 @@ export default function Dashboard() {
                         key={index} 
                         className="bg-gray-700/50 rounded-lg p-3 flex items-center"
                       >
-                        <div className="w-8 h-8 bg-primary-800 rounded-full flex items-center justify-center mr-3">
+                        <div className="w-8 h-8 bg-primary-800 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                           <span className="text-primary-300 text-sm">
                             {index + 1}
                           </span>
                         </div>
-                        <span className="text-white">{title}</span>
+                        <span className="text-white truncate">{title}</span>
                       </div>
                     ))
                   )}
@@ -548,30 +548,31 @@ export default function Dashboard() {
           )}
           
           {selectedTab === 'inventory' && (
-            <div className="grid gap-6 grid-cols-1">
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
+            <div className="grid gap-4 sm:gap-6 grid-cols-1">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-gray-700">
                 <h3 className="text-lg font-medium text-white mb-4">Inventory</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {character.inventory
                     .filter(item => !Object.values(character.equipment).some(equippedItem => equippedItem?.id === item.id))
                     .map((item) => (
                     <div 
                       key={item.id} 
-                      className="bg-gray-700/50 rounded-lg p-4 border border-gray-600 cursor-pointer hover:border-gray-500 transition-colors"
+                      className="bg-gray-700/50 rounded-lg p-3 sm:p-4 border border-gray-600 cursor-pointer hover:border-gray-500 transition-colors"
                       onClick={() => setSelectedItem(item)}
                     >
                       <div className="flex items-start">
-                        <div className="w-12 h-12 bg-primary-900 rounded-md flex-shrink-0 flex items-center justify-center mr-3">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-900 rounded-md flex-shrink-0 flex items-center justify-center mr-3">
                           <Image 
                             src={item.image}
                             alt={item.name}
                             width={32}
                             height={32}
+                            className="w-full h-full object-contain"
                           />
                         </div>
-                        <div>
-                          <h4 className="text-white text-sm font-medium">{item.name}</h4>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-white text-sm font-medium truncate">{item.name}</h4>
                           <p className="text-gray-400 text-xs mt-1">Level {item.level}</p>
                           <div className="mt-2 flex items-center">
                             <span className="text-xs bg-primary-900/50 text-primary-300 px-2 py-1 rounded">
