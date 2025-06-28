@@ -193,4 +193,18 @@ export async function removeFriend(userId: string, friendId: string): Promise<vo
   await updateDoc(friendRef, {
     friends: arrayRemove(userId)
   })
+}
+
+// Utility to fetch user profile data by userId
+export async function getUserProfile(userId: string): Promise<{ username?: string; character?: { name?: string; level?: number } }> {
+  const userRef = doc(db, 'users', userId)
+  const userDoc = await getDoc(userRef)
+  if (!userDoc.exists()) {
+    return {}
+  }
+  const data = userDoc.data()
+  return {
+    username: data.username,
+    character: data.character,
+  }
 } 

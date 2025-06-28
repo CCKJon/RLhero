@@ -16,6 +16,7 @@ import {
   getFriendsList,
   getFriendRequestStatus,
   areUsersFriends,
+  getUserProfile,
   type FriendRequest,
   type FriendData
 } from '@/lib/friends'
@@ -154,6 +155,7 @@ export default function Social() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [pendingRequests, setPendingRequests] = useState<FriendRequest[]>([])
+  const [pendingRequestProfiles, setPendingRequestProfiles] = useState<Record<string, { username?: string; character?: { name?: string; level?: number } }>>({})
   const [friends, setFriends] = useState<FriendData[]>([])
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set())
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -173,6 +175,12 @@ export default function Social() {
     if (!user) return
     const requests = await getPendingFriendRequests(user.uid)
     setPendingRequests(requests)
+    // Fetch profile data for each sender
+    const profiles: Record<string, { username?: string; character?: { name?: string; level?: number } }> = {}
+    await Promise.all(requests.map(async (req) => {
+      profiles[req.fromUserId] = await getUserProfile(req.fromUserId)
+    }))
+    setPendingRequestProfiles(profiles)
   }
 
   const loadSentRequests = async () => {
@@ -881,35 +889,39 @@ export default function Social() {
               <div>
                 <h3 className="text-xl font-medium text-white mb-4">Pending Friend Requests</h3>
                 <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 divide-y divide-gray-700">
-                  {pendingRequests.map(request => (
-                    <div key={request.id} className="p-4 flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
-                          {request.fromUserId.charAt(0).toUpperCase()}
+                  {pendingRequests.map(request => {
+                    const profile = pendingRequestProfiles[request.fromUserId] || {}
+                    const displayName = profile.character?.name || request.fromUserId
+                    return (
+                      <div key={request.id} className="p-4 flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
+                            {displayName.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="ml-3">
+                            <p className="text-white font-medium">{displayName}</p>
+                            <p className="text-xs text-gray-400">
+                              {new Date(request.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
                         </div>
-                        <div className="ml-3">
-                          <p className="text-white font-medium">{request.fromUserId}</p>
-                          <p className="text-xs text-gray-400">
-                            {new Date(request.createdAt).toLocaleDateString()}
-                          </p>
+                        <div className="flex gap-2">
+                          <button 
+                            className="btn btn-primary text-sm"
+                            onClick={() => handleAcceptRequest(request.id)}
+                          >
+                            Accept
+                          </button>
+                          <button 
+                            className="btn btn-secondary text-sm"
+                            onClick={() => handleDeclineRequest(request.id)}
+                          >
+                            Decline
+                          </button>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <button 
-                          className="btn btn-primary text-sm"
-                          onClick={() => handleAcceptRequest(request.id)}
-                        >
-                          Accept
-                        </button>
-                        <button 
-                          className="btn btn-secondary text-sm"
-                          onClick={() => handleDeclineRequest(request.id)}
-                        >
-                          Decline
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                   {pendingRequests.length === 0 && (
                     <div className="p-4 text-center text-gray-400">
                       No pending friend requests
