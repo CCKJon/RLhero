@@ -45,6 +45,10 @@ body {
     @apply bg-accent-500 text-white hover:bg-accent-600 active:bg-accent-700;
   }
 
+  .btn-success {
+    @apply bg-success text-white hover:bg-success/90 active:bg-success/80;
+  }
+
   .card {
     @apply bg-white dark:bg-dark rounded-lg shadow-md overflow-hidden;
   }

@@ -30,13 +30,40 @@ export interface FriendData {
 }
 
 export async function sendFriendRequest(fromUserId: string, toUserId: string): Promise<void> {
+  // Prevent sending request to yourself
+  if (fromUserId === toUserId) {
+    throw new Error('Cannot send friend request to yourself')
+  }
+
   const friendRequestsRef = collection(db, 'friendRequests')
   const requestId = `${fromUserId}_${toUserId}`
   
   // Check if request already exists
   const existingRequest = await getDoc(doc(friendRequestsRef, requestId))
   if (existingRequest.exists()) {
-    throw new Error('Friend request already exists')
+    const requestData = existingRequest.data()
+    if (requestData.status === 'pending') {
+      throw new Error('Friend request already exists')
+    } else if (requestData.status === 'accepted') {
+      throw new Error('Users are already friends')
+    } else if (requestData.status === 'declined') {
+      // Allow resending if previously declined
+      await updateDoc(doc(friendRequestsRef, requestId), {
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      })
+      return
+    }
+  }
+  
+  // Check if users are already friends
+  const fromUserRef = doc(db, 'users', fromUserId)
+  const fromUserDoc = await getDoc(fromUserRef)
+  if (fromUserDoc.exists()) {
+    const friends = fromUserDoc.data().friends || []
+    if (friends.includes(toUserId)) {
+      throw new Error('Users are already friends')
+    }
   }
   
   // Create new friend request
@@ -90,6 +117,42 @@ export async function getPendingFriendRequests(userId: string): Promise<FriendRe
   
   const snapshot = await getDocs(q)
   return snapshot.docs.map(doc => doc.data() as FriendRequest)
+}
+
+export async function getSentFriendRequests(userId: string): Promise<FriendRequest[]> {
+  const friendRequestsRef = collection(db, 'friendRequests')
+  const q = query(
+    friendRequestsRef,
+    where('fromUserId', '==', userId),
+    where('status', '==', 'pending')
+  )
+  
+  const snapshot = await getDocs(q)
+  return snapshot.docs.map(doc => doc.data() as FriendRequest)
+}
+
+export async function getFriendRequestStatus(fromUserId: string, toUserId: string): Promise<'pending' | 'accepted' | 'declined' | 'none'> {
+  const friendRequestsRef = collection(db, 'friendRequests')
+  const requestId = `${fromUserId}_${toUserId}`
+  
+  const existingRequest = await getDoc(doc(friendRequestsRef, requestId))
+  if (existingRequest.exists()) {
+    return existingRequest.data().status
+  }
+  
+  return 'none'
+}
+
+export async function areUsersFriends(userId1: string, userId2: string): Promise<boolean> {
+  const userRef = doc(db, 'users', userId1)
+  const userDoc = await getDoc(userRef)
+  
+  if (!userDoc.exists()) {
+    return false
+  }
+  
+  const friends = userDoc.data().friends || []
+  return friends.includes(userId2)
 }
 
 export async function getFriendsList(userId: string): Promise<FriendData[]> {

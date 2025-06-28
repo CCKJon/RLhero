@@ -12,7 +12,10 @@ import {
   acceptFriendRequest, 
   declineFriendRequest,
   getPendingFriendRequests,
+  getSentFriendRequests,
   getFriendsList,
+  getFriendRequestStatus,
+  areUsersFriends,
   type FriendRequest,
   type FriendData
 } from '@/lib/friends'
@@ -118,13 +121,15 @@ const SUGGESTED_FRIENDS = [
 ]
 
 type SearchResult = {
-  id: string;
-  username?: string;
-  email?: string;
+  id: string
+  username?: string
+  email?: string
   character?: {
-    level?: number;
-    name?: string;
-  };
+    level?: number
+    name?: string
+  }
+  isFriend?: boolean
+  requestStatus?: 'pending' | 'declined'
 }
 
 // Add mock data for pending requests
@@ -151,12 +156,15 @@ export default function Social() {
   const [pendingRequests, setPendingRequests] = useState<FriendRequest[]>([])
   const [friends, setFriends] = useState<FriendData[]>([])
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set())
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const { user } = useAuthStore()
   const { actions: messagingActions } = useMessagingStore()
 
   useEffect(() => {
     if (user) {
       loadPendingRequests()
+      loadSentRequests()
       loadFriends()
     }
   }, [user])
@@ -165,6 +173,13 @@ export default function Social() {
     if (!user) return
     const requests = await getPendingFriendRequests(user.uid)
     setPendingRequests(requests)
+  }
+
+  const loadSentRequests = async () => {
+    if (!user) return
+    const sentRequests = await getSentFriendRequests(user.uid)
+    const sentUserIds = new Set(sentRequests.map(req => req.toUserId))
+    setSentRequests(sentUserIds)
   }
 
   const loadFriends = async () => {
@@ -178,8 +193,28 @@ export default function Social() {
     try {
       await sendFriendRequest(user.uid, toUserId)
       setSentRequests(prev => new Set(Array.from(prev).concat(toUserId)))
+      setErrorMessage(null)
+      setSuccessMessage('Friend request sent successfully!')
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000)
     } catch (error) {
       console.error('Error sending friend request:', error)
+      setSuccessMessage(null)
+      // If the error is "Friend request already exists", update the UI state
+      if (error instanceof Error && error.message === 'Friend request already exists') {
+        setSentRequests(prev => new Set(Array.from(prev).concat(toUserId)))
+        setErrorMessage('Friend request already sent!')
+      } else if (error instanceof Error && error.message === 'Users are already friends') {
+        setErrorMessage('You are already friends with this user!')
+      } else if (error instanceof Error && error.message === 'Cannot send friend request to yourself') {
+        setErrorMessage('You cannot send a friend request to yourself!')
+      } else {
+        setErrorMessage('Failed to send friend request. Please try again.')
+      }
+      
+      // Clear error message after 3 seconds
+      setTimeout(() => setErrorMessage(null), 3000)
     }
   }
 
@@ -256,6 +291,22 @@ export default function Social() {
       
       // Filter out the current user from results
       const filteredResults = results.filter(result => result.id !== user?.uid)
+      
+      // Check friend status for each result
+      if (user) {
+        for (const result of filteredResults) {
+          const isFriend = await areUsersFriends(user.uid, result.id)
+          const requestStatus = await getFriendRequestStatus(user.uid, result.id)
+          
+          if (isFriend) {
+            (result as SearchResult).isFriend = true
+          } else if (requestStatus === 'pending') {
+            (result as SearchResult).requestStatus = 'pending'
+          } else if (requestStatus === 'declined') {
+            (result as SearchResult).requestStatus = 'declined'
+          }
+        }
+      }
       
       console.log('Final results:', filteredResults)
       setSearchResults(filteredResults)
@@ -417,12 +468,37 @@ export default function Social() {
           
           {activeTab === 'find-friends' && (
             <div>
+              {/* Success Message */}
+              {successMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mb-4 p-3 bg-green-500/20 border border-green-500/50 rounded-lg text-green-300"
+                >
+                  {successMessage}
+                </motion.div>
+              )}
+              
+              {/* Error Message */}
+              {errorMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300"
+                >
+                  {errorMessage}
+                </motion.div>
+              )}
+              
+              {/* Search Bar */}
               <div className="mb-6">
                 <div className="relative rounded-md shadow-sm max-w-md">
                   <input
                     type="text"
                     className="input w-full pr-10"
-                    placeholder="Search by username, character name, or email..."
+                    placeholder="Search users by username, character name, or email..."
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value)
@@ -431,7 +507,7 @@ export default function Social() {
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                     {isSearching ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-primary-500"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-500"></div>
                     ) : (
                       <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -465,14 +541,23 @@ export default function Social() {
                           </div>
                           <button 
                             className={`btn text-sm ${
-                              sentRequests.has(user.id) 
+                              (user as SearchResult).isFriend 
+                                ? 'btn-success' 
+                                : (user as SearchResult).requestStatus === 'pending' || sentRequests.has(user.id)
                                 ? 'btn-secondary' 
                                 : 'btn-primary'
                             }`}
                             onClick={() => handleSendFriendRequest(user.id)}
-                            disabled={sentRequests.has(user.id)}
+                            disabled={(user as SearchResult).isFriend || (user as SearchResult).requestStatus === 'pending' || sentRequests.has(user.id)}
                           >
-                            {sentRequests.has(user.id) ? 'Request Sent!' : 'Add Friend'}
+                            {(user as SearchResult).isFriend 
+                              ? 'Already Friends' 
+                              : (user as SearchResult).requestStatus === 'pending' || sentRequests.has(user.id)
+                              ? 'Request Sent!' 
+                              : (user as SearchResult).requestStatus === 'declined'
+                              ? 'Resend Request'
+                              : 'Add Friend'
+                            }
                           </button>
                         </div>
                       </div>
