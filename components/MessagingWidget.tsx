@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FiMessageCircle, FiX } from 'react-icons/fi'
 import { useAuthStore } from '@/store/authStore'
@@ -25,6 +25,7 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
   const [recentMessages, setRecentMessages] = useState<Record<string, Message>>({})
   const { user } = useAuthStore()
   const { isOpen, activeView, openChats, actions } = useMessagingStore()
+  const messagingRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (user && isOpen) {
@@ -42,6 +43,23 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
       return unsubscribe
     }
   }, [user])
+
+  // Handle click outside to minimize messaging
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isOpen && messagingRef.current && !messagingRef.current.contains(event.target as Node)) {
+        actions.closeMessaging()
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen, actions])
 
   const loadFriends = async () => {
     if (!user) return
@@ -160,7 +178,7 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
   }
 
   return (
-    <div className={`fixed bottom-4 right-4 z-50 ${className}`}>
+    <div ref={messagingRef} className={`fixed bottom-4 right-4 z-50 ${className}`}>
       {/* Floating Action Button */}
       <motion.button
         whileHover={{ scale: 1.1 }}
