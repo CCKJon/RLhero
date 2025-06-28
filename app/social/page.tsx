@@ -163,6 +163,21 @@ export default function Social() {
   const { user } = useAuthStore()
   const { actions: messagingActions } = useMessagingStore()
 
+  // Helper function to get display name (character name if available, otherwise username)
+  const getDisplayName = (friend: FriendData) => {
+    return friend.character?.name || friend.username
+  }
+
+  // Helper function for search results
+  const getSearchResultDisplayName = (user: SearchResult) => {
+    return user.character?.name || user.username || 'Unknown'
+  }
+
+  // Helper function for pending request profiles
+  const getPendingRequestDisplayName = (profile: { username?: string; character?: { name?: string; level?: number } }) => {
+    return profile.character?.name || profile.username || 'Unknown'
+  }
+
   useEffect(() => {
     if (user) {
       loadPendingRequests()
@@ -434,11 +449,16 @@ export default function Social() {
                     <div className="flex items-center">
                       <div className="relative">
                         <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
-                          {friend.username.charAt(0).toUpperCase()}
+                          {getDisplayName(friend).charAt(0).toUpperCase()}
                         </div>
                       </div>
                       <div className="ml-3">
-                        <p className="text-white font-medium">{friend.character?.name}</p>
+                        <p className="text-white font-medium">{getDisplayName(friend)}</p>
+                        {friend.character?.name && friend.character.name !== friend.username && (
+                          <p className="text-xs text-accent-400">
+                            "{friend.username}"
+                          </p>
+                        )}
                         <p className="text-xs text-gray-400">
                           Level {friend.character?.level || 1}
                         </p>
@@ -528,13 +548,13 @@ export default function Social() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
                             <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
-                              {user.username?.charAt(0).toUpperCase()}
+                              {getSearchResultDisplayName(user).charAt(0).toUpperCase()}
                             </div>
                             <div className="ml-3">
-                              <p className="text-white font-medium">{user.username}</p>
+                              <p className="text-white font-medium">{getSearchResultDisplayName(user)}</p>
                               {user.character?.name && user.character.name !== user.username && (
                                 <p className="text-xs text-accent-400">
-                                  "{user.character.name}"
+                                  "{user.username}"
                                 </p>
                               )}
                               <p className="text-xs text-gray-400">
@@ -769,7 +789,7 @@ export default function Social() {
                         <div className="flex items-center">
                           <div className="relative">
                             <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
-                              {member.name.charAt(0)}
+                              {getDisplayName(member).charAt(0).toUpperCase()}
                             </div>
                             {member.online && (
                               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-800"></div>
@@ -777,7 +797,7 @@ export default function Social() {
                           </div>
                           
                           <div className="ml-3">
-                            <p className="text-white font-medium">{member.name}</p>
+                            <p className="text-white font-medium">{getDisplayName(member)}</p>
                             <p className="text-xs text-gray-400">Level {member.level} • {member.role}</p>
                           </div>
                         </div>
@@ -886,7 +906,7 @@ export default function Social() {
                 <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 divide-y divide-gray-700">
                   {pendingRequests.map(request => {
                     const profile = pendingRequestProfiles[request.fromUserId] || {}
-                    const displayName = profile.character?.name || request.fromUserId
+                    const displayName = getPendingRequestDisplayName(profile)
                     return (
                       <div key={request.id} className="p-4 flex items-center justify-between">
                         <div className="flex items-center">
