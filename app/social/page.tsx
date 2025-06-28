@@ -438,12 +438,7 @@ export default function Social() {
                         </div>
                       </div>
                       <div className="ml-3">
-                        <p className="text-white font-medium">{friend.username}</p>
-                        {friend.character?.name && friend.character.name !== friend.username && (
-                          <p className="text-xs text-accent-400">
-                            "{friend.character.name}"
-                          </p>
-                        )}
+                        <p className="text-white font-medium">{friend.character?.name}</p>
                         <p className="text-xs text-gray-400">
                           Level {friend.character?.level || 1}
                         </p>
