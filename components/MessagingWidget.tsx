@@ -179,8 +179,10 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
                                 )}
                               </div>
                               {conversation?.lastMessage ? (
-                                <p className="text-gray-400 text-sm truncate">
-                                  {conversation.lastMessage.content}
+                                <p className="text-gray-400 text-sm truncate max-w-48">
+                                  {conversation.lastMessage.content.length > 50 
+                                    ? `${conversation.lastMessage.content.substring(0, 50)}...` 
+                                    : conversation.lastMessage.content}
                                 </p>
                               ) : (
                                 <p className="text-gray-500 text-sm truncate">
