@@ -115,12 +115,6 @@ const MY_FRIENDS = [
   { id: 'f3', name: 'Emma', level: 18, online: true, lastActive: '5m ago' },
 ]
 
-const SUGGESTED_FRIENDS = [
-  { id: 'sf1', name: 'Alex', level: 14, mutualFriends: 3 },
-  { id: 'sf2', name: 'Lisa', level: 16, mutualFriends: 5 },
-  { id: 'sf3', name: 'John', level: 11, mutualFriends: 2 },
-]
-
 type SearchResult = {
   id: string
   username?: string
@@ -205,36 +199,50 @@ export default function Social() {
 
   const loadPendingRequests = async () => {
     if (!user) return
-    const requests = await getPendingFriendRequests(user.uid)
-    setPendingRequests(requests)
-    // Fetch profile data for each sender
-    const profiles: Record<string, { username?: string; character?: { name?: string; level?: number } }> = {}
-    await Promise.all(requests.map(async (req) => {
-      profiles[req.fromUserId] = await getUserProfile(req.fromUserId)
-    }))
-    setPendingRequestProfiles(profiles)
+    try {
+      const requests = await getPendingFriendRequests(user.uid)
+      setPendingRequests(requests)
+      
+      // Load profiles for pending requests
+      const profiles: Record<string, { username?: string; character?: { name?: string; level?: number } }> = {}
+      for (const request of requests) {
+        const profile = await getUserProfile(request.fromUserId)
+        profiles[request.fromUserId] = profile
+      }
+      setPendingRequestProfiles(profiles)
+    } catch (error) {
+      console.error('Error loading pending requests:', error)
+    }
   }
 
   const loadSentRequests = async () => {
     if (!user) return
-    const sentRequests = await getSentFriendRequests(user.uid)
-    const sentUserIds = new Set(sentRequests.map(req => req.toUserId))
-    setSentRequests(sentUserIds)
+    try {
+      const sentRequests = await getSentFriendRequests(user.uid)
+      setSentRequests(new Set(sentRequests.map(req => req.toUserId)))
+    } catch (error) {
+      console.error('Error loading sent requests:', error)
+    }
   }
 
   const loadFriends = async () => {
     if (!user) return
-    const friendsList = await getFriendsList(user.uid)
-    setFriends(friendsList)
+    try {
+      const friendsList = await getFriendsList(user.uid)
+      setFriends(friendsList)
+    } catch (error) {
+      console.error('Error loading friends:', error)
+    }
   }
 
   const handleSendFriendRequest = async (toUserId: string) => {
     if (!user) return
+    
     try {
       await sendFriendRequest(user.uid, toUserId)
       setSentRequests(prev => new Set(Array.from(prev).concat(toUserId)))
+      setSuccessMessage('Friend request sent!')
       setErrorMessage(null)
-      setSuccessMessage('Friend request sent successfully!')
       
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(null), 3000)
@@ -289,13 +297,12 @@ export default function Social() {
       const searchTerm = query.toLowerCase().trim()
       console.log('Searching for:', searchTerm)
       
-      // Get all users and filter in memory for both email and character name matches
+      // Get all users and filter in memory for email and character name matches only
       const allUsersSnapshot = await getDocs(usersRef)
       const matches = allUsersSnapshot.docs.filter(doc => {
         const data = doc.data()
         const email = data.email?.toLowerCase()
         const characterName = data.character?.name?.toLowerCase()
-        const username = data.username?.toLowerCase()
         
         // Check for exact email match
         if (email === searchTerm) {
@@ -306,12 +313,6 @@ export default function Social() {
         // Check for partial character name match
         if (characterName && characterName.includes(searchTerm)) {
           console.log('Found character name match:', data.character?.name)
-          return true
-        }
-        
-        // Check for partial username match
-        if (username && username.includes(searchTerm)) {
-          console.log('Found username match:', data.username)
           return true
         }
         
@@ -370,9 +371,9 @@ export default function Social() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark to-gray-900">
-      <div className="max-w-2xl mx-auto px-0 sm:px-4 py-6 sm:py-10">
-        <h1 className="text-2xl sm:text-3xl font-display text-white mb-2 px-4 sm:px-0">SOCIAL HUB</h1>
-        <p className="text-gray-400 text-sm mb-4 px-4 sm:px-0">Connect with friends, join parties, and guilds to enhance your journey</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        <h1 className="text-2xl sm:text-3xl font-display text-white mb-2">SOCIAL HUB</h1>
+        <p className="text-gray-400 text-sm mb-4">Connect with friends, join parties, and guilds to enhance your journey</p>
 
         {/* Mobile Tab Bar - full width, scrollable, no dropdown */}
         <div className="w-full sm:hidden">
@@ -391,7 +392,7 @@ export default function Social() {
         </div>
 
         {/* Desktop Tab Bar */}
-        <div className="hidden sm:flex border-b border-gray-800 mb-6 gap-2 overflow-x-auto px-0">
+        <div className="hidden sm:flex border-b border-gray-800 mb-6 gap-2 overflow-x-auto">
           {tabList.map(tab => (
             <button
               key={tab.key}
@@ -403,8 +404,20 @@ export default function Social() {
           ))}
         </div>
 
+        {/* Error and Success Messages */}
+        {errorMessage && (
+          <div className="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-lg text-red-200 text-sm">
+            {errorMessage}
+          </div>
+        )}
+        {successMessage && (
+          <div className="mb-4 p-3 bg-green-900/50 border border-green-700 rounded-lg text-green-200 text-sm">
+            {successMessage}
+          </div>
+        )}
+
         {/* Tab Content */}
-        <div className="px-4 sm:px-0">
+        <div className="space-y-6">
           {activeTab === 'my-friends' && (
             <div className="space-y-3">
               {friends.length === 0 ? (
@@ -433,7 +446,268 @@ export default function Social() {
               )}
             </div>
           )}
-          {/* ...other tab content, refactor similarly for mobile... */}
+
+          {activeTab === 'find-friends' && (
+            <div className="space-y-4">
+              {/* Search Bar */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search by character name or email..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value)
+                    handleSearch(e.target.value)
+                  }}
+                  className="w-full px-4 py-3 bg-gray-800/60 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-400 focus:border-transparent"
+                />
+                {isSearching && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-accent-400"></div>
+                  </div>
+                )}
+              </div>
+
+              {/* Search Results */}
+              {searchResults.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-white font-medium">Search Results</h3>
+                  {searchResults.map(user => (
+                    <div key={user.id} className="bg-gray-800/60 border border-gray-700 rounded-lg flex items-center px-3 py-2 gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary-700 flex items-center justify-center text-white font-bold text-base">
+                        {getSearchResultDisplayName(user).charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-white text-sm font-medium truncate">{getSearchResultDisplayName(user)}</div>
+                        <div className="text-xs text-gray-400 truncate">Level {user.character?.level || '-'}</div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        {user.isFriend ? (
+                          <span className="text-xs text-green-400 px-2 py-1">Friends</span>
+                        ) : user.requestStatus === 'pending' ? (
+                          <span className="text-xs text-yellow-400 px-2 py-1">Request Sent</span>
+                        ) : (
+                          <button 
+                            className="btn btn-primary btn-mobile text-xs px-3 py-1"
+                            onClick={() => handleSendFriendRequest(user.id)}
+                          >
+                            Add Friend
+                          </button>
+                        )}
+                        <Link href={`/profile/${user.id}`} className="text-xs text-accent-400 text-center mt-1">Profile</Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Empty State */}
+              {searchResults.length === 0 && searchQuery === '' && (
+                <div className="text-gray-400 text-center py-8">
+                  Search for users by their character name or email address
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'my-party' && (
+            <div className="space-y-4">
+              <div className="bg-gray-800/60 border border-gray-700 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-white font-medium">{CURRENT_PARTY.name}</h3>
+                  <span className="text-xs text-gray-400">Level {CURRENT_PARTY.level}</span>
+                </div>
+                <p className="text-gray-400 text-sm mb-4">{CURRENT_PARTY.description}</p>
+                
+                <div className="space-y-2">
+                  <h4 className="text-white text-sm font-medium">Members ({CURRENT_PARTY.members.length})</h4>
+                  {CURRENT_PARTY.members.map(member => (
+                    <div key={member.id} className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-primary-700 flex items-center justify-center text-white text-xs font-bold">
+                        {member.name.charAt(0)}
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-white text-sm">{member.name}</div>
+                        <div className="text-xs text-gray-400">Level {member.level} • {member.role}</div>
+                      </div>
+                      <div className={`w-2 h-2 rounded-full ${member.online ? 'bg-green-400' : 'bg-gray-500'}`}></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'find-party' && (
+            <div className="space-y-3">
+              {AVAILABLE_PARTIES.map(party => (
+                <div key={party.id} className="bg-gray-800/60 border border-gray-700 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-white font-medium">{party.name}</h3>
+                    <span className="text-xs text-gray-400">Level {party.level}</span>
+                  </div>
+                  <p className="text-gray-400 text-sm mb-3">{party.focus}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400">{party.members} members</span>
+                    {party.openInvitations ? (
+                      <button className="btn btn-primary btn-mobile text-xs px-3 py-1">
+                        Join Party
+                      </button>
+                    ) : (
+                      <span className="text-xs text-gray-500">Invite Only</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {activeTab === 'my-guild' && (
+            <div className="space-y-4">
+              <div className="bg-gray-800/60 border border-gray-700 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-white font-medium">{CURRENT_GUILD.name}</h3>
+                  <span className="text-xs text-gray-400">Level {CURRENT_GUILD.level}</span>
+                </div>
+                <p className="text-gray-400 text-sm mb-4">{CURRENT_GUILD.description}</p>
+                
+                <div className="space-y-2">
+                  <h4 className="text-white text-sm font-medium">Members ({CURRENT_GUILD.members.length})</h4>
+                  {CURRENT_GUILD.members.map(member => (
+                    <div key={member.id} className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-primary-700 flex items-center justify-center text-white text-xs font-bold">
+                        {member.name.charAt(0)}
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-white text-sm">{member.name}</div>
+                        <div className="text-xs text-gray-400">Level {member.level} • {member.role}</div>
+                      </div>
+                      <div className={`w-2 h-2 rounded-full ${member.online ? 'bg-green-400' : 'bg-gray-500'}`}></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'find-guild' && (
+            <div className="space-y-3">
+              {AVAILABLE_GUILDS.map(guild => (
+                <div key={guild.id} className="bg-gray-800/60 border border-gray-700 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-white font-medium">{guild.name}</h3>
+                    <span className="text-xs text-gray-400">Level {guild.level}</span>
+                  </div>
+                  <p className="text-gray-400 text-sm mb-3">{guild.focus}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400">{guild.members} members</span>
+                    {guild.openInvitations ? (
+                      <button className="btn btn-primary btn-mobile text-xs px-3 py-1">
+                        Join Guild
+                      </button>
+                    ) : (
+                      <span className="text-xs text-gray-500">Invite Only</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {activeTab === 'pending-requests' && (
+            <div className="space-y-4">
+              {/* Friend Requests */}
+              <div>
+                <h3 className="text-white font-medium mb-3">Friend Requests ({pendingRequests.length})</h3>
+                {pendingRequests.length === 0 ? (
+                  <div className="text-gray-400 text-center py-4">No pending friend requests</div>
+                ) : (
+                  <div className="space-y-3">
+                    {pendingRequests.map(request => {
+                      const profile = pendingRequestProfiles[request.fromUserId]
+                      return (
+                        <div key={request.id} className="bg-gray-800/60 border border-gray-700 rounded-lg flex items-center px-3 py-2 gap-3">
+                          <div className="w-10 h-10 rounded-full bg-primary-700 flex items-center justify-center text-white font-bold text-base">
+                            {getPendingRequestDisplayName(profile).charAt(0)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-white text-sm font-medium truncate">{getPendingRequestDisplayName(profile)}</div>
+                            <div className="text-xs text-gray-400 truncate">Level {profile?.character?.level || '-'}</div>
+                          </div>
+                          <div className="flex gap-2">
+                            <button 
+                              className="btn btn-primary btn-mobile text-xs px-3 py-1"
+                              onClick={() => handleAcceptRequest(request.id)}
+                            >
+                              Accept
+                            </button>
+                            <button 
+                              className="btn btn-secondary btn-mobile text-xs px-3 py-1"
+                              onClick={() => handleDeclineRequest(request.id)}
+                            >
+                              Decline
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Party Requests */}
+              <div>
+                <h3 className="text-white font-medium mb-3">Party Requests ({PENDING_PARTY_REQUESTS.length})</h3>
+                {PENDING_PARTY_REQUESTS.length === 0 ? (
+                  <div className="text-gray-400 text-center py-4">No pending party requests</div>
+                ) : (
+                  <div className="space-y-3">
+                    {PENDING_PARTY_REQUESTS.map(request => (
+                      <div key={request.id} className="bg-gray-800/60 border border-gray-700 rounded-lg flex items-center px-3 py-2 gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary-700 flex items-center justify-center text-white font-bold text-base">
+                          {request.partyName.charAt(0)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white text-sm font-medium truncate">{request.partyName}</div>
+                          <div className="text-xs text-gray-400 truncate">Level {request.level} • {request.sentAt}</div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button className="btn btn-primary btn-mobile text-xs px-3 py-1">Accept</button>
+                          <button className="btn btn-secondary btn-mobile text-xs px-3 py-1">Decline</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Guild Requests */}
+              <div>
+                <h3 className="text-white font-medium mb-3">Guild Requests ({PENDING_GUILD_REQUESTS.length})</h3>
+                {PENDING_GUILD_REQUESTS.length === 0 ? (
+                  <div className="text-gray-400 text-center py-4">No pending guild requests</div>
+                ) : (
+                  <div className="space-y-3">
+                    {PENDING_GUILD_REQUESTS.map(request => (
+                      <div key={request.id} className="bg-gray-800/60 border border-gray-700 rounded-lg flex items-center px-3 py-2 gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary-700 flex items-center justify-center text-white font-bold text-base">
+                          {request.guildName.charAt(0)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white text-sm font-medium truncate">{request.guildName}</div>
+                          <div className="text-xs text-gray-400 truncate">Level {request.level} • {request.sentAt}</div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button className="btn btn-primary btn-mobile text-xs px-3 py-1">Accept</button>
+                          <button className="btn btn-secondary btn-mobile text-xs px-3 py-1">Decline</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
