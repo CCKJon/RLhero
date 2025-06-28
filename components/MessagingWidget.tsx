@@ -9,7 +9,9 @@ import { getFriendsList, type FriendData } from '@/lib/friends'
 import { 
   getOrCreateConversation, 
   subscribeToConversations,
-  type Conversation 
+  getMostRecentMessage,
+  type Conversation,
+  type Message
 } from '@/lib/messaging'
 import ChatWindow from './ChatWindow'
 
@@ -20,6 +22,7 @@ interface MessagingWidgetProps {
 export default function MessagingWidget({ className = '' }: MessagingWidgetProps) {
   const [friends, setFriends] = useState<FriendData[]>([])
   const [conversations, setConversations] = useState<Conversation[]>([])
+  const [recentMessages, setRecentMessages] = useState<Record<string, Message>>({})
   const { user } = useAuthStore()
   const { isOpen, activeView, openChats, actions } = useMessagingStore()
 
@@ -33,6 +36,8 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
     if (user) {
       const unsubscribe = subscribeToConversations(user.uid, (newConversations) => {
         setConversations(newConversations)
+        // Fetch recent messages for conversations without lastMessage
+        fetchRecentMessagesForConversations(newConversations)
       })
       return unsubscribe
     }
@@ -45,6 +50,31 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
       setFriends(friendsList)
     } catch (error) {
       console.error('Error loading friends:', error)
+    }
+  }
+
+  const fetchRecentMessagesForConversations = async (conversations: Conversation[]) => {
+    const messagesToFetch: Record<string, string> = {}
+    
+    conversations.forEach(conversation => {
+      if (!conversation.lastMessage) {
+        messagesToFetch[conversation.id] = conversation.id
+      }
+    })
+    
+    // Fetch recent messages for conversations without lastMessage
+    for (const conversationId of Object.values(messagesToFetch)) {
+      try {
+        const recentMessage = await getMostRecentMessage(conversationId)
+        if (recentMessage) {
+          setRecentMessages(prev => ({
+            ...prev,
+            [conversationId]: recentMessage
+          }))
+        }
+      } catch (error) {
+        console.error('Error fetching recent message:', error)
+      }
     }
   }
 
@@ -76,23 +106,45 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
     })
   }
 
+  const getDisplayMessage = (conversation: Conversation) => {
+    // First try to use lastMessage from conversation
+    if (conversation.lastMessage) {
+      return conversation.lastMessage
+    }
+    
+    // If no lastMessage, try to use recent message from state
+    const recentMessage = recentMessages[conversation.id]
+    if (recentMessage) {
+      return {
+        content: recentMessage.content,
+        timestamp: recentMessage.timestamp,
+        senderId: recentMessage.senderId
+      }
+    }
+    
+    return null
+  }
+
   // Sort friends by conversation activity (most recent first)
   const sortedFriends = friends.sort((a, b) => {
     const conversationA = getConversationForFriend(a)
     const conversationB = getConversationForFriend(b)
     
     // If both have conversations, sort by last message timestamp
-    if (conversationA?.lastMessage?.timestamp && conversationB?.lastMessage?.timestamp) {
-      const timeA = conversationA.lastMessage.timestamp.toMillis?.() || 0
-      const timeB = conversationB.lastMessage.timestamp.toMillis?.() || 0
+    const messageA = conversationA ? getDisplayMessage(conversationA) : null
+    const messageB = conversationB ? getDisplayMessage(conversationB) : null
+    
+    if (messageA?.timestamp && messageB?.timestamp) {
+      const timeA = messageA.timestamp.toMillis?.() || 0
+      const timeB = messageB.timestamp.toMillis?.() || 0
       return timeB - timeA
     }
     
     // If only one has conversation, prioritize it
-    if (conversationA?.lastMessage?.timestamp && !conversationB?.lastMessage?.timestamp) {
+    if (messageA?.timestamp && !messageB?.timestamp) {
       return -1
     }
-    if (!conversationA?.lastMessage?.timestamp && conversationB?.lastMessage?.timestamp) {
+    if (!messageA?.timestamp && messageB?.timestamp) {
       return 1
     }
     
@@ -159,6 +211,7 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
                     <div className="p-2">
                       {sortedFriends.map(friend => {
                         const conversation = getConversationForFriend(friend)
+                        const displayMessage = conversation ? getDisplayMessage(conversation) : null
                         
                         return (
                           <div
@@ -178,11 +231,11 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
                                   </span>
                                 )}
                               </div>
-                              {conversation?.lastMessage ? (
+                              {displayMessage ? (
                                 <p className="text-gray-400 text-sm truncate max-w-48">
-                                  {conversation.lastMessage.content.length > 50 
-                                    ? `${conversation.lastMessage.content.substring(0, 50)}...` 
-                                    : conversation.lastMessage.content}
+                                  {displayMessage.content.length > 50 
+                                    ? `${displayMessage.content.substring(0, 50)}...` 
+                                    : displayMessage.content}
                                 </p>
                               ) : (
                                 <p className="text-gray-500 text-sm truncate">

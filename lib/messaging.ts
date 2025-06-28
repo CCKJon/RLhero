@@ -14,7 +14,8 @@ import {
   serverTimestamp,
   Timestamp,
   writeBatch,
-  DocumentData
+  DocumentData,
+  limit
 } from 'firebase/firestore'
 
 export interface Message {
@@ -121,8 +122,7 @@ export function subscribeToConversations(
   const conversationsRef = collection(db, 'conversations')
   const q = query(
     conversationsRef,
-    where('participants', 'array-contains', userId),
-    orderBy('lastMessage.timestamp', 'desc')
+    where('participants', 'array-contains', userId)
   )
   
   return onSnapshot(q, (snapshot) => {
@@ -130,6 +130,14 @@ export function subscribeToConversations(
       id: doc.id,
       ...doc.data()
     })) as Conversation[]
+    
+    // Sort conversations by last message timestamp (most recent first)
+    conversations.sort((a, b) => {
+      const timeA = a.lastMessage?.timestamp?.toMillis?.() || 0
+      const timeB = b.lastMessage?.timestamp?.toMillis?.() || 0
+      return timeB - timeA
+    })
+    
     callback(conversations)
   })
 }
@@ -139,15 +147,18 @@ export async function markMessagesAsRead(conversationId: string, userId: string)
   const messagesRef = collection(db, 'conversations', conversationId, 'messages')
   const q = query(
     messagesRef,
-    where('senderId', '!=', userId),
     where('read', '==', false)
   )
   
   const snapshot = await getDocs(q)
   const batch = writeBatch(db)
   
+  // Filter messages that are not from the current user
   snapshot.docs.forEach((doc: DocumentData) => {
-    batch.update(doc.ref, { read: true })
+    const data = doc.data()
+    if (data.senderId !== userId) {
+      batch.update(doc.ref, { read: true })
+    }
   })
   
   await batch.commit()
@@ -170,4 +181,21 @@ export async function getConversation(conversationId: string): Promise<Conversat
     id: conversationDoc.id,
     ...conversationDoc.data()
   } as Conversation
+}
+
+// Get the most recent message for a conversation
+export async function getMostRecentMessage(conversationId: string): Promise<Message | null> {
+  const messagesRef = collection(db, 'conversations', conversationId, 'messages')
+  const q = query(messagesRef, orderBy('timestamp', 'desc'), limit(1))
+  
+  const snapshot = await getDocs(q)
+  if (snapshot.empty) {
+    return null
+  }
+  
+  const doc = snapshot.docs[0]
+  return {
+    id: doc.id,
+    ...doc.data()
+  } as Message
 } 

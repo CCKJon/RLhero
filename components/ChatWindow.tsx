@@ -37,6 +37,13 @@ export default function ChatWindow({ friend, conversationId, onClose, isActive }
     }
   }, [conversationId])
 
+  // Scroll to bottom when messages are first loaded
+  useEffect(() => {
+    if (messages.length > 0) {
+      scrollToBottom()
+    }
+  }, [messages.length])
+
   useEffect(() => {
     if (isActive && conversationId && user) {
       markMessagesAsRead(conversationId, user.uid)
