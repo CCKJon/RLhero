@@ -375,12 +375,8 @@ export default function Social() {
         <p className="text-gray-400 text-sm mb-4 px-4 sm:px-0">Connect with friends, join parties, and guilds to enhance your journey</p>
 
         {/* Mobile Tab Bar - full width, scrollable, no dropdown */}
-        <div className="relative w-full">
-          {/* Left gradient fade */}
-          <div className="pointer-events-none absolute left-0 top-0 h-full w-6 z-10 bg-gradient-to-r from-dark via-dark/80 to-transparent" />
-          {/* Right gradient fade */}
-          <div className="pointer-events-none absolute right-0 top-0 h-full w-6 z-10 bg-gradient-to-l from-dark via-dark/80 to-transparent" />
-          <div className="flex overflow-x-auto whitespace-nowrap gap-2 no-scrollbar px-0 sm:px-0 py-2 border-b border-gray-800 mb-4">
+        <div className="w-full sm:hidden">
+          <div className="flex overflow-x-auto whitespace-nowrap gap-2 no-scrollbar px-2 py-2 border-b border-gray-800 mb-4">
             {tabList.map(tab => (
               <button
                 key={tab.key}

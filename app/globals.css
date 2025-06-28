@@ -8,6 +8,56 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 248, 250, 252;
   --background-end-rgb: 241, 245, 249;
+  
+  /* Safe area insets for mobile browsers */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+/* Safe area utilities */
+.pt-safe-top {
+  padding-top: var(--sat);
+}
+
+.pb-safe-bottom {
+  padding-bottom: var(--sab);
+}
+
+.pl-safe-left {
+  padding-left: var(--sal);
+}
+
+.pr-safe-right {
+  padding-right: var(--sar);
+}
+
+.mt-safe-top {
+  margin-top: var(--sat);
+}
+
+.mb-safe-bottom {
+  margin-bottom: var(--sab);
+}
+
+.ml-safe-left {
+  margin-left: var(--sal);
+}
+
+.mr-safe-right {
+  margin-right: var(--sar);
+}
+
+/* Mobile viewport height fix */
+.h-screen-mobile {
+  height: 100vh;
+  height: 100dvh; /* dynamic viewport height */
+}
+
+.min-h-screen-mobile {
+  min-height: 100vh;
+  min-height: 100dvh; /* dynamic viewport height */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -47,6 +97,19 @@ body {
   /* Better mobile scrolling */
   .overflow-y-auto {
     -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Mobile header improvements */
+  nav.sticky {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    top: env(safe-area-inset-top, 0px);
+  }
+  
+  /* Ensure proper spacing for mobile browsers */
+  .mobile-header-safe {
+    padding-top: max(env(safe-area-inset-top, 0px), 8px);
   }
 }
 
