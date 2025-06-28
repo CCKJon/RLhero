@@ -168,6 +168,11 @@ export default function Social() {
     return friend.character?.name || friend.username
   }
 
+  // Helper function for guild/party members
+  const getMemberDisplayName = (member: { name: string; username?: string }) => {
+    return member.name
+  }
+
   // Helper function for search results
   const getSearchResultDisplayName = (user: SearchResult) => {
     return user.character?.name || user.username || 'Unknown'
@@ -639,7 +644,7 @@ export default function Social() {
                         <div className="flex items-center">
                           <div className="relative">
                             <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
-                              {member.name.charAt(0)}
+                              {getMemberDisplayName(member).charAt(0).toUpperCase()}
                             </div>
                             {member.online && (
                               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-800"></div>
@@ -647,7 +652,7 @@ export default function Social() {
                           </div>
                           
                           <div className="ml-3">
-                            <p className="text-white font-medium">{member.name}</p>
+                            <p className="text-white font-medium">{getMemberDisplayName(member)}</p>
                             <p className="text-xs text-gray-400">Level {member.level} • {member.role}</p>
                           </div>
                         </div>
@@ -789,7 +794,7 @@ export default function Social() {
                         <div className="flex items-center">
                           <div className="relative">
                             <div className="w-10 h-10 bg-primary-800 rounded-full flex items-center justify-center text-white">
-                              {getDisplayName(member).charAt(0).toUpperCase()}
+                              {getMemberDisplayName(member).charAt(0).toUpperCase()}
                             </div>
                             {member.online && (
                               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-800"></div>
@@ -797,7 +802,7 @@ export default function Social() {
                           </div>
                           
                           <div className="ml-3">
-                            <p className="text-white font-medium">{getDisplayName(member)}</p>
+                            <p className="text-white font-medium">{getMemberDisplayName(member)}</p>
                             <p className="text-xs text-gray-400">Level {member.level} • {member.role}</p>
                           </div>
                         </div>
