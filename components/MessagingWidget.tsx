@@ -242,7 +242,7 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
-                                <p className="text-white font-medium truncate">{friend.username}</p>
+                                <p className="text-white font-medium truncate">{friend.character?.name}</p>
                                 {conversation && getUnreadCount(conversation) > 0 && (
                                   <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                                     {getUnreadCount(conversation)}
