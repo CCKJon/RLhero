@@ -13,6 +13,7 @@ import LevelUpModal from '@/components/LevelUpModal'
 import CurrencyIcon from '@/components/CurrencyIcon'
 import { useRouter } from 'next/navigation'
 import { getCharacterImagePathWithSeed } from '@/utils/characterImage'
+import { getQuestIcon } from '@/utils/questUtils'
 
 const EQUIPMENT_SLOT_DISPLAY: Record<string, string> = {
   helm: 'Helm',
@@ -344,7 +345,7 @@ export default function Dashboard() {
                       <div className="flex items-start">
                         <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-900 rounded-md flex-shrink-0 flex items-center justify-center mr-3">
                           <Image 
-                            src="/images/fire-emblem/quest-1.png"
+                            src={getQuestIcon(quest, character)}
                             alt="Quest"
                             width={32}
                             height={32}
