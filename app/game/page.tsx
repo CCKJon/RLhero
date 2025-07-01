@@ -24,7 +24,7 @@ const GAME_EVENTS: GameEvent[] = [
     description: 'Complete a focused study session to gain knowledge and experience.',
     reward: '+50 XP, +2 Intelligence',
     difficulty: 1,
-    image: '/images/fire-emblem/quest-study.png'
+    image: '/images/fire-emblem/quest-1.png'
   },
   {
     id: '2',

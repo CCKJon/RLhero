@@ -200,14 +200,14 @@ export default function Quests() {
                     onClick={() => handleQuestClick(quest)}
                   >
                     <div className="flex items-start">
-                      <div className="w-12 h-12 bg-primary-900 rounded-md flex-shrink-0 flex items-center justify-center mr-3">
-                        <Image 
-                          src={`/images/fire-emblem/quest-${Math.floor(Math.random() * 4) + 1}.png`}
-                          alt="Quest"
-                          width={32}
-                          height={32}
-                        />
-                      </div>
+                                              <div className="w-12 h-12 bg-primary-900 rounded-md flex-shrink-0 flex items-center justify-center mr-3">
+                          <Image 
+                            src="/images/fire-emblem/quest-1.png"
+                            alt="Quest"
+                            width={32}
+                            height={32}
+                          />
+                        </div>
                       <div>
                         <h4 className="text-white text-sm font-medium">{quest.name}</h4>
                         <p className="text-gray-400 text-xs mt-1">Category: {quest.category}</p>

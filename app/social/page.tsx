@@ -321,13 +321,13 @@ export default function Social() {
                       <div className="text-xs text-gray-400 truncate max-w-24 sm:max-w-32">Level {friend.character?.level || '-'}</div>
                     </div>
                     <div className="flex flex-col gap-1">
+                      <Link href={`/profile/${friend.id}`} className="btn btn-mobile text-xs px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white border border-amber-500">Profile</Link>
                       <button 
                         className="btn btn-primary btn-mobile text-xs px-3 py-1"
                         onClick={() => messagingActions.openConversation(friend, friend.id)}
                       >
                         Message
                       </button>
-                      <Link href={`/profile/${friend.id}`} className="text-xs text-accent-400 text-center mt-1">Profile</Link>
                     </div>
                   </div>
                 ))

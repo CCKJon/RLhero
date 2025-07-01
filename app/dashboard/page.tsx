@@ -349,7 +349,7 @@ export default function Dashboard() {
                       <div className="flex items-start">
                         <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-900 rounded-md flex-shrink-0 flex items-center justify-center mr-3">
                           <Image 
-                            src={`/images/fire-emblem/quest-${Math.floor(Math.random() * 4) + 1}.png`}
+                            src="/images/fire-emblem/quest-1.png"
                             alt="Quest"
                             width={32}
                             height={32}
