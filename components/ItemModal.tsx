@@ -93,12 +93,12 @@ export default function ItemModal({ isOpen, onClose, item }: ItemModalProps) {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Panel className="w-full max-w-md sm:max-w-lg transform overflow-hidden rounded-2xl bg-gray-800 p-4 sm:p-6 text-left align-middle shadow-xl transition-all">
                   <div className="flex items-center justify-between mb-4">
-                    <Dialog.Title as="h3" className={`text-xl font-medium ${rarityColors[item.rarity]}`}>
+                    <Dialog.Title as="h3" className={`text-lg sm:text-xl font-medium ${rarityColors[item.rarity]} break-words max-w-48 sm:max-w-64`}>
                       {item.name}
                     </Dialog.Title>
-                    <span className="text-sm text-gray-400">Level {item.level}</span>
+                    <span className="text-sm text-gray-400 flex-shrink-0 ml-2">Level {item.level}</span>
                   </div>
 
                   <div className="w-full h-48 mb-4 flex items-center justify-center bg-gray-700/50 rounded-lg">
@@ -111,7 +111,7 @@ export default function ItemModal({ isOpen, onClose, item }: ItemModalProps) {
                     />
                   </div>
 
-                  <p className="text-gray-400 text-sm mb-4">{item.description}</p>
+                  <p className="text-gray-400 text-sm mb-4 break-words">{item.description}</p>
 
                   {/* Stats */}
                   <div className="space-y-2 mb-4">

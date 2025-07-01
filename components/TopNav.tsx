@@ -85,7 +85,7 @@ export default function TopNav() {
 
           {/* Desktop User Menu */}
           <div className="hidden md:flex items-center">
-            <span className="text-sm font-medium text-white mr-4">
+            <span className="text-sm font-medium text-white mr-4 max-w-32 truncate">
               Level {character.level} {character.race}
             </span>
             <div className="relative" ref={dropdownRef}>
@@ -166,8 +166,8 @@ export default function TopNav() {
                 </span>
               </div>
               <div>
-                <p className="text-white font-medium">{character.name}</p>
-                <p className="text-sm text-gray-400">Level {character.level} {character.race}</p>
+                <p className="text-white font-medium truncate max-w-32">{character.name}</p>
+                <p className="text-sm text-gray-400 truncate max-w-32">Level {character.level} {character.race}</p>
               </div>
             </div>
           </div>
@@ -177,7 +177,7 @@ export default function TopNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`block px-3 py-2 rounded-md text-base font-medium relative ${
+              className={`block px-3 py-2 rounded-md text-sm sm:text-base font-medium relative break-words ${
                 pathname === item.href 
                   ? 'bg-primary-600 text-white' 
                   : 'text-gray-300 hover:bg-gray-700 hover:text-white'

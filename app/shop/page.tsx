@@ -99,7 +99,7 @@ export default function ShopPage() {
                 onClick={() => setSelectedItem(item)}
               >
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <h3 className={`text-base sm:text-lg font-medium ${rarityColors[item.rarity]} truncate`}>{item.name}</h3>
+                  <h3 className={`text-base sm:text-lg font-medium ${rarityColors[item.rarity]} truncate max-w-32 sm:max-w-40`}>{item.name}</h3>
                   <span className="text-sm text-gray-400 flex-shrink-0 ml-2">Level {item.level}</span>
                 </div>
                 
@@ -113,7 +113,7 @@ export default function ShopPage() {
                   />
                 </div>
 
-                <p className="text-gray-400 text-sm mb-3 sm:mb-4 line-clamp-2">{item.description}</p>
+                <p className="text-gray-400 text-sm mb-3 sm:mb-4 line-clamp-2 max-w-full">{item.description}</p>
 
                 {/* Stats */}
                 <div className="space-y-1 sm:space-y-2 mb-3 sm:mb-4">
@@ -129,7 +129,7 @@ export default function ShopPage() {
                 {item.set && (
                   <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-gray-700/30 rounded-lg">
                     <p className="text-sm text-gray-300 mb-1 sm:mb-2">Part of {item.set}</p>
-                    <div className="text-xs text-gray-400 line-clamp-2">
+                    <div className="text-xs text-gray-400 line-clamp-2 max-w-full">
                       {ARMOR_SETS.find(s => s.name === item.set)?.description}
                     </div>
                   </div>

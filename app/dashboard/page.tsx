@@ -130,8 +130,8 @@ export default function Dashboard() {
         {/* Banner content overlay - ensure z-10 so header (z-10 sticky) is above */}
         <div className="absolute inset-0 z-10 flex items-center px-4 sm:px-8">
           <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
-            <h1 className="text-xl sm:text-3xl md:text-4xl font-display font-bold text-white drop-shadow-lg">
-              Welcome back, <span className="text-accent-400">{character.name}</span>
+            <h1 className="text-xl sm:text-3xl md:text-4xl font-display font-bold text-white drop-shadow-lg break-words">
+              Welcome back, <span className="text-accent-400 break-words">{character.name}</span>
             </h1>
           </div>
         </div>
@@ -163,7 +163,7 @@ export default function Dashboard() {
                 <h1 className="text-xl sm:text-2xl font-display font-bold text-white">
                   {character.name}
                 </h1>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-gray-400 truncate max-w-full">
                   Level {character.level} {character.race} • {character.titles[0] || 'Adventurer'}
                 </p>
                 
@@ -320,8 +320,8 @@ export default function Dashboard() {
                               className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-600 rounded bg-gray-700 flex-shrink-0"
                             />
                             <div className="ml-3 flex-1 min-w-0">
-                              <h3 className="text-white font-medium truncate">{quest.name}</h3>
-                              <p className="text-sm text-gray-400">{quest.category}</p>
+                              <h3 className="text-white font-medium truncate max-w-48 sm:max-w-64">{quest.name}</h3>
+                              <p className="text-sm text-gray-400 truncate">{quest.category}</p>
                             </div>
                           </div>
                           <div className="flex items-center ml-2">
@@ -356,8 +356,8 @@ export default function Dashboard() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-white text-sm font-medium truncate">{quest.name}</h4>
-                          <p className="text-gray-400 text-xs mt-1">Category: {quest.category}</p>
+                          <h4 className="text-white text-sm font-medium truncate max-w-32 sm:max-w-40">{quest.name}</h4>
+                          <p className="text-gray-400 text-xs mt-1 truncate">Category: {quest.category}</p>
                           <div className="mt-2 flex items-center flex-wrap gap-1">
                             <span className="text-xs bg-primary-900/50 text-primary-300 px-2 py-1 rounded">
                               +{quest.reward} XP
@@ -423,7 +423,7 @@ export default function Dashboard() {
                     Object.entries(character.skills).map(([skillName, level]) => (
                       <div key={skillName}>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-white truncate">{skillName}</span>
+                          <span className="text-white truncate max-w-24 sm:max-w-32">{skillName}</span>
                           <span className="text-gray-400 flex-shrink-0 ml-2">Level {level}</span>
                         </div>
                         <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
@@ -462,8 +462,8 @@ export default function Dashboard() {
                               className="opacity-90 w-full h-full object-contain"
                             />
                           </div>
-                          <p className="text-white text-xs sm:text-sm text-center line-clamp-1">{item.name}</p>
-                          <p className="text-gray-400 text-xs mt-1">Level {item.level}</p>
+                          <p className="text-white text-xs sm:text-sm text-center line-clamp-1 max-w-20 sm:max-w-24">{item.name}</p>
+                          <p className="text-gray-400 text-xs mt-1 truncate">Level {item.level}</p>
                         </>
                       ) : (
                         <div className="text-center">
@@ -538,7 +538,7 @@ export default function Dashboard() {
                             {index + 1}
                           </span>
                         </div>
-                        <span className="text-white truncate">{title}</span>
+                        <span className="text-white truncate max-w-32 sm:max-w-40">{title}</span>
                       </div>
                     ))
                   )}
@@ -572,8 +572,8 @@ export default function Dashboard() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-white text-sm font-medium truncate">{item.name}</h4>
-                          <p className="text-gray-400 text-xs mt-1">Level {item.level}</p>
+                          <h4 className="text-white text-sm font-medium truncate max-w-32 sm:max-w-40">{item.name}</h4>
+                          <p className="text-gray-400 text-xs mt-1 truncate">Level {item.level}</p>
                           <div className="mt-2 flex items-center">
                             <span className="text-xs bg-primary-900/50 text-primary-300 px-2 py-1 rounded">
                               {item.type}

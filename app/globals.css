@@ -92,6 +92,8 @@ body {
   /* Improve text readability on mobile */
   body {
     font-size: 16px; /* Prevent zoom on iOS */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
   
   /* Better mobile scrolling */
@@ -110,6 +112,31 @@ body {
   /* Ensure proper spacing for mobile browsers */
   .mobile-header-safe {
     padding-top: max(env(safe-area-inset-top, 0px), 8px);
+  }
+
+  /* Prevent text overflow on mobile */
+  h1, h2, h3, h4, h5, h6 {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Improve modal text handling on mobile */
+  .modal-content {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Better text truncation on mobile */
+  .truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Improve button text on mobile */
+  .btn {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 }
 
@@ -163,6 +190,40 @@ body {
 
   .text-mobile-xl {
     @apply text-lg sm:text-xl;
+  }
+
+  /* Enhanced text overflow utilities */
+  .truncate-mobile {
+    @apply truncate max-w-full;
+  }
+
+  .truncate-mobile-sm {
+    @apply truncate max-w-16 sm:max-w-24;
+  }
+
+  .truncate-mobile-md {
+    @apply truncate max-w-24 sm:max-w-32;
+  }
+
+  .truncate-mobile-lg {
+    @apply truncate max-w-32 sm:max-w-40;
+  }
+
+  .truncate-mobile-xl {
+    @apply truncate max-w-40 sm:max-w-48;
+  }
+
+  /* Line clamp utilities for better text control */
+  .line-clamp-1-mobile {
+    @apply line-clamp-1 max-w-full;
+  }
+
+  .line-clamp-2-mobile {
+    @apply line-clamp-2 max-w-full;
+  }
+
+  .line-clamp-3-mobile {
+    @apply line-clamp-3 max-w-full;
   }
 
   /* Mobile-optimized spacing */

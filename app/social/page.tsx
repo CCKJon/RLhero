@@ -317,8 +317,8 @@ export default function Social() {
                       {friend.character?.name?.charAt(0) || friend.username?.charAt(0) || '?'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-white text-sm font-medium truncate">{getDisplayName(friend)}</div>
-                      <div className="text-xs text-gray-400 truncate">Level {friend.character?.level || '-'}</div>
+                      <div className="text-white text-sm font-medium truncate max-w-24 sm:max-w-32">{getDisplayName(friend)}</div>
+                      <div className="text-xs text-gray-400 truncate max-w-24 sm:max-w-32">Level {friend.character?.level || '-'}</div>
                     </div>
                     <div className="flex flex-col gap-1">
                       <button 
@@ -366,8 +366,8 @@ export default function Social() {
                         {getSearchResultDisplayName(user).charAt(0)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-white text-sm font-medium truncate">{getSearchResultDisplayName(user)}</div>
-                        <div className="text-xs text-gray-400 truncate">Level {user.character?.level || '-'}</div>
+                        <div className="text-white text-sm font-medium truncate max-w-24 sm:max-w-32">{getSearchResultDisplayName(user)}</div>
+                        <div className="text-xs text-gray-400 truncate max-w-24 sm:max-w-32">Level {user.character?.level || '-'}</div>
                       </div>
                       <div className="flex flex-col gap-1">
                         {user.isFriend ? (
@@ -487,8 +487,8 @@ export default function Social() {
                             {getPendingRequestDisplayName(profile).charAt(0)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-white text-sm font-medium truncate">{getPendingRequestDisplayName(profile)}</div>
-                            <div className="text-xs text-gray-400 truncate">Level {profile?.character?.level || '-'}</div>
+                            <div className="text-white text-sm font-medium truncate max-w-24 sm:max-w-32">{getPendingRequestDisplayName(profile)}</div>
+                            <div className="text-xs text-gray-400 truncate max-w-24 sm:max-w-32">Level {profile?.character?.level || '-'}</div>
                           </div>
                           <div className="flex gap-2">
                             <button 

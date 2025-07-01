@@ -112,19 +112,19 @@ export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestMo
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-gray-800/95 p-6 shadow-xl transition-all">
-                <Dialog.Title as="h3" className="text-xl font-medium text-white mb-4">
+              <Dialog.Panel className="w-full max-w-md sm:max-w-lg transform overflow-hidden rounded-2xl bg-gray-800/95 p-4 sm:p-6 shadow-xl transition-all">
+                <Dialog.Title as="h3" className="text-lg sm:text-xl font-medium text-white mb-4 break-words">
                   {quest.name}
                 </Dialog.Title>
 
                 <div className="space-y-4">
                   {error && (
-                    <div className="bg-red-900/50 text-red-200 px-4 py-2 rounded">
+                    <div className="bg-red-900/50 text-red-200 px-4 py-2 rounded break-words">
                       {error}
                     </div>
                   )}
 
-                  <p className="text-gray-400">{quest.description}</p>
+                  <p className="text-gray-400 break-words">{quest.description}</p>
 
                   {quest.levelRequirement && (
                     <div className="flex items-center text-sm">

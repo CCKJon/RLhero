@@ -84,7 +84,7 @@ export default function ChatWindow({ friend, conversationId, onClose, isActive }
       animate={{ opacity: 1, scale: 1, x: 0 }}
       exit={{ opacity: 0, scale: 0.8, x: 20 }}
       transition={{ duration: 0.2 }}
-      className={`w-72 sm:w-80 h-80 sm:h-96 bg-gray-900 border border-gray-700 rounded-lg shadow-xl flex flex-col ${
+      className={`w-80 sm:w-96 h-80 sm:h-96 bg-gray-900 border border-gray-700 rounded-lg shadow-xl flex flex-col ${
         isActive ? 'ring-2 ring-primary-500' : ''
       }`}
     >
@@ -94,7 +94,7 @@ export default function ChatWindow({ friend, conversationId, onClose, isActive }
           <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary-800 rounded-full flex items-center justify-center text-white text-xs sm:text-sm mr-2 flex-shrink-0">
             {friend.username.charAt(0).toUpperCase()}
           </div>
-          <h3 className="text-white font-medium text-sm truncate max-w-32 sm:max-w-40">
+          <h3 className="text-white font-medium text-sm truncate max-w-40 sm:max-w-48">
             {friend.username}
           </h3>
         </div>
@@ -120,13 +120,13 @@ export default function ChatWindow({ friend, conversationId, onClose, isActive }
                 className={`flex ${message.senderId === user?.uid ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-40 sm:max-w-48 px-2 py-1 rounded-lg text-xs ${
+                  className={`max-w-56 sm:max-w-64 px-2 py-1 rounded-lg text-xs ${
                     message.senderId === user?.uid
                       ? 'bg-primary-600 text-white'
                       : 'bg-gray-700 text-gray-200'
                   }`}
                 >
-                  <p className="text-xs break-words">{message.content}</p>
+                  <p className="text-xs break-words max-w-full">{message.content}</p>
                   <p className="text-xs opacity-70 mt-1">
                     {formatTime(message.timestamp)}
                   </p>

@@ -142,8 +142,8 @@ export default function Quests() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center flex-1 min-w-0">
                         <div className="ml-3 flex-1 min-w-0">
-                          <h3 className="text-white font-medium truncate">{quest.name}</h3>
-                          <p className="text-sm text-gray-400">{quest.category}</p>
+                          <h3 className="text-white font-medium truncate max-w-48 sm:max-w-64">{quest.name}</h3>
+                          <p className="text-sm text-gray-400 truncate">{quest.category}</p>
                         </div>
                       </div>
                       <div className="flex items-center ml-2">

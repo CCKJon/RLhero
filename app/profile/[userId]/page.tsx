@@ -281,7 +281,7 @@ export default function UserProfilePage() {
                                 className="opacity-90"
                               />
                             </div>
-                            <p className="text-white text-sm text-center line-clamp-1">{item.name}</p>
+                            <p className="text-white text-sm text-center line-clamp-1 max-w-24 sm:max-w-32">{item.name}</p>
                             <p className="text-gray-400 text-xs mt-1">Level {item.level}</p>
                           </>
                         ) : (

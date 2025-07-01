@@ -277,7 +277,7 @@ export default function ProfilePage() {
                     Object.entries(character.skills).map(([skillName, level]) => (
                       <div key={skillName}>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-white truncate">{skillName}</span>
+                          <span className="text-white truncate max-w-24 sm:max-w-32">{skillName}</span>
                           <span className="text-gray-400 flex-shrink-0 ml-2">Level {level}</span>
                         </div>
                         <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
@@ -316,7 +316,7 @@ export default function ProfilePage() {
                               className="opacity-90 w-full h-full object-contain"
                               />
                             </div>
-                          <p className="text-white text-xs sm:text-sm text-center line-clamp-1">{item.name}</p>
+                          <p className="text-white text-xs sm:text-sm text-center line-clamp-1 max-w-20 sm:max-w-24">{item.name}</p>
                             <p className="text-gray-400 text-xs mt-1">Level {item.level}</p>
                           </>
                         ) : (
@@ -392,7 +392,7 @@ export default function ProfilePage() {
                             {index + 1}
                           </span>
                         </div>
-                        <span className="text-white truncate">{title}</span>
+                        <span className="text-white truncate max-w-32 sm:max-w-40">{title}</span>
                       </div>
                     ))
                   )}

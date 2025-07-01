@@ -210,7 +210,7 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                className="w-72 sm:w-80 h-80 sm:h-96 bg-gray-900 border border-gray-700 rounded-lg shadow-xl flex flex-col"
+                className="w-80 sm:w-96 h-80 sm:h-96 bg-gray-900 border border-gray-700 rounded-lg shadow-xl flex flex-col"
               >
                 {/* Header */}
                 <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-700">
@@ -242,7 +242,7 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
-                                <p className="text-white font-medium truncate text-sm sm:text-base">{friend.character?.name}</p>
+                                <p className="text-white font-medium truncate text-sm sm:text-base max-w-32 sm:max-w-40">{friend.character?.name}</p>
                                 {conversation && getUnreadCount(conversation) > 0 && (
                                   <span className="bg-red-500 text-white text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full flex-shrink-0 ml-2">
                                     {getUnreadCount(conversation) > 99 ? '99+' : getUnreadCount(conversation)}
@@ -250,13 +250,13 @@ export default function MessagingWidget({ className = '' }: MessagingWidgetProps
                                 )}
                               </div>
                               {displayMessage ? (
-                                <p className="text-gray-400 text-xs sm:text-sm truncate max-w-32 sm:max-w-48">
+                                <p className="text-gray-400 text-xs sm:text-sm truncate max-w-40 sm:max-w-56">
                                   {displayMessage.content.length > 40 
                                     ? `${displayMessage.content.substring(0, 40)}...` 
                                     : displayMessage.content}
                                 </p>
                               ) : (
-                                <p className="text-gray-500 text-xs sm:text-sm truncate">
+                                <p className="text-gray-500 text-xs sm:text-sm truncate max-w-40 sm:max-w-56">
                                   No messages yet
                                 </p>
                               )}
