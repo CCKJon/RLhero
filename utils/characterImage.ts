@@ -40,4 +40,11 @@ export function getCharacterImagePathWithSeed(race: Race, gender: Gender, seed?:
   }
   
   return `/images/fire-emblem/character-${race}-${effectiveGender}.png`
+}
+
+/**
+ * Capitalizes the first letter of a race name for display
+ */
+export function capitalizeRace(race: string): string {
+  return race.charAt(0).toUpperCase() + race.slice(1);
 } 

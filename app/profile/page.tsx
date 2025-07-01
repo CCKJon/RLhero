@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { TITLE_BONUSES } from '@/lib/titles';
 import { ARMOR_SETS, ALL_EQUIPMENT, Equipment } from '@/types/equipment';
 import ItemModal from '@/components/ItemModal';
-import { getCharacterImagePathWithSeed } from '@/utils/characterImage';
+import { getCharacterImagePathWithSeed, capitalizeRace } from '@/utils/characterImage';
 
 // Define available skills and their unlock levels
 const AVAILABLE_SKILLS = [
@@ -220,7 +220,7 @@ export default function ProfilePage() {
                   {character.name}
                 </h1>
                 <p className="text-gray-400 text-sm sm:text-base mb-2">
-                  Level {character.level} {character.race}
+                  Level {character.level} {capitalizeRace(character.race)}
                 </p>
                 <p className="text-gray-500 text-xs sm:text-sm mb-4">
                   {raceInfo?.description}

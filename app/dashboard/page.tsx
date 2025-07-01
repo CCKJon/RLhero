@@ -12,7 +12,7 @@ import ItemModal from '@/components/ItemModal'
 import LevelUpModal from '@/components/LevelUpModal'
 import CurrencyIcon from '@/components/CurrencyIcon'
 import { useRouter } from 'next/navigation'
-import { getCharacterImagePathWithSeed } from '@/utils/characterImage'
+import { getCharacterImagePathWithSeed, capitalizeRace } from '@/utils/characterImage'
 import { getQuestIcon } from '@/utils/questUtils'
 
 const EQUIPMENT_SLOT_DISPLAY: Record<string, string> = {
@@ -165,7 +165,7 @@ export default function Dashboard() {
                   {character.name}
                 </h1>
                 <p className="text-sm text-gray-400 truncate max-w-full">
-                  Level {character.level} {character.race} • {character.titles[0] || 'Adventurer'}
+                  Level {character.level} {capitalizeRace(character.race)} • {character.titles[0] || 'Adventurer'}
                 </p>
                 
                 {/* Currency Display */}

@@ -73,7 +73,7 @@ export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestMo
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/75 backdrop-blur-sm" />
+          <div className="fixed inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -87,7 +87,7 @@ export default function QuestModal({ isOpen, onClose, quest, onAccept }: QuestMo
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md sm:max-w-lg transform overflow-hidden rounded-2xl bg-gray-800/95 p-4 sm:p-6 shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-md sm:max-w-lg transform overflow-hidden rounded-2xl bg-gray-800/95 p-4 sm:p-6 shadow-xl transition-all" onClick={(e) => e.stopPropagation()}>
                 <Dialog.Title as="h3" className="text-lg sm:text-xl font-medium text-white mb-4 break-words">
                   {quest.name}
                 </Dialog.Title>

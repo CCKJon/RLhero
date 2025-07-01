@@ -7,6 +7,7 @@ import { useUserStore } from '@/store/userStore'
 import { signOutUser } from '@/lib/firebase'
 import { useRouter, usePathname } from 'next/navigation'
 import { FiMenu, FiX, FiUser, FiBarChart, FiLogOut } from 'react-icons/fi'
+import { capitalizeRace } from '@/utils/characterImage'
 
 export default function TopNav() {
   const { character, actions: { resetState } } = useUserStore()
@@ -86,7 +87,7 @@ export default function TopNav() {
           {/* Desktop User Menu */}
           <div className="hidden md:flex items-center">
             <span className="text-sm font-medium text-white mr-4 max-w-32 truncate">
-              Level {character.level} {character.race}
+              Level {character.level} {capitalizeRace(character.race)}
             </span>
             <div className="relative" ref={dropdownRef}>
               <button
@@ -167,7 +168,7 @@ export default function TopNav() {
               </div>
               <div>
                 <p className="text-white font-medium truncate max-w-32">{character.name}</p>
-                <p className="text-sm text-gray-400 truncate max-w-32">Level {character.level} {character.race}</p>
+                <p className="text-sm text-gray-400 truncate max-w-32">Level {character.level} {capitalizeRace(character.race)}</p>
               </div>
             </div>
           </div>

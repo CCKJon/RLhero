@@ -10,7 +10,7 @@ import { db } from '@/lib/firebase'
 import { useAuthStore } from '@/store/authStore'
 import { Character, Race, CharacterClass, Gender } from '@/store/userStore'
 import { ALL_EQUIPMENT, Equipment } from '@/types/equipment'
-import { getCharacterImagePathWithSeed } from '@/utils/characterImage'
+import { getCharacterImagePathWithSeed, capitalizeRace } from '@/utils/characterImage'
 
 // Race descriptions and bonuses
 const RACE_INFO = {
@@ -208,7 +208,7 @@ export default function UserProfilePage() {
                   <p className="text-lg text-accent-400 font-medium mt-1">{character.appliedTitle}</p>
                 )}
                 <p className="text-sm text-gray-400">
-                  Level {character.level || 1} {character.race || 'Human'} {character.class || 'Warrior'}
+                  Level {character.level || 1} {capitalizeRace(character.race || 'human')} {character.class || 'Warrior'}
                 </p>
                 <div className="mt-2">
                   <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
@@ -228,7 +228,7 @@ export default function UserProfilePage() {
             <div className="flex-1 space-y-6">
               {/* Race Description */}
               <div className="bg-gray-800/50 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-white mb-2">Race: {character.race}</h3>
+                <h3 className="text-lg font-medium text-white mb-2">Race: {capitalizeRace(character.race)}</h3>
                 <p className="text-gray-300">{raceInfo?.description}</p>
                 <div className="mt-4">
                   <h4 className="text-sm font-medium text-gray-400 mb-2">Racial Bonuses:</h4>
