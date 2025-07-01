@@ -142,7 +142,7 @@ body {
 
 @layer components {
   .btn {
-    @apply px-4 py-2 rounded-md font-medium transition-all duration-300 ease-in-out;
+    @apply px-3 py-1.5 rounded-md font-medium transition-all duration-300 ease-in-out;
   }
 
   .btn-primary {
@@ -171,7 +171,7 @@ body {
 
   /* Mobile-optimized button styles */
   .btn-mobile {
-    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+    @apply min-h-[32px] min-w-[32px] flex items-center justify-center px-2 py-1;
   }
 
   /* Mobile-optimized card styles */
