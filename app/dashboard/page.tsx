@@ -227,16 +227,6 @@ export default function Dashboard() {
           </motion.div>
         </div>
         
-        {/* Quest Count Display */}
-        <div className="flex justify-center sm:justify-end mb-4">
-          <div className="px-4 py-2 bg-dark/50 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg">
-            <p className="text-sm font-medium text-gray-300">Accepted Quests</p>
-            <p className="text-2xl font-bold text-white">
-              {acceptedQuests.length}/{getMaxAcceptedQuests(character.level)}
-            </p>
-          </div>
-        </div>
-        
         {/* Tab Navigation */}
         <div className="flex border-b border-gray-800 mb-6 overflow-x-auto">
           <button
@@ -338,7 +328,12 @@ export default function Dashboard() {
 
               {/* Available Quests */}
               <div className="mt-6 sm:mt-8">
-                <h3 className="text-lg font-medium text-white mb-4">Available Quests</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium text-white">Available Quests</h3>
+                  <span className="text-lg font-bold text-white flex items-center gap-2">
+                    <span className="text-base font-medium text-gray-300">Accepted Quests:</span> {acceptedQuests.length}/{getMaxAcceptedQuests(character.level)}
+                  </span>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {availableQuests.map((quest) => (
                     <div 
