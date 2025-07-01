@@ -12,7 +12,7 @@ export default function CurrencyIcon({ type, size = 20, className = '' }: Curren
       case 'gold':
         return '/images/fire-emblem/gold-coin.png';
       case 'sp':
-        return '/images/fire-emblem/sp-coin.png';
+        return '/images/fire-emblem/sp-points.png';
       default:
         return '/images/fire-emblem/gold-coin.png';
     }
