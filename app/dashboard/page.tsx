@@ -147,7 +147,7 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-6">
               {/* Character Portrait */}
               <div className="relative w-24 h-24 sm:w-32 sm:h-32 overflow-hidden rounded-lg border-2 border-accent-500 flex-shrink-0 mx-auto sm:mx-0">
                 <Image 
@@ -159,7 +159,7 @@ export default function Dashboard() {
                 />
               </div>
               
-              <div className="flex-1 text-center sm:text-left">
+              <div className="flex-1 flex flex-col items-center sm:items-start text-center sm:text-left">
                 <h1 className="text-xl sm:text-2xl font-display font-bold text-white">
                   {character.name}
                 </h1>
@@ -168,7 +168,7 @@ export default function Dashboard() {
                 </p>
                 
                 {/* Currency Display */}
-                <div className="mt-2 flex items-center justify-center sm:justify-start space-x-4">
+                <div className="mt-2 flex items-center justify-center sm:justify-start space-x-4 w-full">
                   <div className="flex items-center">
                     <CurrencyIcon 
                       type="gold"
