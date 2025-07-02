@@ -22,8 +22,15 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center">
       <div className="relative w-full h-screen flex items-center justify-center overflow-hidden">
         {/* Hero Background */}
-        <div className="absolute inset-0 bg-hero-pattern opacity-20 bg-repeat"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-primary-900/30 to-dark/70"></div>
+        <Image 
+          src="/images/fire-emblem/banner-bg.jpg" 
+          alt=""
+          fill
+          className="object-cover"
+          priority
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary-900/50 to-dark/80"></div>
         
         {/* Content Container */}
         <div className="relative z-10 max-w-5xl mx-auto text-center px-6">
