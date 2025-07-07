@@ -117,8 +117,6 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-dark">
       {/* Hero Banner */}
       <div className="relative w-full h-48 sm:h-64 overflow-hidden">
-        {/* Banner background overlay - ensure z-0 so header is above */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-accent-900/80 z-0 pointer-events-none"></div>
         <Image 
           src="/images/fire-emblem/banner-bg.jpg" 
           alt=""
