@@ -202,132 +202,108 @@ export default function ProfilePage() {
             </Link>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
+          <div className="flex flex-col md:flex-row gap-8">
             {/* Profile Image and Basic Info */}
-            <div className="flex-shrink-0">
-              <div className="relative w-32 h-32 sm:w-48 sm:h-48 rounded-lg overflow-hidden border-2 border-primary-500 mx-auto lg:mx-0">
-                <Image 
-                  src={getCharacterImagePathWithSeed(character.race, character.gender, character.id)}
-                  alt={character.name}
-                  width={192}
-                  height={192}
-                  className="w-full h-full object-cover"
-                />
+            <div className="flex-shrink-0 flex flex-col items-center md:items-start w-full md:w-1/3">
+              <div className="ornate-border w-full flex flex-col items-center p-4 mb-4">
+                <div className="relative w-32 h-32 sm:w-48 sm:h-48 rounded-lg overflow-hidden border-2 border-primary-500">
+                  <Image 
+                    src={getCharacterImagePathWithSeed(character.race, character.gender, character.id)}
+                    alt={character.name}
+                    width={192}
+                    height={192}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="mt-4 text-center w-full">
+                  <h2 className="text-xl sm:text-2xl font-display text-white font-bold">{character.name}</h2>
+                  <p className="text-lg text-accent-400 font-medium mt-1">
+                    {character.appliedTitle ? character.appliedTitle : 'No Title'}
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Level {character.level} {capitalizeRace(character.race)} {character.class || ''}
+                  </p>
+                  <div className="mt-2 w-full">
+                    <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-primary-500" 
+                        style={{ width: `${((character.experience || 0) / (character.nextLevelXp || 100)) * 100}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {character.experience || 0} / {character.nextLevelXp || 100} XP
+                    </p>
+                  </div>
+                </div>
               </div>
-              
-              <div className="mt-4 sm:mt-6 text-center lg:text-left">
-                <h1 className="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
-                  {character.name}
-                </h1>
-                <p className="text-gray-400 text-sm sm:text-base mb-2">
-                  Level {character.level} {capitalizeRace(character.race)}
-                </p>
-                <p className="text-gray-500 text-xs sm:text-sm mb-4">
-                  {raceInfo?.description}
-                </p>
-                
-                {/* Race Bonuses */}
-                <div className="bg-gray-800/50 rounded-lg p-3 sm:p-4 mb-4">
-                  <h3 className="text-sm sm:text-base font-medium text-white mb-2">Race Bonuses</h3>
+            </div>
+
+            {/* Character Information */}
+            <div className="flex-1 space-y-6">
+              {/* Race Description */}
+              <div className="bg-gray-800/50 rounded-lg p-6">
+                <h3 className="text-lg font-medium text-white mb-2">Race: {capitalizeRace(character.race)}</h3>
+                <p className="text-gray-300">{raceInfo?.description}</p>
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-gray-400 mb-2">Racial Bonuses:</h4>
                   <div className="grid grid-cols-2 gap-2">
                     {Object.entries(raceInfo?.bonuses || {}).map(([stat, bonus]) => (
-                      <div key={stat} className="flex justify-between text-xs sm:text-sm">
-                        <span className="text-gray-400 capitalize">{stat}</span>
+                      <div key={stat} className="flex items-center justify-between bg-gray-700/50 rounded px-3 py-1">
+                        <span className="text-gray-300 capitalize">{stat}</span>
                         <span className="text-primary-400">+{bonus}</span>
                       </div>
                     ))}
                   </div>
-                  </div>
                 </div>
               </div>
-
-            {/* Character Details */}
-            <div className="flex-1 space-y-6 sm:space-y-8">
               {/* Stats */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-gray-700">
-                <h2 className="text-lg sm:text-xl font-medium text-white mb-4">Character Stats</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="bg-gray-800/50 rounded-lg p-6">
+                <h3 className="text-lg font-medium text-white mb-4">Character Stats</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {Object.entries(character.stats).map(([stat, value]) => (
-                    <div key={stat} className="bg-gray-700/50 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm text-gray-400 capitalize">{stat}</span>
-                        <span className="text-sm font-medium text-white">{value}</span>
-                      </div>
-                      <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-accent-500" 
-                          style={{ width: `${(Number(value) / 20) * 100}%` }}
-                        ></div>
-                      </div>
+                    <div key={stat} className="bg-gray-700/50 rounded-lg p-4">
+                      <label className="block text-sm font-medium text-gray-400 capitalize">{stat}</label>
+                      <p className="mt-1 text-xl font-bold text-primary-400">{value}</p>
+                      {raceInfo?.bonuses[stat as keyof typeof raceInfo.bonuses] && (
+                        <p className="text-xs text-primary-300">
+                          +{raceInfo.bonuses[stat as keyof typeof raceInfo.bonuses]} from race
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
-
-              {/* Skills */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-gray-700">
-                <h2 className="text-lg sm:text-xl font-medium text-white mb-4">Skills</h2>
-                <div className="space-y-3 sm:space-y-4">
-                  {Object.keys(character.skills).length === 0 ? (
-                    <div className="text-center py-6 sm:py-8">
-                      <p className="text-gray-400">No skills learned yet.</p>
-                      <p className="text-sm text-gray-500 mt-1">Complete quests to level up your skills!</p>
-                    </div>
-                  ) : (
-                    Object.entries(character.skills).map(([skillName, level]) => (
-                      <div key={skillName}>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-white truncate max-w-24 sm:max-w-32">{skillName}</span>
-                          <span className="text-gray-400 flex-shrink-0 ml-2">Level {level}</span>
-                        </div>
-                        <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-primary-500" 
-                            style={{ width: `${(level / 10) * 100}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
               {/* Equipment */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-gray-700">
-                <h2 className="text-lg sm:text-xl font-medium text-white mb-4">Equipment</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="bg-gray-800/50 rounded-lg p-6">
+                <h3 className="text-lg font-medium text-white mb-4">Equipment</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {Object.entries(hydratedEquipment)
                     .filter(([slot]) => Object.keys(EQUIPMENT_SLOT_DISPLAY).includes(slot))
                     .map(([slot, item]) => (
-                    <div 
-                      key={slot} 
-                      className="bg-gray-700/50 rounded-lg p-3 sm:p-4 relative cursor-pointer hover:border-gray-600 transition-colors h-[100px] sm:h-[120px] flex flex-col items-center justify-center"
-                      onClick={() => item && setSelectedItem(item)}
-                    >
-                      <label className="block text-xs sm:text-sm font-medium text-gray-400 capitalize mb-1 sm:mb-2 text-center">{EQUIPMENT_SLOT_DISPLAY[slot]}</label>
+                      <div key={slot} className="bg-gray-700/50 rounded-lg p-4 h-[100px] sm:h-[120px] flex flex-col items-center justify-center">
+                        <label className="block text-sm font-medium text-gray-400 capitalize mb-2">{EQUIPMENT_SLOT_DISPLAY[slot]}</label>
                         {item ? (
                           <>
-                          <div className="w-8 h-8 sm:w-12 sm:h-12 mb-1 sm:mb-2 flex items-center justify-center">
+                            <div className="w-8 h-8 sm:w-12 sm:h-12 mb-2 flex items-center justify-center">
                               <Image 
                                 src={item.image} 
                                 alt={item.name} 
                                 width={48} 
                                 height={48} 
-                              className="opacity-90 w-full h-full object-contain"
+                                className="opacity-90 w-full h-full object-contain"
                               />
                             </div>
-                          <p className="text-white text-xs sm:text-sm text-center line-clamp-1 max-w-20 sm:max-w-24">{item.name}</p>
+                            <p className="text-white text-xs sm:text-sm text-center line-clamp-1 max-w-20 sm:max-w-24">{item.name}</p>
                             <p className="text-gray-400 text-xs mt-1">Level {item.level}</p>
                           </>
                         ) : (
                           <div className="text-center">
-                          <p className="text-xs sm:text-sm text-gray-400">No {EQUIPMENT_SLOT_DISPLAY[slot]} equipped</p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                            <p className="text-xs sm:text-sm text-gray-400">No {EQUIPMENT_SLOT_DISPLAY[slot]} equipped</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                 </div>
-
                 {/* Set Bonuses */}
                 {Object.values(character.equipment).some(item => item?.set) && (
                   <div className="mt-4 sm:mt-6">
@@ -337,10 +313,8 @@ export default function ProfilePage() {
                         const equippedPieces = Object.values(character.equipment).filter(
                           item => item?.set === set.name
                         );
-                        
                         if (equippedPieces.length === 0) return null;
-                    
-                    return (
+                        return (
                           <div key={set.name} className="bg-gray-700/30 rounded-lg p-3">
                             <div className="flex justify-between items-center mb-2">
                               <span className="text-sm text-white">{set.name}</span>
@@ -348,7 +322,6 @@ export default function ProfilePage() {
                                 {equippedPieces.length}/{set.pieces.length} pieces
                               </span>
                             </div>
-                            
                             {Object.entries(set.bonuses).map(([pieceCount, bonus]) => {
                               const isActive = equippedPieces.length >= parseInt(pieceCount);
                               return (
@@ -361,43 +334,43 @@ export default function ProfilePage() {
                                       +{value} {stat}
                                     </span>
                                   ))}
-                            </div>
+                                </div>
                               );
                             })}
-                      </div>
-                    );
-                  })}
-                </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
-
-              {/* Titles */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-gray-700">
-                <h2 className="text-lg sm:text-xl font-medium text-white mb-4">Titles</h2>
-                <div className="grid grid-cols-1 gap-3">
-                  {character.titles.length === 0 ? (
-                    <div className="text-center py-6 sm:py-8">
-                      <p className="text-gray-400">No titles earned yet.</p>
-                      <p className="text-sm text-gray-500 mt-1">Complete achievements to earn titles!</p>
+              {/* Skills */}
+              {Object.keys(character.skills).length > 0 && (
+                <div className="bg-gray-800/50 rounded-lg p-6">
+                  <h3 className="text-lg font-medium text-white mb-4">Skills</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(character.skills).map(([skillName, level]) => (
+                      <div key={skillName} className="bg-gray-700/50 rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h4 className="text-white font-medium">{skillName}</h4>
                           </div>
-                  ) : (
-                    character.titles.map((title, index) => (
-                      <div 
-                        key={index} 
-                        className="bg-gray-700/50 rounded-lg p-3 flex items-center"
-                      >
-                        <div className="w-8 h-8 bg-primary-800 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                          <span className="text-primary-300 text-sm">
-                            {index + 1}
-                          </span>
+                          <span className="text-primary-400">Level {level}/10</span>
                         </div>
-                        <span className="text-white truncate max-w-32 sm:max-w-40">{title}</span>
+                        <div className="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-primary-500" 
+                            style={{ width: `${(level / 10) * 100}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Max Level: 10
+                        </p>
                       </div>
-                    ))
-                  )}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </motion.div>

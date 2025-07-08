@@ -309,6 +309,14 @@ body {
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  .ornate-border {
+    border: 3px solid #eab308; /* gold-400 */
+    border-radius: 1rem;
+    box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.15), 0 2px 16px 0 rgba(0,0,0,0.25);
+    background: linear-gradient(135deg, rgba(234,179,8,0.08) 0%, rgba(255,255,255,0.01) 100%);
+    position: relative;
+  }
 }
 
 /* Japanese-inspired scrollbar */
