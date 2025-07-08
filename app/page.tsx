@@ -23,7 +23,7 @@ export default function Home() {
       <div className="relative w-full h-screen flex items-center justify-center overflow-hidden">
         {/* Hero Background */}
         <Image 
-          src="/images/fire-emblem/banner-bg.jpg" 
+          src="/images/fire-emblem/banner-bg.jpeg" 
           alt=""
           fill
           className="object-cover"

@@ -118,7 +118,7 @@ export default function Dashboard() {
       {/* Hero Banner */}
       <div className="relative w-full h-48 sm:h-64 overflow-hidden">
         <Image 
-          src="/images/fire-emblem/banner-bg.jpg" 
+          src="/images/fire-emblem/banner-bg.jpeg" 
           alt=""
           width={1920}
           height={400}
@@ -189,8 +189,7 @@ export default function Dashboard() {
                 {/* XP Bar */}
                 <div className="mt-4">
                   <div className="flex justify-between text-xs text-gray-400 mb-1">
-                    <span>Experience: {displayedExperience}/{displayedNextLevelXp}</span>
-                    <span>{displayedPercent}%</span>
+                    <span>Experience: {displayedExperience}/{displayedNextLevelXp} ({displayedPercent}%)</span>
                   </div>
                   <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
                     <div 
