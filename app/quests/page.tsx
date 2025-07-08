@@ -8,7 +8,7 @@ import { useUserStore, Quest, getMaxAcceptedQuests } from '@/store/userStore'
 import type { QuestCategory } from '@/store/userStore'
 import QuestModal from '@/components/QuestModal'
 import AddQuestModal from '@/components/AddQuestModal'
-import { getQuestIcon } from '@/utils/questUtils'
+import { getQuestIcon, isQuestLocked } from '@/utils/questUtils'
 
 export default function Quests() {
   const { quests, character, actions: { addQuest, acceptQuest } } = useUserStore()
@@ -26,9 +26,26 @@ export default function Quests() {
     quest => questFilter === 'All' || quest.category === questFilter
   )
 
-  const acceptedQuests = filteredQuests.filter(q => q.accepted && !q.completed)
-  const availableQuests = filteredQuests.filter(q => !q.accepted && !q.completed)
-  const completedQuests = filteredQuests.filter(q => q.completed)
+  // Sort quests so unlocked quests appear first, then locked quests
+  const sortQuestsByLockStatus = (questArray: Quest[]) => {
+    return questArray.sort((a, b) => {
+      if (!character) return 0
+      const aLocked = isQuestLocked(a, character)
+      const bLocked = isQuestLocked(b, character)
+      
+      // Unlocked quests first (false comes before true when sorting)
+      if (aLocked !== bLocked) {
+        return aLocked ? 1 : -1
+      }
+      
+      // If both have same lock status, maintain original order
+      return 0
+    })
+  }
+
+  const acceptedQuests = sortQuestsByLockStatus(filteredQuests.filter(q => q.accepted && !q.completed))
+  const availableQuests = sortQuestsByLockStatus(filteredQuests.filter(q => !q.accepted && !q.completed))
+  const completedQuests = sortQuestsByLockStatus(filteredQuests.filter(q => q.completed))
 
   const handleAddQuest = (questData: {
     name: string
@@ -134,7 +151,7 @@ export default function Quests() {
           {selectedTab === 'daily' && (
             <div className="px-4 sm:px-0">
               <div className="space-y-3 sm:space-y-4">
-                {filteredQuests.filter(q => !q.completed).map((quest) => (
+                {sortQuestsByLockStatus(filteredQuests.filter(q => !q.completed)).map((quest) => (
                   <div 
                     key={quest.id}
                     className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-gray-700 cursor-pointer hover:bg-gray-700/50 transition-colors"
