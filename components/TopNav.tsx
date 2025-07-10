@@ -48,6 +48,8 @@ export default function TopNav() {
   const navigationItems = [
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/quests', label: 'Quests' },
+    { href: '/habits', label: 'Habits' },
+    { href: '/journal', label: 'Journal' },
     { href: '/social', label: 'Social' },
     { href: '/shop', label: 'Shop' },
     { href: '/crafting', label: 'Crafting' },

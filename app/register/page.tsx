@@ -117,7 +117,9 @@ export default function Register() {
           ].filter(Boolean) as typeof ALL_EQUIPMENT,
           appliedTitle: null,
           class: 'warrior',
-          completedQuests: []
+          completedQuests: [],
+          habits: [],
+          journalEntries: []
         }
         
         await userActions.setCharacter(newCharacter)
@@ -129,7 +131,8 @@ export default function Register() {
           category: 'Education',
           completed: false,
           accepted: false,
-          goldReward: 100
+          goldReward: 100,
+          isHabit: false
         })
         
         await userActions.addQuest({
@@ -325,6 +328,43 @@ export default function Register() {
               requiredQuestId: 'skill-mastery'
             }
           ]
+        })
+        
+        // Add starter habits
+        await userActions.addHabit({
+          name: 'Morning Exercise',
+          description: 'Start your day with some physical activity',
+          category: 'morning',
+          baseReward: 30,
+          isActive: true,
+          currentMultiplier: 1
+        })
+
+        await userActions.addHabit({
+          name: 'Evening Reflection',
+          description: 'Take time to reflect on your day',
+          category: 'evening',
+          baseReward: 25,
+          isActive: true,
+          currentMultiplier: 1
+        })
+
+        await userActions.addHabit({
+          name: 'Weekly Planning',
+          description: 'Plan your goals for the week ahead',
+          category: 'weekly',
+          baseReward: 50,
+          isActive: true,
+          currentMultiplier: 1
+        })
+
+        // Add a starter journal entry
+        await userActions.addJournalEntry({
+          title: 'Welcome to RL Hero!',
+          content: 'This is your first journal entry. Use this space to reflect on your journey, track your progress, and document your achievements. You can add mood tracking and tags to organize your thoughts.',
+          mood: 'great',
+          tags: ['welcome', 'first-entry'],
+          isPrivate: false
         })
         
         // Redirect to dashboard

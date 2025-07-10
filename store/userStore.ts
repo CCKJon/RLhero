@@ -41,6 +41,9 @@ export type Character = {
     eyeColor: Array<{ original: string; replacement: string }>
   }
   completedQuests: string[]
+  // New fields for habits and journaling
+  habits: Habit[]
+  journalEntries: JournalEntry[]
 }
 
 // Types for our quests
@@ -52,6 +55,33 @@ export type QuestPrerequisite = {
   requiredLevel?: number
   requiredSkill?: string
   requiredQuestId?: string
+}
+
+export type Habit = {
+  id: string
+  name: string
+  description?: string
+  category: 'morning' | 'evening' | 'weekly'
+  streak: number
+  maxStreak: number
+  lastCompletedDate?: Date
+  isActive: boolean
+  createdAt: Date
+  chainId?: string // For habit chains
+  chainPosition?: number // Position in the chain
+  baseReward: number
+  currentMultiplier: number
+}
+
+export type JournalEntry = {
+  id: string
+  title: string
+  content: string
+  mood?: 'great' | 'good' | 'neutral' | 'bad' | 'terrible'
+  tags: string[]
+  dateCreated: Date
+  dateModified: Date
+  isPrivate: boolean
 }
 
 export type Quest = {
@@ -70,6 +100,14 @@ export type Quest = {
   levelRequirement?: number
   prerequisites?: QuestPrerequisite[]
   isLocked?: boolean
+  // New fields for expiration and habits
+  expirationDate?: Date
+  isHabit?: boolean
+  habitCategory?: 'morning' | 'evening' | 'weekly'
+  habitStreak?: number
+  habitChain?: string // ID of the next habit in the chain
+  chainMultiplier?: number // Current multiplier for chain
+  lastCompletedDate?: Date
 }
 
 // Maximum number of quests a player can have accepted at once
@@ -121,6 +159,15 @@ type UserState = {
     addToInventory: (item: Equipment) => Promise<void>
     removeFromInventory: (itemId: string) => Promise<void>
     closeLevelUpModal: () => void
+    // New actions for habits and journaling
+    addHabit: (habit: Omit<Habit, 'id' | 'createdAt' | 'streak' | 'maxStreak'>) => Promise<void>
+    completeHabit: (id: string) => Promise<void>
+    updateHabit: (id: string, updates: Partial<Habit>) => Promise<void>
+    deleteHabit: (id: string) => Promise<void>
+    createHabitChain: (habits: Omit<Habit, 'id' | 'createdAt' | 'streak' | 'maxStreak'>[]) => Promise<void>
+    addJournalEntry: (entry: Omit<JournalEntry, 'id' | 'dateCreated' | 'dateModified'>) => Promise<void>
+    updateJournalEntry: (id: string, updates: Partial<JournalEntry>) => Promise<void>
+    deleteJournalEntry: (id: string) => Promise<void>
   }
 }
 
@@ -211,6 +258,11 @@ export const useUserStore = create<UserState>()(
             const state = get()
             const quest = state.quests.find(q => q.id === id)
             if (!quest) throw new Error('Quest not found')
+
+            // Check if quest has expired
+            if (quest.expirationDate && new Date() > new Date(quest.expirationDate)) {
+              throw new Error('Quest has expired and cannot be completed')
+            }
 
             const updatedQuest = {
               ...quest,
@@ -873,6 +925,339 @@ export const useUserStore = create<UserState>()(
           } catch (error: any) {
             set({ 
               error: error.message || 'Failed to remove item from inventory',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        // Habit actions
+        addHabit: async (habit) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const newHabit: Habit = {
+              ...habit,
+              id: Math.random().toString(36).substring(2, 9),
+              createdAt: new Date(),
+              streak: 0,
+              maxStreak: 0,
+              currentMultiplier: 1
+            }
+
+            const state = get()
+            const character = state.character
+            if (!character) throw new Error('No character found')
+
+            const updatedHabits = [...(character.habits || []), newHabit]
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              'character.habits': updatedHabits
+            })
+
+            set({
+              character: {
+                ...character,
+                habits: updatedHabits
+              },
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to add habit',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        completeHabit: async (id: string) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
+            const character = state.character
+            if (!character) throw new Error('No character found')
+
+            const habit = character.habits?.find(h => h.id === id)
+            if (!habit) throw new Error('Habit not found')
+
+            const today = new Date()
+            const lastCompleted = habit.lastCompletedDate ? new Date(habit.lastCompletedDate) : null
+            const isConsecutiveDay = lastCompleted && 
+              lastCompleted.toDateString() === new Date(today.getTime() - 24 * 60 * 60 * 1000).toDateString()
+
+            let newStreak = habit.streak
+            let newMultiplier = habit.currentMultiplier
+
+            if (isConsecutiveDay) {
+              newStreak = habit.streak + 1
+              // Increase multiplier by 5% for each consecutive day, max 2x
+              newMultiplier = Math.min(2, habit.currentMultiplier + 0.05)
+            } else {
+              newStreak = 1
+              newMultiplier = 1
+            }
+
+            const updatedHabit: Habit = {
+              ...habit,
+              streak: newStreak,
+              maxStreak: Math.max(habit.maxStreak, newStreak),
+              lastCompletedDate: today,
+              currentMultiplier: newMultiplier
+            }
+
+            const updatedHabits = character.habits?.map(h => h.id === id ? updatedHabit : h) || []
+
+            // Calculate reward with multiplier
+            const reward = Math.floor(habit.baseReward * newMultiplier)
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              'character.habits': updatedHabits
+            })
+
+            set({
+              character: {
+                ...character,
+                habits: updatedHabits
+              },
+              isLoading: false
+            })
+
+            // Award XP for completing habit
+            await get().actions.gainExperience(reward)
+
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to complete habit',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        updateHabit: async (id: string, updates: Partial<Habit>) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
+            const character = state.character
+            if (!character) throw new Error('No character found')
+
+            const updatedHabits = character.habits?.map(h => 
+              h.id === id ? { ...h, ...updates } : h
+            ) || []
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              'character.habits': updatedHabits
+            })
+
+            set({
+              character: {
+                ...character,
+                habits: updatedHabits
+              },
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to update habit',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        deleteHabit: async (id: string) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
+            const character = state.character
+            if (!character) throw new Error('No character found')
+
+            const updatedHabits = character.habits?.filter(h => h.id !== id) || []
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              'character.habits': updatedHabits
+            })
+
+            set({
+              character: {
+                ...character,
+                habits: updatedHabits
+              },
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to delete habit',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        createHabitChain: async (habits) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const chainId = Math.random().toString(36).substring(2, 9)
+            const newHabits: Habit[] = habits.map((habit, index) => ({
+              ...habit,
+              id: Math.random().toString(36).substring(2, 9),
+              createdAt: new Date(),
+              streak: 0,
+              maxStreak: 0,
+              currentMultiplier: 1,
+              chainId,
+              chainPosition: index
+            }))
+
+            const state = get()
+            const character = state.character
+            if (!character) throw new Error('No character found')
+
+            const updatedHabits = [...(character.habits || []), ...newHabits]
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              'character.habits': updatedHabits
+            })
+
+            set({
+              character: {
+                ...character,
+                habits: updatedHabits
+              },
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to create habit chain',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        // Journaling actions
+        addJournalEntry: async (entry) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const newEntry: JournalEntry = {
+              ...entry,
+              id: Math.random().toString(36).substring(2, 9),
+              dateCreated: new Date(),
+              dateModified: new Date()
+            }
+
+            const state = get()
+            const character = state.character
+            if (!character) throw new Error('No character found')
+
+            const updatedEntries = [...(character.journalEntries || []), newEntry]
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              'character.journalEntries': updatedEntries
+            })
+
+            set({
+              character: {
+                ...character,
+                journalEntries: updatedEntries
+              },
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to add journal entry',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        updateJournalEntry: async (id: string, updates: Partial<JournalEntry>) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
+            const character = state.character
+            if (!character) throw new Error('No character found')
+
+            const updatedEntries = character.journalEntries?.map(entry => 
+              entry.id === id ? { ...entry, ...updates, dateModified: new Date() } : entry
+            ) || []
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              'character.journalEntries': updatedEntries
+            })
+
+            set({
+              character: {
+                ...character,
+                journalEntries: updatedEntries
+              },
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to update journal entry',
+              isLoading: false 
+            })
+            throw error
+          }
+        },
+
+        deleteJournalEntry: async (id: string) => {
+          try {
+            set({ isLoading: true, error: null })
+            const { user } = useAuthStore.getState()
+            if (!user) throw new Error('No authenticated user')
+
+            const state = get()
+            const character = state.character
+            if (!character) throw new Error('No character found')
+
+            const updatedEntries = character.journalEntries?.filter(entry => entry.id !== id) || []
+
+            const userRef = doc(db, 'users', user.uid)
+            await updateDoc(userRef, {
+              'character.journalEntries': updatedEntries
+            })
+
+            set({
+              character: {
+                ...character,
+                journalEntries: updatedEntries
+              },
+              isLoading: false
+            })
+          } catch (error: any) {
+            set({ 
+              error: error.message || 'Failed to delete journal entry',
               isLoading: false 
             })
             throw error

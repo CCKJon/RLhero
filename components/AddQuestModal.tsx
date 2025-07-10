@@ -12,6 +12,9 @@ interface AddQuestModalProps {
     reward: number
     goldReward: number
     itemReward: string
+    expirationDate: string
+    isHabit: boolean
+    habitCategory: 'morning' | 'evening' | 'weekly'
   }) => void
   initialQuestName?: string
 }
@@ -23,7 +26,10 @@ export default function AddQuestModal({ isOpen, onClose, onSubmit, initialQuestN
     description: '',
     reward: 30,
     goldReward: 0,
-    itemReward: ''
+    itemReward: '',
+    expirationDate: '',
+    isHabit: false,
+    habitCategory: 'morning' as 'morning' | 'evening' | 'weekly'
   })
 
   // Reset form when modal opens with new initial quest name
@@ -45,7 +51,10 @@ export default function AddQuestModal({ isOpen, onClose, onSubmit, initialQuestN
       description: '',
       reward: 30,
       goldReward: 0,
-      itemReward: ''
+      itemReward: '',
+      expirationDate: '',
+      isHabit: false,
+      habitCategory: 'morning'
     })
   }
 
@@ -171,6 +180,50 @@ export default function AddQuestModal({ isOpen, onClose, onSubmit, initialQuestN
                       placeholder="Enter item name or leave empty"
                     />
                   </div>
+
+                  <div>
+                    <label htmlFor="expirationDate" className="block text-sm font-medium text-gray-300 mb-1">
+                      Expiration Date (Optional)
+                    </label>
+                    <input
+                      type="datetime-local"
+                      id="expirationDate"
+                      value={quest.expirationDate}
+                      onChange={(e) => setQuest({ ...quest, expirationDate: e.target.value })}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-white placeholder-gray-400 focus:ring-primary-500 focus:border-primary-500"
+                    />
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="isHabit"
+                      checked={quest.isHabit}
+                      onChange={(e) => setQuest({ ...quest, isHabit: e.target.checked })}
+                      className="mr-2"
+                    />
+                    <label htmlFor="isHabit" className="text-sm text-gray-300">
+                      This is a habit quest
+                    </label>
+                  </div>
+
+                  {quest.isHabit && (
+                    <div>
+                      <label htmlFor="habitCategory" className="block text-sm font-medium text-gray-300 mb-1">
+                        Habit Category
+                      </label>
+                      <select
+                        id="habitCategory"
+                        value={quest.habitCategory}
+                        onChange={(e) => setQuest({ ...quest, habitCategory: e.target.value as any })}
+                        className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-white focus:ring-primary-500 focus:border-primary-500"
+                      >
+                        <option value="morning">🌅 Morning Routine</option>
+                        <option value="evening">🌙 Evening Routine</option>
+                        <option value="weekly">📅 Weekly Goal</option>
+                      </select>
+                    </div>
+                  )}
 
                   <div className="mt-6 flex justify-end gap-3">
                     <button

@@ -45,7 +45,9 @@ const DEFAULT_CHARACTER: Character = {
     hairColor: [],
     eyeColor: []
   },
-  completedQuests: []
+  completedQuests: [],
+  habits: [],
+  journalEntries: []
 }
 
 type UserData = {

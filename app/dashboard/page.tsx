@@ -13,7 +13,7 @@ import LevelUpModal from '@/components/LevelUpModal'
 import CurrencyIcon from '@/components/CurrencyIcon'
 import { useRouter } from 'next/navigation'
 import { getCharacterImagePathWithSeed, capitalizeRace } from '@/utils/characterImage'
-import { getQuestIcon } from '@/utils/questUtils'
+import { getQuestIcon, isQuestExpired, formatExpirationDate } from '@/utils/questUtils'
 
 const EQUIPMENT_SLOT_DISPLAY: Record<string, string> = {
   helm: 'Helm',
@@ -297,26 +297,43 @@ export default function Dashboard() {
                         onClick={() => handleQuestClick(quest)}
                       >
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center flex-1 min-w-0">
-                            <input
-                              type="checkbox"
-                              checked={quest.completed}
-                              onChange={(e) => {
-                                e.stopPropagation()
-                                handleQuestToggle(quest.id)
-                              }}
-                              className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-600 rounded bg-gray-700 flex-shrink-0"
-                            />
-                            <div className="ml-3 flex-1 min-w-0">
-                              <h3 className="text-white font-medium truncate max-w-48 sm:max-w-64">{quest.name}</h3>
+                                                  <div className="flex items-center flex-1 min-w-0">
+                          <input
+                            type="checkbox"
+                            checked={quest.completed}
+                            onChange={(e) => {
+                              e.stopPropagation()
+                              handleQuestToggle(quest.id)
+                            }}
+                            className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-600 rounded bg-gray-700 flex-shrink-0"
+                            disabled={isQuestExpired(quest)}
+                          />
+                          <div className="ml-3 flex-1 min-w-0">
+                            <h3 className="text-white font-medium truncate max-w-48 sm:max-w-64">{quest.name}</h3>
+                            <div className="flex items-center gap-2">
                               <p className="text-sm text-gray-400 truncate">{quest.category}</p>
+                              {quest.isHabit && (
+                                <span className="text-xs bg-blue-600/50 text-blue-300 px-1 py-0.5 rounded">
+                                  Habit
+                                </span>
+                              )}
+                              {quest.expirationDate && (
+                                <span className={`text-xs px-1 py-0.5 rounded ${
+                                  isQuestExpired(quest) 
+                                    ? 'bg-red-600/50 text-red-300' 
+                                    : 'bg-yellow-600/50 text-yellow-300'
+                                }`}>
+                                  {formatExpirationDate(quest.expirationDate)}
+                                </span>
+                              )}
                             </div>
                           </div>
-                          <div className="flex items-center ml-2">
-                            <span className="text-xs bg-accent-900/50 text-accent-300 px-2 py-1 rounded whitespace-nowrap">
-                              +{quest.reward} XP
-                            </span>
-                          </div>
+                        </div>
+                        <div className="flex items-center ml-2">
+                          <span className="text-xs bg-accent-900/50 text-accent-300 px-2 py-1 rounded whitespace-nowrap">
+                            +{quest.reward} XP
+                          </span>
+                        </div>
                         </div>
                       </div>
                     ))}
