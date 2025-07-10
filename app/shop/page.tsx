@@ -67,9 +67,6 @@ export default function ShopPage() {
                 />
                 <span className="text-purple-400 font-bold text-sm sm:text-base">{character.sp || 0}</span>
               </div>
-              <div className="text-white">
-                <span className="text-primary-400 font-bold text-sm sm:text-base">{character.experience || 0}</span> XP
-              </div>
             </div>
           </div>
 
