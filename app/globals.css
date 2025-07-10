@@ -319,6 +319,14 @@ body {
   }
 }
 
+.profile-bg {
+  background-image: url('/images/fire-emblem/profile-image.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
 /* Japanese-inspired scrollbar */
 ::-webkit-scrollbar {
   width: 10px;

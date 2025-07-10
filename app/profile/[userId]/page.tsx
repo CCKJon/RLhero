@@ -170,7 +170,7 @@ export default function UserProfilePage() {
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-900 to-dark">
+    <div className="min-h-screen profile-bg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <motion.div 
           className="bg-dark/50 backdrop-blur-sm rounded-xl p-8 border border-gray-800"
