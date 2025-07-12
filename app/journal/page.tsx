@@ -292,7 +292,14 @@ export default function Journal() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-dark">
+    <div 
+      className="min-h-screen bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: 'url(/images/fire-emblem/journal.png)',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        backgroundBlendMode: 'overlay'
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-display text-white">Journal</h1>
