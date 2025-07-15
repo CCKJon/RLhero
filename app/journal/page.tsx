@@ -297,9 +297,7 @@ export default function Journal() {
       style={{
         backgroundImage: 'url(/images/fire-emblem/journal.png)',
         backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        backgroundBlendMode: 'overlay',
-        backgroundSize: '120% auto',
-        backgroundPosition: 'center 30%'
+        backgroundBlendMode: 'overlay'
       }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
